@@ -1,0 +1,26 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Obsidian — per-machine workspace state (sync the rest of .obsidian/)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/workspace.json.bak
+.obsidian/cache
+.trash/
+
+# Editors
+.vscode/
+.idea/
+
+# Python (in case of any analysis scripts dropped in)
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Temp
+*.tmp
+*.swp
+*~
