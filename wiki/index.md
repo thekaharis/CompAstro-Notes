@@ -1,7 +1,7 @@
 ---
 type: meta
 title: Wiki Index
-updated: 2026-04-28
+updated: 2026-05-12
 ---
 
 # Wiki Index
@@ -50,6 +50,12 @@ updated: 2026-04-28
 ### Neural Operator Architectures
 - [[Lu et al 2020 (DeepONet)]] — DeepONet; branch-trunk architecture; universal approximation theorem for operators; arbitrary output locations; high-order convergence
 - [[Rahman et al 2023 (U-NO)]] — U-shaped Neural Operator; encoder-decoder with skip connections; 3D spatiotemporal native; 26–44% better than FNO on PDE benchmarks; memory-efficient via domain contraction
+- [[Staddon 2026 (Isotropic FNO)]] — radially-binned spectral kernel $R(|\mathbf{k}|)$; SO(d)-equivariant FNO; ~16x (2D) / ~96x (3D) parameter reduction; right symmetry for the comoving real-space surrogate
+
+### 21 cm Forecasts & Reionization (recent arXiv digest, May 2026)
+- [[Worku et al 2026 (PMFs 21cm Forecasts)]] — `zeus21` extended with primordial magnetic field contribution to $P_\text{lin}(k)$; HERA/SKA forecasts; example of modular new-physics priors on the forward model
+- [[Wang & Shan 2026 (JWST Reionization Degeneracy)]] — $f_\text{esc} \times f_{\star,0}$ degeneracy of global reionization observables; JWST UV LF *shape* breaks it; "early-galaxy crisis" excluded at 4.5σ; relevant to what 21 cm alone can constrain
+- [[Byrne et al 2026 (Digital Whitening Systematic)]] — instrumentation; digital whitening + re-quantization induces a frequency-dependent gain distortion not removed by bandpass calibration; forecast-realism caveat
 
 ### Thesis Documents
 - [[Thesis Proposal (EFT of Ionization Field)]] — Supervisor's project proposal; defines P1 + P2; EFT coefficients as simulator-independent inference targets; **thesis foundation document**
@@ -108,7 +114,7 @@ updated: 2026-04-28
 ### Inference / ML
 - [[Simulation-Based Inference]], [[Neural Posterior Estimation]], [[Simulator Dependence]]
 - [[Cross-Simulator Generalization]], [[Self-Supervised Learning]]
-- [[Vision Transformer]], [[Fourier Neural Operator]]
+- [[Vision Transformer]], [[Fourier Neural Operator]], [[FiLM Conditioning]]
 - [[Training Set Generation]], [[Initial Conditions]]
 
 ### Concepts
@@ -116,7 +122,7 @@ updated: 2026-04-28
 
 ## Sources
 
-*(full catalog in wiki/sources/ — 20 papers ingested)*
+*(full catalog in wiki/sources/ — 24 papers ingested)*
 
 ## Comparisons
 

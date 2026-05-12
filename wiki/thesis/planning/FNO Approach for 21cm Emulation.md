@@ -214,13 +214,13 @@ Parameters $\theta$ can be injected via two strategies:
 
 **Strategy A — Concatenation**: embed $\theta$ as a spatially constant field and concatenate with $\delta_m$ as additional input channels. Simple, but the FNO must learn to use the parameter information across layers.
 
-**Strategy B — FiLM conditioning**: use Feature-wise Linear Modulation — at each U-NO layer, the parameter embedding $\theta_\text{embed} = \text{MLP}(\theta)$ modulates the spectral filter:
+**Strategy B — [[FiLM Conditioning]]**: use Feature-wise Linear Modulation — at each U-NO layer, the parameter embedding $\theta_\text{embed} = \text{MLP}(\theta)$ produces channel-wise affine parameters that modulate the block's output before the nonlinearity:
 
-$$R_l(\mathbf{k}; \theta) = \gamma_l(\theta) \cdot R_l^0(\mathbf{k}) + \beta_l(\theta)$$
+$$h_{l+1} = \sigma\big(\text{FiLM}_\theta(W_l h_l + \mathcal{F}^{-1}[R_l(\mathbf{k}) \mathcal{F}(h_l)])\big)$$
 
-This allows parameters to control *how* the operator acts at each scale, rather than simply providing additional input channels. Physically motivated: $\zeta$ and $T_\text{vir}$ control the ionizing efficiency (should modulate large-scale modes), $R_\text{mfp}$ controls bubble sizes (should modulate intermediate-scale modes).
+In Fourier space this is a wavenumber-independent gain per channel — it reweights which channels dominate as a function of $\theta$, without reshaping any single channel's spectral profile (see [[FiLM Conditioning]] for the detailed Fourier-space action). Physically motivated for parameters that act multiplicatively on amplitudes (e.g. $\zeta$, $T_\text{vir}$ on ionizing efficiency); insufficient for parameters that shift characteristic scales (e.g. $R_\text{mfp}$ on bubble size), which need **spectral FiLM** — $R_l(\mathbf{k}; \theta) = \gamma_l(\theta, \mathbf{k}) \cdot R_l^0(\mathbf{k}) + \beta_l(\theta, \mathbf{k})$ — as a next-tier upgrade.
 
-**Recommendation**: start with Strategy A (simpler baseline), then try Strategy B if performance is insufficient.
+**Recommendation**: start with Strategy A (simpler baseline), then try Strategy B (channel-wise FiLM) if performance is insufficient. Escalate to spectral FiLM only if channel-wise saturates.
 
 #### Redshift Evolution
 

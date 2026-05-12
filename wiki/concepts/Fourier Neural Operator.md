@@ -2,7 +2,7 @@
 type: concept
 title: "Fourier Neural Operator"
 created: 2026-04-14
-updated: 2026-04-16
+updated: 2026-05-12
 tags:
   - concept/ml
   - domain/inference
@@ -15,8 +15,10 @@ aliases:
 related:
   - "[[Training Set Generation]]"
   - "[[Simulation-Based Inference]]"
+  - "[[Redshift Space Distortions]]"
 sources:
   - "[[Duruisseaux et al 2026 (FNO)]]"
+  - "[[Staddon 2026 (Isotropic FNO)]]"
 ---
 
 # Fourier Neural Operator
@@ -312,3 +314,68 @@ While FNOs are not the primary focus of this thesis, they represent a complement
 - **Future direction**: As 21cm inference becomes more field-level and computationally demanding, FNOs will likely become more central to the toolkit
 
 The FNO framework highlights an important principle: **leveraging physics structure (Green's functions, spectral methods) in neural network architecture leads to better generalization and efficiency than purely generic deep learning**.
+
+## Symmetry: Isotropic / Equivariant FNOs and the 21 cm Anisotropy
+
+*Added 2026-05-12 — synthesis based on [[Staddon 2026 (Isotropic FNO)]] and discussion of how to reconcile rotational symmetry of the operator with anisotropy of the observable.*
+
+### Anisotropy of the Spectral Kernel in the Standard FNO
+
+In a vanilla FNO, the spectral filter $R_\ell(\mathbf{k}) \in \mathbb{C}^{C \times C}$ has independent learnable parameters at each Fourier mode $\mathbf{k}$. There is no constraint forcing $R_\ell(\mathbf{k})$ to depend only on $|\mathbf{k}|$; the network is free to learn a kernel that prefers particular directions in $\mathbf{k}$-space. For physical forward problems that are themselves rotationally symmetric, this is a waste of expressivity and a source of unnecessary parameters.
+
+### Isotropic FNO
+
+[[Staddon 2026 (Isotropic FNO)]] proposes parameterizing the kernel as
+$$
+R_\ell(\mathbf{k}) \;=\; R_\ell(|\mathbf{k}|),
+$$
+implemented by binning Fourier modes by radial wavenumber and sharing parameters within each bin. This makes the operator $SO(d)$-equivariant: a rotation of the input field produces the same rotation of the output field. Parameter counts drop by approximately $16\times$ in 2D and $96\times$ in 3D vs the unconstrained FNO, with matched or better accuracy on isotropic-PDE benchmarks. Empirically equivalent to free rotational data augmentation.
+
+### Equivariance vs Invariance — the Important Distinction for 21 cm
+
+The 21 cm **observable** is anisotropic:
+
+- **Redshift-space distortions**: $P_{21}^s(k, \mu) \propto (\bar b_T + f\mu^2)^2 P_m(k)$ in the linear Kaiser regime — a direction-dependent multiplicative term tied to the line-of-sight.
+- **Light-cone effect**: signal statistics evolve along the LOS at fixed observer frequency while remaining (approximately) frozen transverse to it.
+- **Instrument response**: the EoR window in $(k_\parallel, k_\perp)$ has a wedge that lives on specific $\mu$.
+
+A natural objection: imposing isotropy on the FNO seems to contradict these observed anisotropies. The resolution is the **equivariance vs invariance** distinction:
+
+- *Invariance* would force the output to be the same under rotations of the input — wrong for 21 cm.
+- *Equivariance* means rotate the input, rotate the output the same way. The output of an equivariant FNO acting on an anisotropic input is still anisotropic; the *operator itself* does not introduce or prefer a direction.
+
+Because $R_\ell(|\mathbf{k}|)$ acts multiplicatively in Fourier space, the output field's anisotropy is fully inherited from the input field's anisotropy. The symmetry constraint is on the operator class, not on the data.
+
+### Where the Isotropic FNO Belongs in the 21 cm Forward Chain
+
+The right factorization of the forward map is:
+
+1. **Isotropic FNO core**: the comoving real-space simulator surrogate, $(\delta_m(\mathbf{x}), \theta) \to (x_\text{HI}(\mathbf{x}), T_b^\text{real}(\mathbf{x}))$ at fixed $z$. The underlying physics — gravity, ionizing radiative transfer, recombinations — has no preferred direction, so the operator should be equivariant. This is also the level at which 21cmFAST produces its boxes before light-cone interpolation and RSD.
+
+2. **Explicit symmetry-breaking layers downstream**, in order:
+   - RSD using the peculiar velocity field $\mathbf{v}_\text{pec}$ and the LOS unit vector $\hat{\mathbf{n}}$.
+   - Light-cone interpolation along the LOS direction.
+   - Beam convolution / instrument response.
+   - Foreground filtering and wedge masking.
+
+The anisotropies enter at the right point in the pipeline without being baked into the part of the network that does not need them.
+
+### Subtle Case: Redshift-Space Forward Map with the LOS as an Input
+
+The operator $(\delta_m, \mathbf{v}_\text{pec}) \to T_b^\text{redshift-space}$ is itself rotationally equivariant *only if you rotate the LOS unit vector along with the fields*. Equivariant architectures handle this cleanly when the LOS is passed in as an explicit input vector — the symmetry-breaking lives in the data, not the operator. If the LOS is not passed in, an isotropic kernel cannot represent the $\mu^2$ Kaiser term and will angle-average it away. This is the explicit failure mode to track if you ever try to fold RSD into the same network instead of a separate transfer block.
+
+### Why Isotropy Is the Right First Constraint for the Thesis Surrogate
+
+1. **Parameter savings translate directly to fewer required training simulations.** Training-set generation via 21cmFAST is the practical bottleneck; ~10–100× fewer spectral parameters means meaningfully fewer simulations are needed to populate the training distribution.
+2. **Equivariance is free augmentation.** Every rotation of every training cube is implicitly the same datapoint, which is a strong inductive prior on the cosmological forward map.
+3. **Ideologically consistent with EFT.** EFT itself is built on respecting the underlying symmetries of the physics and isolating the parts that break them through explicit operators (velocity field, LOS, bias coefficients). Imposing the same symmetry on the surrogate keeps the two halves of the thesis (P1 EFT, P2 inference using an FNO surrogate) aligned. See also: the conceptual parallel between [[Bias Expansion]]'s decomposition into universal operators times code-specific coefficients and the FNO's decomposition into universal isotropic kernel times anisotropic downstream layers.
+
+### Escalation Path Along the Symmetry Axis
+
+To complement the parameter-conditioning escalation in [[FiLM Conditioning]] (channel-wise → spectral → hypernetwork), there is now a symmetry-axis escalation:
+
+1. **Vanilla FNO** — the starting point in [[FNO Approach for 21cm Emulation]].
+2. **Isotropic FNO** — $R(|\mathbf{k}|)$, $SO(d)$-equivariant. Right for the comoving real-space task.
+3. **Equivariant FNO with explicit LOS input** — if redshift space is folded into the surrogate rather than a downstream layer.
+
+For Task 1 and Task 2 of the planning note as currently specified, step 2 is the natural choice; step 3 only becomes necessary if the design decision changes.

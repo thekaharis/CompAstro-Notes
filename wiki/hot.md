@@ -1,13 +1,49 @@
 ---
 type: meta
 title: "Hot Cache"
-updated: 2026-04-28T00:00:00
+updated: 2026-05-12T00:00:00
 ---
 
 # Recent Context
 
 ## Last Updated
-2026-04-28 — Fourth ingest: 2 FNO architecture papers ingested (20 total). New planning note: FNO Approach for 21cm Emulation.
+2026-05-12 — Weekly arXiv digest (May 4–11, 2026) ingested. Four new paper notes ([[Staddon 2026 (Isotropic FNO)]], [[Worku et al 2026 (PMFs 21cm Forecasts)]], [[Wang & Shan 2026 (JWST Reionization Degeneracy)]], [[Byrne et al 2026 (Digital Whitening Systematic)]]) plus a new "Symmetry: Isotropic / Equivariant FNOs and the 21 cm Anisotropy" section appended to the [[Fourier Neural Operator]] concept.
+
+## Isotropic FNO + 21 cm Anisotropy (Sixth Pass — new)
+
+**[[Staddon 2026 (Isotropic FNO)]]** — radially-binned spectral kernel; the main technical update is in the [[Fourier Neural Operator]] concept note.
+
+- **Construction**: $R_\ell(\mathbf{k}) \to R_\ell(|\mathbf{k}|)$ via parameter sharing within radial bins. Operator becomes $SO(d)$-equivariant.
+- **Numbers**: ~16x fewer spectral params in 2D, ~96x in 3D; matched or better accuracy on isotropic benchmarks. Equivariance ≈ free rotational data augmentation.
+- **Key distinction for 21 cm**: equivariance ≠ invariance. The constraint is on the *operator*, not the *output field*. An anisotropic input (e.g. one carrying a velocity field or a LOS direction) produces an anisotropic output.
+- **Right factorization of the 21 cm forward chain**:
+  1. *Isotropic FNO core*: $(\delta_m, \theta) \to (x_\text{HI}, T_b^\text{real})$ in comoving real space. This is where 21cmFAST produces its boxes; the physics is rotationally symmetric.
+  2. *Downstream symmetry-breaking layers*: RSD using $\mathbf{v}_\text{pec}$ and $\hat{\mathbf{n}}_\text{LOS}$, light-cone interpolation, beam, foreground wedge.
+- **Failure mode**: if you fold RSD into the FNO without passing the LOS as an explicit input, equivariance kills the $\mu^2$ Kaiser term.
+- **Why this matters for the thesis**: parameter savings directly cut required training-sim count (the 21cmFAST bottleneck); ideologically consistent with EFT's "universal operator × code-specific coefficient" decomposition. Symmetry-axis escalation now reads: vanilla FNO → isotropic FNO → equivariant FNO with explicit LOS input.
+
+## Recent arXiv Papers (May 4–11, 2026 window)
+
+- **[[Worku et al 2026 (PMFs 21cm Forecasts)]]** (arXiv:2605.05323): `zeus21` extended with a PMF contribution to $P_\text{lin}(k)$, HERA/SKA forecasts. Useful as an example of how new-physics priors plug into an EoR forward model; EFT bias coefficients are defined relative to whatever $P_\text{lin}(k)$ is fed in, so this is a relabel-the-input scenario, not an EFT-killer.
+- **[[Wang & Shan 2026 (JWST Reionization Degeneracy)]]** (arXiv:2605.03635): structural $f_\text{esc} \times f_{\star,0}$ degeneracy of global reionization observables; JWST UV LF shape breaks it. Relevant for P2 posterior interpretation: 21 cm alone will produce elongated posteriors along the product direction unless a UV LF shape prior is added.
+- **[[Byrne et al 2026 (Digital Whitening Systematic)]]** (arXiv:2605.05489): instrumentation; digital whitening + re-quantization induces a frequency-dependent gain distortion not removed by bandpass calibration. Forecast-realism caveat, off critical path.
+- **Cross-listed but unchanged**: [[Solt et al 2026 (Multi-Simulator Training)]] (arXiv:2601.05229) appeared as a cross-listing in this week's `/new` page. Already mature in the wiki as the P2 empirical baseline.
+
+## Key Structural Insight (Sixth Pass)
+The thesis now has a clean symmetry argument linking P1 and P2. EFT factorizes the ionization field into universal operators × code-specific bias coefficients. An isotropic-FNO surrogate enforces the same factorization at the architectural level: a rotationally symmetric spectral kernel does the universal lifting, while observation-side anisotropies (RSD, LOS, wedge) live in explicit downstream layers. The two halves of the pipeline now share the same inductive bias rather than re-discovering it independently.
+
+---
+
+## FiLM Conditioning (Fifth Pass — new concept)
+
+**[[FiLM Conditioning]]** — Feature-wise Linear Modulation as the parameter-injection mechanism for the FNO/U-NO surrogate.
+
+- **Affine form**: $\text{FiLM}_\theta(h)_{i,c,x} = \gamma_{c}(\theta_i)\cdot h_{i,c,x} + \beta_{c}(\theta_i)$. Channel-wise affine, spatial-constant. $\gamma, \beta \in \mathbb{R}^C$ produced by a small MLP from $\theta$.
+- **Placement**: after $W_\ell h_\ell + \mathcal{F}^{-1}(R_\ell \mathcal{F}(h_\ell))$, before the activation, in every FNO block. Identity-init trick ($\gamma = 1 + \gamma^\text{raw}$, last linear zero-initialized) so the block starts as an unmodulated FNO.
+- **Fourier-space action**: $\gamma_c(\theta)$ is a wavenumber-independent gain on channel $c$; $\beta_c(\theta)$ is a DC offset. FiLM **cannot reshape spectral profile** — that is $R_\ell$'s job. Mode-shaping requires spectral FiLM ($R_\theta = R \odot \gamma(\theta)$) or a hypernetwork over $R$.
+- **Escalation path** for thesis: channel-wise FiLM → spectral FiLM → hypernetwork.
+- **Why not the alternatives**: concatenation wastes capacity; per-voxel affine breaks resolution invariance; scalar modulation is too blunt.
+- **Pitfall for Task 2** (EFT-coefficient extraction from FNO): overexpressive FiLM can memorize through parameters and mask physical degeneracies. Watch for non-smooth $\gamma, \beta$ vs $\theta$.
 
 ## FNO Architecture Papers (Fourth Pass — new)
 
