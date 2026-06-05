@@ -1,12 +1,44 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-05-12
+updated: 2026-06-05
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-06-05] finding | 3-D FNO lightcone experiments — parameter conditioning breakthrough + modes/BCE negative findings
+
+**Source**: Experimental campaign on `Code/FNO v3/` (cluster `/pfs/10/work/hd_id260-fno_training/fno-21cm/`). 6600 21cmFAST lightcones from an 11-parameter LHS design, trained as a 3-D FNO mapping density → $x_\text{HI}$ on full $(140, 140, 256)$ cubes under 4× H200 NVL DDP.
+
+**Finding note created**:
+- [[FNO Lightcone Experimental Findings]] — Four-act ablation: density only → +parameters → +modes → +BCE.
+  - **Act 1 (density only)**: Degenerate constant predictor, val L² = 0.20 flat, val H¹ = 17.85 flat. Visualisation shows cone 6 (a no-reionization extreme) predicted as fully ionized — maximally wrong.
+  - **Act 2 (+ 11 LHS params as broadcast channels)**: val L² 0.20 → 0.06 (−61%) at epoch 0 alone; val H¹ 17.85 → 12.5 → 11.5. Predictions show qualitatively correct bubble morphology and correct reionization timing per cone. **Breakthrough.**
+  - **Act 3 (n_modes 16 → 24)**: trajectories overlap from epoch ~10. Spectral capacity is not the bottleneck.
+  - **Act 4 (BCE term @ weight 0.5)**: val_bce drops fast in epoch 0→1 then plateaus; val L² / val H¹ unchanged at the floor; mild regression at hardest slice ($z=5$ MSE 0.085 → 0.119). BCE commits uncertain voxels to the marginal prior (toward ionized at $z=5$ in the LHS sample), not toward truth.
+- **Synthesis**: ceiling is input information, not capacity / loss formulation. Operational floor: val L² ≈ 0.058, val H¹ ≈ 11.5. Per-voxel residual is the irreducible stochasticity that EFT's $P_{\varepsilon\varepsilon}$ term is supposed to capture analytically — natural complement to [[P1 EFT Characterization]].
+
+**Engineering wins documented**:
+- Cube precompute + **direct-chunk merge** via `h5py.read_direct_chunk` / `write_direct_chunk`: ~43× speedup over decompress-recompress merge, made the 33-shard cluster build fit in walltime.
+- Local NVMe staging in sbatch (28 TB per H200 node) → all 4 ranks share ~3 GB/s local I/O.
+- 4-GPU DDP scaling: ~4.1× speedup over single H200 (near-ideal), bringing per-epoch from ~44 min (A30 streaming) → ~4.5 min.
+
+**Methodological lessons**:
+- Visualisation caught a silent checkpoint-loading bug (DDP `module.` prefix mismatch + `strict=False`) — viz was showing a random-init model for several runs before discovery. Fixed by an autodetect prefix loader that fails loudly on zero key matches.
+- Negative findings (modes=24, BCE) are *informative* — they eliminate entire classes of explanation for the ceiling.
+
+**Index updated**: new "Findings" section in `wiki/index.md`; `updated` bumped to 2026-06-05.
+
+**Next experiments queued** (priority order, documented in finding note §"What to Try Next"):
+1. Auxiliary global-history output ($\bar{x}_\text{HI}(z)$ as second head) — cheap regulariser
+2. Early-time density as auxiliary input — addresses the diagnosed information bottleneck directly, but expensive (re-run 21cmFAST or compute linear field analytically)
+3. Pivot loss to power-spectrum / summary statistics — what [[P2 Cross-Simulator Inference]] / SBI actually needs
+4. [[FiLM Conditioning]] instead of channel concatenation
+5. [[U-NO]] architecture trial
 
 ---
 

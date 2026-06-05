@@ -1,7 +1,7 @@
 ---
 type: meta
 title: Wiki Index
-updated: 2026-05-12
+updated: 2026-06-05
 ---
 
 # Wiki Index
@@ -96,6 +96,10 @@ updated: 2026-05-12
 - [[P1 EFT Characterization]] — Step-by-step P1 plan: EFT coefficient extraction across 21cmFAST and BEoRN
 - [[P2 Cross-Simulator Inference]] — P2 plan: EFT-targeted SBI; cross-simulator posterior comparison
 - [[FNO Approach for 21cm Emulation]] — FNO/U-NO emulation of $T_b$ and $x_\text{HI}$; EFT–FNO connection; suggested timeline
+
+## Findings
+
+- [[FNO Lightcone Experimental Findings]] — 3-D FNO $\delta_m \to x_\text{HI}$ on full lightcones (4× H200 DDP, 6600 cones). **Breakthrough**: 11-param astrophysical conditioning drops val L² 0.20 → 0.06 and recovers bubble morphology. **Negative findings**: modes 16 → 24 and BCE regulariser both ineffective — the ceiling is input information, not capacity or loss formulation.
 
 ## Concepts
 
