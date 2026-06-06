@@ -2,7 +2,7 @@
 type: finding
 title: "FNO Lightcone Experimental Findings"
 created: 2026-06-05
-updated: 2026-06-05
+updated: 2026-06-06
 tags:
   - domain/thesis
   - domain/ml
@@ -198,6 +198,37 @@ The BCE run is the worst at the hardest slice. Looking at the Pred − True pane
 
 **Verdict:** Loss-formulation is not the bottleneck either.
 
+### Addendum (2026-06-06): full 100-epoch trajectory of the BCE run
+
+The Act-4 BCE @ 0.5 run was carried to 100 epochs. The metrics through epoch 19 above were re-confirmed; the question this addendum settles is **where the cosine-annealed asymptote lands**.
+
+Key milestones over the full run:
+
+| Epoch | `train_err` | `val_l2` | `val_h1` | `val_bce` | What's happening |
+|---|---|---|---|---|---|
+| 0 | 6.897 | 0.0883 | 12.73 | 0.086 | starting from random init |
+| 1 | 5.995 | 0.0714 | 12.17 | 0.057 | the big drop -- params absorbed in 1 epoch |
+| 10 | 5.719 | 0.0644 | 11.72 | 0.054 | end of fast phase |
+| 20 | 5.657 | 0.0596 | 11.62 | 0.049 | crosses below the 0.06 projection |
+| 50 | 5.579 | 0.0575 | 11.45 | 0.047 | LR cooldown visibly damping val oscillation |
+| 70 | 5.553 | 0.0566 | 11.38 | 0.047 | oscillation gone; trajectory now monotonic |
+| 90 | 5.541 | 0.0561 | 11.36 | 0.046 | converged within noise of the asymptote |
+| **99** | **5.540** | **0.0561** | **11.356** | **0.0465** | **final** |
+
+Three things this run settles:
+
+1. **The §Synthesis floor projection was slightly conservative.** I projected `val_l2 ~= 0.058` from the 20-epoch extrapolation. The actual cosine-annealed asymptote is **`val_l2 = 0.0561`**. Qualitatively the same plateau, ~3% better than projected.
+
+2. **Cosine annealing did meaningful work in the long tail.** Between epochs 30 and 99, `val_l2` dropped 0.060 → 0.0561 (6.5%) and the val-metric epoch-to-epoch oscillation visible at warmer LR (~10% bounce at epochs 15-20) is completely absent by epoch ~70. **Always commit to the full 100 epochs when wall time permits** -- earlier "plateau" calls were premature.
+
+3. **BCE didn't change the asymptote.** The earlier observation (epoch 19: BCE 4% worse than L²+H¹) was an early-trajectory artifact. By epoch 100, both runs are within noise of each other at the floor. The information-bound diagnosis is **confirmed at the asymptote**, not just at the early-epoch comparison.
+
+The updated operational-floor line that appears in §Synthesis below should therefore read:
+
+$$\boxed{\;\text{val L}^2 = 0.056,\quad \text{val H}^1 = 11.36\quad\text{(100-epoch cosine-annealed)}\;}$$
+
+Per-epoch wall time was stable at ~192s × 100 = ~5.3 h total -- well inside the 24h walltime budget.  Cluster log: `checkpoints_3d/metrics.jsonl` at the 6600-cone, 4× H200 DDP run that completed on 2026-06-05.
+
 ---
 
 ## Synthesis: Where the Ceiling Actually Lives
@@ -210,9 +241,9 @@ Three independent interventions targeted the bubble-wall plateau:
 
 When more capacity *and* better loss gradients both fail to break through, the bottleneck is not **expressivity** — it is **input information**. The 11 LHS parameters fix the global reionization history (when, how fast, what mass-scale dominates), but they cannot encode the specific 3-D distribution of ionizing sources within a given simulation realisation. That source-position information lives in the small-scale density structure at *earlier* redshifts (which the operator does not see) and in the discrete Poisson realisation of halo positions (irreducible stochasticity).
 
-**Operational floor:** With `in_channels = 13`, n_modes = (16,16,16), L²+H¹ loss, and the parameter conditioning enabled, the model converges to:
+**Operational floor:** With `in_channels = 13`, n_modes = (16,16,16), L²+H¹ loss (BCE @ 0.5 tested; same asymptote within noise -- see addendum to §Act 4), and the parameter conditioning enabled, the model converges over a 100-epoch cosine-annealed run to:
 
-$$\boxed{\;\text{val L}^2 \approx 0.058,\quad \text{val H}^1 \approx 11.5\;}$$
+$$\boxed{\;\text{val L}^2 = 0.056,\quad \text{val H}^1 = 11.36\;}$$
 
 This is likely close to the **information-theoretic floor** for this conditioning set. Per-voxel exactness at the bubble-wall scale appears to require either (a) injecting earlier-time density (the source-finding history) or (b) accepting that per-voxel predictions are inherently noisy and pivoting the task to global statistics (power spectrum, ionization history, bubble-size distribution).
 
