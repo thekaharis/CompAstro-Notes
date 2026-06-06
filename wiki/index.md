@@ -1,7 +1,7 @@
 ---
 type: meta
 title: Wiki Index
-updated: 2026-06-06
+updated: 2026-06-07
 ---
 
 # Wiki Index
@@ -99,7 +99,7 @@ updated: 2026-06-06
 
 ## Findings
 
-- [[FNO Lightcone Experimental Findings]] — 3-D FNO $\delta_m \to x_\text{HI}$ on full lightcones (4× H200 DDP, 6600 cones). **Breakthrough**: 11-param astrophysical conditioning drops val L² 0.20 → 0.06 and recovers bubble morphology. **Negative findings**: modes 16 → 24 and BCE regulariser both ineffective — the ceiling is input information, not capacity or loss formulation.
+- [[FNO Lightcone Experimental Findings]] — 3-D FNO $\delta_m \to x_\text{HI}$ on full lightcones (4× H200 DDP, 6600 cones). **Two breakthroughs**: (i) 11-param astrophysical conditioning drops val L² 0.20 → 0.06 and recovers bubble morphology; (ii) U-FNO architecture with SyncBN further breaks through to **val L² = 0.042, val H¹ = 8.27** (vs FNO floors 0.056 / 11.36). The earlier "information-bound" reading is retracted: the bottleneck was the pure-Fourier basis's inability to represent step-like bubble walls, not the input information. **Negative findings**: spectral modes (16 → 24) and BCE regulariser both ineffective on the FNO baseline — useful in retrospect for isolating architectural inductive bias as the right lever.
 
 ## Concepts
 

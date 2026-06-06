@@ -1,12 +1,34 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-06-06
+updated: 2026-06-07
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-06-07] finding | U-FNO + SyncBN -- architectural breakthrough; Act 5 written up
+
+**Source**: 30-epoch U-FNO + SyncBN run on the 4× H200 NVL cluster, `checkpoints_3d_ufno/metrics.jsonl`.  16-cone detailed viz run on the converged checkpoint (`figures/ufno-detailed_20260606-234954_job3966888/`) confirms the cone-61 high-z artefact diagnosed at epoch 20 of the pre-SyncBN run is fully resolved.
+
+**Finding note updated**: [[FNO Lightcone Experimental Findings]] gains a new **§Act 5 -- U-FNO architecture: decisive breakthrough**.  Subsections: hypothesis, change, the **SyncBN gotcha** (documented as a methodological lesson), the 30-epoch trajectory table, comparison vs the FNO 100-epoch asymptote, **visual evidence** (embeds three diagnostic-cone lightcone strips + the 16-cone summary grid), and a paragraph on why `val_h1 = 8.27` is the bubble-wall-sharpness signal.  The §Headline Results table is updated from 4 to 5 rows; the §Synthesis section is rewritten -- the previous "information-bound" diagnosis is explicitly retracted in favour of an **inductive-bias-bound** reading with two boxed operational floors (pure-FNO at 0.056 / 11.36, U-FNO at 0.042 / 8.27).
+
+**Headline numbers**:
+- val L²:  FNO 100-ep. 0.0561 → **U-FNO 30-ep. 0.0418** (−25%)
+- val H¹:  FNO 100-ep. 11.36 → **U-FNO 30-ep. 8.27** (−27%)
+- val H¹ < 11 achieved for the first time in the entire campaign (the bubble-wall-sharpness signal we'd been watching for)
+
+**Methodological lesson documented**: BatchNorm running stats are **not** synchronised by DDP -- only parameters are.  At `batch_size=1` per rank under 4-rank DDP the per-rank BN sees a single sample, the running stats drift independently, only rank-0's are saved, and the all-reduced eval metric averages over inconsistent forward passes.  Fix is one line (`nn.SyncBatchNorm.convert_sync_batchnorm`) inserted before the DDP wrap.  No-op for pure-FNO (no BN); critical for any architecture with BN under DDP.
+
+**Index updated**: `wiki/index.md` `updated` bumped to 2026-06-07.
+
+**Three follow-up experiments queued** (priority order):
+1. Asymmetric Z-modes (`n_modes=(16,16,32)`) on the U-FNO -- physically motivated by LOS step-function content; cheap to test (no FFT cost change).
+2. 100-epoch U-FNO baseline run to confirm the asymptote (~3-8 % marginal improvement expected).
+3. `BATCH_SIZE=2` per rank on U-FNO to test convergence-speed / final-quality at larger effective batch.
 
 ---
 
