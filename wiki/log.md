@@ -1,12 +1,29 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-06-05
+updated: 2026-06-06
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-06-06] finding | 100-epoch BCE run completed — operational floor confirmed and tightened
+
+**Source**: Full 100-epoch run on the cluster (BCE @ 0.5 variant of the modes=16 + parameter-conditioned configuration), `checkpoints_3d/metrics.jsonl`.  Same hardware as the original campaign (4× H200 NVL DDP, ~192 s/epoch, ~5.3 h total wall time).
+
+**Finding note updated**: [[FNO Lightcone Experimental Findings]] gains a new "Addendum (2026-06-06): full 100-epoch trajectory of the BCE run" section under §Act 4 with milestone metrics every ~10 epochs, and the boxed operational-floor line in §Synthesis is tightened to the empirical 100-epoch asymptote.
+
+**Three things this settles**:
+1. **Operational floor refined**: `val_l2 ≈ 0.058` → **`val_l2 = 0.0561`**, `val_h1 = 11.36` at epoch 99. The §Synthesis projection from a 20-epoch extrapolation was ~3% conservative but qualitatively right.
+2. **Cosine annealing earns the full 100 epochs**: between epochs 30 and 99, `val_l2` dropped 0.060 → 0.0561 (6.5%) and the val-metric oscillation visible at warmer LR (~10% bounce at epochs 15-20) is gone by epoch ~70. Earlier "plateau" calls (epoch 20-30) were premature.
+3. **BCE didn't change the asymptote**: the earlier observation (epoch 19: BCE 4% worse than L²+H¹) was an early-trajectory artifact. By epoch 100, both runs are within noise at the floor. Information-bound diagnosis confirmed at the asymptote, not just at the early-epoch comparison.
+
+**Implication for the queued experiments** (in [[FNO Lightcone Experimental Findings]] §"What to Try Next"): the 100-epoch BCE run establishes the empirical baseline that the U-FNO experiment (next up, sbatch script already in place) needs to *beat*, not just tie.  Tie = info-bound diagnosis is final; break = architectural inductive bias mattered after all.
+
+**Index updated**: `wiki/index.md` `updated` bumped to 2026-06-06.
 
 ---
 
