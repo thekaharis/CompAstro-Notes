@@ -24,3 +24,16 @@ __pycache__/
 *.tmp
 *.swp
 *~
+
+# Finding-note figures: keep only the images embedded in finding notes,
+# not the full diagnostic dumps from every viz run.  Track run_info.txt
+# breadcrumbs so older folders remain self-describing.
+wiki/thesis/findings/figures/**/*.png
+
+# Per-figure exceptions for images referenced by the notes:
+#   Act 5 (U-FNO + SyncBN, 30-epoch detailed viz, 2026-06-06)
+!wiki/thesis/findings/figures/ufno-detailed_20260606-234954_job3966888/lightcone_3d_validation_cone61.png
+!wiki/thesis/findings/figures/ufno-detailed_20260606-234954_job3966888/lightcone_3d_validation_cone2322.png
+!wiki/thesis/findings/figures/ufno-detailed_20260606-234954_job3966888/lightcone_3d_validation_cone1982.png
+!wiki/thesis/findings/figures/ufno-detailed_20260606-234954_job3966888/lightcone_grid_3d_validation.png
+!wiki/thesis/findings/figures/**/run_info.txt
