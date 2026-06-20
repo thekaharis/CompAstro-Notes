@@ -2,7 +2,7 @@
 type: meta
 title: "Planning Index"
 created: 2026-04-21
-updated: 2026-04-21
+updated: 2026-06-20
 tags:
   - domain/thesis
   - domain/planning
@@ -16,6 +16,9 @@ Detailed, step-by-step operational plans for each work package. These documents 
 
 - [[P1 EFT Characterization]] — Matched ICs → perturbative basis → coefficient extraction → stochastic analysis → regime mapping → interpretation
 - [[P2 Cross-Simulator Inference]] — Training set design → mapping → swyft setup → cross-simulator test → baseline comparison
+- [[FNO Approach for 21cm Emulation]] — Neural-operator strategy for the density-to-ionization and brightness-temperature maps
+- [[21cmFAST → FNO Pipeline]] — Data-transfer, training, checkpoint, and prediction pipeline
+- [[Siren3D Residual Refinement Plan]] — Coordinate-conditioned residual refinement of U-FNO bubble boundaries, with controls and stop criteria
 
 ## Reading Order
 

@@ -1,7 +1,7 @@
 ---
 type: meta
 title: Wiki Index
-updated: 2026-06-07
+updated: 2026-06-20
 ---
 
 # Wiki Index
@@ -96,10 +96,11 @@ updated: 2026-06-07
 - [[P1 EFT Characterization]] — Step-by-step P1 plan: EFT coefficient extraction across 21cmFAST and BEoRN
 - [[P2 Cross-Simulator Inference]] — P2 plan: EFT-targeted SBI; cross-simulator posterior comparison
 - [[FNO Approach for 21cm Emulation]] — FNO/U-NO emulation of $T_b$ and $x_\text{HI}$; EFT–FNO connection; suggested timeline
+- [[Siren3D Residual Refinement Plan]] — Frozen-U-FNO + coordinate-conditioned sinusoidal residual head for bubble-wall refinement; boundary sampling, controls, and stop criteria
 
 ## Findings
 
-- [[FNO Lightcone Experimental Findings]] — 3-D FNO $\delta_m \to x_\text{HI}$ on full lightcones (4× H200 DDP, 6600 cones). **Two breakthroughs**: (i) 11-param astrophysical conditioning drops val L² 0.20 → 0.06 and recovers bubble morphology; (ii) U-FNO architecture with SyncBN further breaks through to **val L² = 0.042, val H¹ = 8.27** (vs FNO floors 0.056 / 11.36). The earlier "information-bound" reading is retracted: the bottleneck was the pure-Fourier basis's inability to represent step-like bubble walls, not the input information. **Negative findings**: spectral modes (16 → 24) and BCE regulariser both ineffective on the FNO baseline — useful in retrospect for isolating architectural inductive bias as the right lever.
+- [[FNO Lightcone Experimental Findings]] — 3-D FNO $\delta_m \to x_\text{HI}$ on full lightcones (4× H200 DDP, 6600 cones). **Two breakthroughs**: parameter conditioning drops val L² 0.20 → 0.06; U-FNO + SyncBN reaches **val L² = 0.0418, val H¹ = 8.27**. **Nulls**: more isotropic/LOS modes, BCE, GroupNorm, stronger H¹ weighting, and doubled LOS U-Net receptive field do not improve the relevant architecture's floor. The active bottleneck is not retained mode count or LOS receptive field.
 
 ## Concepts
 
@@ -119,6 +120,7 @@ updated: 2026-06-07
 - [[Simulation-Based Inference]], [[Neural Posterior Estimation]], [[Simulator Dependence]]
 - [[Cross-Simulator Generalization]], [[Self-Supervised Learning]]
 - [[Vision Transformer]], [[Fourier Neural Operator]], [[FiLM Conditioning]]
+- [[Spectral Mode Cutoff in FNOs]]
 - [[Training Set Generation]], [[Initial Conditions]]
 
 ### Concepts

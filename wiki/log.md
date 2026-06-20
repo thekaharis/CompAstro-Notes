@@ -1,12 +1,33 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-06-07
+updated: 2026-06-20
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-06-20] synthesis | Mode-cutoff findings consolidated; Siren3D plan filed
+
+**Sources**: [[FNO Lightcone Experimental Findings]] Acts 3, 5, 6, and 7; current U-FNO v1/v2/v3 metrics and experiment interpretation.
+
+**Concept created**:
+- [[Spectral Mode Cutoff in FNOs]] — distinguishes the spectral branch's `n_modes` truncation from a hard output band-limit. Documents why pointwise, nonlinear, and U-Net paths can produce above-cutoff structure; translates mode counts into nominal axis-dependent physical edges; and records the repeated null results from isotropic modes, asymmetric LOS modes, and enlarged LOS receptive field.
+
+**Planning note created**:
+- [[Siren3D Residual Refinement Plan]] — proposes a frozen-U-FNO + coordinate-conditioned SIREN logit-residual head, zero-initialized to preserve the baseline. Includes boundary-aware sampling, staged fine-tuning, parameter-matched controls, success/stop criteria, and risks.
+
+**Finding note updated**:
+- Added the precise mode-cutoff interpretation and the empirical claim that the tested models are not bottlenecked by retained mode count.
+- Added Siren3D as the next different-basis test after the global-pooling residual.
+- Replaced the stale “try U-NO” item: the local-path experiment has already succeeded through U-FNO.
+
+**Indexes/cache updated**: `wiki/index.md`, `wiki/thesis/planning/_index.md`, `wiki/concepts/_index.md`, and `wiki/hot.md`.
+
+**Decision order**: global-pooling residual → boundary-distance diagnostic → frozen-U-FNO Siren3D with controls → limited joint fine-tuning only after a clean residual-only win.
 
 ---
 
