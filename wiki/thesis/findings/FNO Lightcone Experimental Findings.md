@@ -2,7 +2,7 @@
 type: finding
 title: "FNO Lightcone Experimental Findings"
 created: 2026-06-05
-updated: 2026-06-06
+updated: 2026-06-20
 tags:
   - domain/thesis
   - domain/ml
@@ -16,6 +16,8 @@ related:
   - "[[FNO Approach for 21cm Emulation]]"
   - "[[21cmFAST → FNO Pipeline]]"
   - "[[Fourier Neural Operator]]"
+  - "[[Spectral Mode Cutoff in FNOs]]"
+  - "[[Siren3D Residual Refinement Plan]]"
   - "[[Reionization Physics]]"
   - "[[Inference and ML]]"
   - "[[P1 EFT Characterization]]"
@@ -33,13 +35,13 @@ This note is **field-level** experimental findings on training a 3-D Fourier Neu
 
 $$\mathcal{G}: \delta_m(\mathbf{x}, z) \;\longmapsto\; x_\text{HI}(\mathbf{x}, z)$$
 
-across the full 21cmFAST lightcone (cube shape **140 × 140 × 256**, redshift range $z = 5 \to 25$, $\sim$200 Mpc transverse box, $\sim$3340 Mpc LOS extent). All experiments use 4× NVIDIA H200 NVL GPUs with NCCL DDP, sqrt-scaled LR, and the same train/val/test split (80/10/10 by cone, seed 42).
+across the full 21cmFAST lightcone (cube shape **140 × 140 × 256**, redshift range $z = 5 \to 25$, $\sim$ 200 Mpc transverse box, $\sim$ 3340 Mpc LOS extent). All experiments use 4× NVIDIA H200 NVL GPUs with NCCL DDP, sqrt-scaled LR, and the same train/val/test split (80/10/10 by cone, seed 42).
 
 ---
 
 ## Headline Results
 
-A five-act narrative, established by ablation:
+A seven-act narrative, established by ablation:
 
 | Configuration | val L² | val H¹ | Predicts | Verdict |
 |---|---|---|---|---|
@@ -48,8 +50,10 @@ A five-act narrative, established by ablation:
 | **+ Spectral modes 16 → 24** | 0.06 (same) | 11.5 (same) | No qualitative change | **No effect** |
 | **+ BCE regulariser @ weight 0.5** (100 ep.) | 0.0561 | 11.36 | Same asymptote; mild early regression | **No effect** |
 | **+ U-FNO architecture + SyncBN** (30 ep.) | **0.0418** | **8.27** | Sharper bubble walls; high-z artefacts resolved | **Decisive breakthrough** |
+| **+ v2 A+B+C bundle** (asymm Z modes + GroupNorm + H¹ weighting) | 0.0424 | 8.36 | Matches U-FNO floor; H¹ slightly worse | **Floor confirmed (null)** |
+| **+ v3-D anisotropic Z U-Net** (stride=(2,2,4)) | 0.0438 | 8.45 | Matches floor on test; LOS RF irrelevant | **Hypothesis falsified** |
 
-The transition from row 1 to row 2 (parameter conditioning) and from row 4 to row 5 (architecture) are the two headline results.  The negative findings in rows 3 and 4 served their purpose: they ruled out spectral capacity and loss formulation as the bottleneck, isolating **architectural inductive bias** as the remaining lever — and row 5 confirms that diagnosis empirically.
+The transition from row 1 to row 2 (parameter conditioning) and from row 4 to row 5 (architecture) are the two headline results.  The negative findings in rows 3 and 4 served their purpose: they ruled out spectral capacity and loss formulation as the bottleneck, isolating **architectural inductive bias** as the remaining lever — and row 5 confirms that diagnosis empirically.  Rows 6 and 7 (Acts 6–7) probe *within* the U-FNO architecture: row 6 rules out cheap-knob tuning (loss reweighting, normalisation choice, more LOS modes), row 7 rules out the U-Net path's LOS receptive field as the missing ingredient.  Together they show the U-FNO floor at (0.042, 8.27) is robust to interventions inside the U-Net path — the next lever has to be qualitatively different (cone-level global context, or moving beyond the U-FNO framework entirely).
 
 ---
 
@@ -225,7 +229,7 @@ Three things this run settles:
 
 2. **Cosine annealing did meaningful work in the long tail.** Between epochs 30 and 99, `val_l2` dropped 0.060 → 0.0561 (6.5%) and the val-metric epoch-to-epoch oscillation visible at warmer LR (~10% bounce at epochs 15-20) is completely absent by epoch ~70. **Always commit to the full 100 epochs when wall time permits** -- earlier "plateau" calls were premature.
 
-3. **BCE didn't change the asymptote.** The earlier observation (epoch 19: BCE 4% worse than L²+H¹) was an early-trajectory artifact. By epoch 100, both runs are within noise of each other at the floor. The information-bound diagnosis is **confirmed at the asymptote**, not just at the early-epoch comparison.
+3. **BCE didn't change the asymptote.** The earlier observation (epoch 19: BCE 4% worse than L²+H¹) was an early-trajectory artifact. By epoch 100, both runs are within noise of each other at the floor. At the time this confirmed the ceiling **within the pure-FNO basis**; Act 5 later showed that interpreting it as a global information bound was wrong.
 
 The updated operational-floor line that appears in §Synthesis below should therefore read:
 
@@ -262,17 +266,17 @@ model = DDP(model, device_ids=[local_rank], output_device=local_rank)
 
 Key milestones:
 
-| Epoch | `train_err` | `val_l2` | `val_h1` | `val_bce` | Comment |
-|---|---|---|---|---|---|
-| 0 | 7.706 | 0.0807 | 12.78 | 0.068 | random init; matches the FNO-baseline epoch-0 numbers |
-| 1 | 5.733 | 0.0662 | 11.22 | 0.056 | already below FNO epoch-1 on every metric |
-| 3 | 4.995 | 0.0567 | 9.99 | 0.049 | **`val_l2` matches the FNO 100-epoch asymptote (0.0561) in 3 epochs** |
-| 5 | 4.793 | 0.0554 | 9.85 | 0.048 | `val_h1` crosses 10 -- the first time in the entire campaign |
-| 10 | 4.401 | 0.0528 | 9.41 | 0.046 | -- |
-| 15 | 4.158 | 0.0448 | 8.64 | 0.041 | -- |
-| 20 | 3.991 | 0.0437 | 8.50 | 0.041 | -- |
-| 25 | 3.881 | 0.0420 | 8.29 | 0.040 | val_l2 essentially flat from here |
-| **29** | **3.852** | **0.0418** | **8.27** | **0.0398** | **final** (test: L² = 0.0408, H¹ = 8.27) |
+| Epoch  | `train_err` | `val_l2`   | `val_h1` | `val_bce`  | Comment                                                               |
+| ------ | ----------- | ---------- | -------- | ---------- | --------------------------------------------------------------------- |
+| 0      | 7.706       | 0.0807     | 12.78    | 0.068      | random init; matches the FNO-baseline epoch-0 numbers                 |
+| 1      | 5.733       | 0.0662     | 11.22    | 0.056      | already below FNO epoch-1 on every metric                             |
+| 3      | 4.995       | 0.0567     | 9.99     | 0.049      | **`val_l2` matches the FNO 100-epoch asymptote (0.0561) in 3 epochs** |
+| 5      | 4.793       | 0.0554     | 9.85     | 0.048      | `val_h1` crosses 10 -- the first time in the entire campaign          |
+| 10     | 4.401       | 0.0528     | 9.41     | 0.046      | --                                                                    |
+| 15     | 4.158       | 0.0448     | 8.64     | 0.041      | --                                                                    |
+| 20     | 3.991       | 0.0437     | 8.50     | 0.041      | --                                                                    |
+| 25     | 3.881       | 0.0420     | 8.29     | 0.040      | val_l2 essentially flat from here                                     |
+| **29** | **3.852**   | **0.0418** | **8.27** | **0.0398** | **final** (test: L² = 0.0408, H¹ = 8.27)                              |
 
 The trajectory is smooth and monotonic after the SyncBN fix; no spikes.  Val plateaus by epoch ~25 (`val_l2` decrease of < 0.5% over the last 5 epochs), so 30 epochs is sufficient -- the cosine schedule's last 70% would buy at most another 3-8% on `val_l2`.  Per-epoch time 522 s; total 30-epoch run 4.4 h, well inside the 18 h walltime.
 
@@ -324,6 +328,78 @@ Reading the grid top-to-bottom: heavily reionized → mostly neutral.  In every 
 Throughout the entire campaign before this run, **no configuration achieved `val_h1 < 11`**.  The FNO baseline plateaued at 11.36 regardless of mode count, hidden-channel count, or BCE weight.  U-FNO crosses 11 at epoch 1 and lands at 8.27 -- a 27 % reduction.  This is the bubble-wall sharpness improvement made visible in the metrics.
 
 **Verdict:** The U-FNO breaks through what was previously diagnosed as the information-theoretic floor.  Adding a local-feature path (the mini U-Net inside each U-Fourier block) provides representational capacity the pure-Fourier basis does not, specifically at the spatial scales where bubble walls live.  The earlier "information-bound" diagnosis was a **local conclusion that turned out to be wrong globally**: it was correct conditional on the pure-FNO architecture, but the architecture itself was the bottleneck -- not the inputs.
+
+### Act 6 — v2 A+B+C bundle: floor confirmed (null)
+
+**Hypothesis bundle.**  Three independent "cheap-knob" interventions, each motivated by post-Act-5 inspection of where the U-FNO still falls short:
+
+- **A. Asymmetric Z modes** (`N_MODES_Z=32`, vs 16 for X/Y).  The LOS direction carries the reionization-front step function; more spectral modes along Z should target that specifically.  FFT cost unchanged (it's grid-wide, not mode-wide).
+- **B. GroupNorm in the U-Net path** (`UFNO_NORM=groupnorm`).  Batch-independent normalisation sidesteps the small-batch + DDP foot-gun that motivated `SyncBatchNorm` in Act 5; the convert call still applies downstream but is a no-op on `GroupNorm`.
+- **C. H¹-weighted loss** (0.3 · L² + 0.7 · H¹, vs 0.5 / 0.5).  v1 U-FNO already showed that `val_h1` was where the win lived; weighting H¹ harder should sharpen bubble walls further.
+
+**Result** (30 epochs, same DDP / cosine setup as Act 5; metrics from `checkpoints_3d_ufno_v2/metrics.jsonl`):
+
+| Metric | v1 U-FNO (Act 5) | **v2 A+B+C** | Δ vs v1 |
+|---|---|---|---|
+| val_l2 | 0.0418 | **0.0424** | +0.0006 (within noise) |
+| val_h1 | 8.27 | **8.36** | **+0.09 (worse)** |
+| test_l2 | 0.0408 | **0.0415** | +0.0007 |
+| test_h1 | 8.27 | **8.37** | +0.10 |
+
+Train loss kept dropping across the full 30 epochs (10.09 → 5.39) while val plateaued from epoch ~22; capacity intact, generalisation ceiling firm.  The cheap-knob bundle ties the v1 floor on val_l2 and is slightly *worse* on val_h1, despite C being designed specifically to *improve* val_h1.
+
+**Diagnostic value of each knob.**
+
+- **A** (asymmetric Z modes): null. Either the original 16 LOS modes were already adequate, or the optimiser averaged the extras away.
+- **B** (GroupNorm): null. The Act-5 `SyncBatchNorm` call already handled the DDP small-batch issue; GroupNorm is an alternative path to the same place, not a better one.
+- **C** (H¹ weighting): the most diagnostic.  Pushing the optimiser 40 % harder on gradient fidelity *should* have dropped val_h1.  It went *up* by 0.09.  Reweighting the loss could not move the H¹ metric below the v1 ceiling -- the constraint is representational, not gradient-flow.
+
+**Verdict.**  The U-FNO floor at (`val_l2 ≈ 0.042`, `val_h1 ≈ 8.27`) is robust to LOS mode count, U-Net normalisation choice, and L²/H¹ reweighting.  It is *not* loss-recipe-bound: the ceiling lives in architecture.  This negative result is what sets up the v3 (Tier 2) experiments: knob-level tuning is exhausted, so the remaining levers must change the U-Net path or add a new path inside the U-FNO framework.
+
+### Act 7 — Anisotropic Z U-Net (v3-D): hypothesis falsified
+
+**Hypothesis** (option D of the v3 Tier-2 sweep): doubling the LOS receptive field at the U-Net bottleneck via `stride=(2, 2, 4)` on the outermost down/up-sample stages would target the high-z bubble-wall failure mode that v1 U-FNO had on cones like 61 -- without adding parameters or layers.  Padding constraint along Z tightens from "multiple of 8" to "multiple of 16"; production cube Z=256 stays at 256.  Same loss recipe and other hyperparameters as v2 (so v2 is the right A/B comparison, not v1).
+
+**Result** (30 epochs; metrics from `checkpoints_3d_ufno_v3_anisoz/metrics.jsonl`):
+
+| Metric | v1 U-FNO | v2 A+B+C | **v3-D anisoz** | Δ vs v2 |
+|---|---|---|---|---|
+| val_l2 | 0.0418 | 0.0424 | **0.0438** | +0.0014 |
+| val_h1 | 8.27 | 8.36 | **8.45** | +0.09 |
+| test_l2 | 0.0408 | 0.0415 | **0.0422** | +0.0007 |
+| test_h1 | 8.27 | 8.37 | **8.42** | +0.05 |
+| train_err (plateau) | 3.852 | 5.389 | 5.449 | +0.06 |
+
+On the cleaner test signal the gap is 1.7 % on test_l2 and 0.6 % on test_h1 -- both within the noise band that 660 held-out cones provide.  Plateau is flat across epochs 25-29 (val_l2 = 0.0438-0.0441), so this is a converged result, not a mid-training snapshot.
+
+**Trajectory detail worth noting.**  The architectural prior gave a real *Act-0 advantage*: v3-D started at val_l2 = 0.073 at epoch 0 vs v2's 0.085 (-14 %).  That head start decayed during training and the plateaus collapsed onto the same floor by epoch ~20.  The model can be initialised closer to a useful solution by the bigger LOS bottleneck, but the optimisation finds the same neighbourhood regardless.
+
+**Subtle confirmation in train loss.**  v3-D's train_err plateau is ~1.1 % *worse* than v2's (5.449 vs 5.389).  The stride=(2, 2, 4) U-Net is marginally *harder* to optimise than the symmetric stride=2 one -- the cost of an architectural prior when the prior turns out not to match the data well.
+
+**Hypothesis falsified.**  Doubling the U-Net's LOS receptive field at the bottleneck does not break the v1/v2 floor.  Whatever is bounding U-FNO performance is *not* the U-Net path's LOS receptive field.
+
+**Implication for the remaining v3 Tier-2 variants.**
+
+- **Option F** (1-D LOS conv path; `kernel=(1, 1, 7)`, n_layers=4): shares D's "LOS receptive field is the bottleneck" hypothesis with a cheaper parameterisation.  Now expected to match the floor; worth running as a parsimony confirmation (~28 K vs ~250 K params per path) but not expected to break it.
+- **Option E** (global-pooling residual): adds cone-level *summary* context to the local U-Net path (per-channel global mean → small MLP → broadcast back → add).  Orthogonal to anything in v2 or D.  **This is the most informative remaining experiment.**  If E breaks the floor, the bottleneck was missing global context, not missing local capacity.  If E ties, the U-FNO floor is a fundamental capacity limit at this width and the thesis must pivot to scaling width/depth or moving beyond the U-FNO framework.
+
+### What the mode cutoff does—and does not—mean
+
+The repeated mode-count null results need one precise qualification. `n_modes` truncates the **learned spectral-convolution branch**; it does not hard-low-pass the complete network or its prediction. The pointwise $Wv$ path remains full-resolution, nonlinearities can mix frequencies, and U-FNO adds an explicitly local real-space path. The model can therefore produce structure above the nominal spectral edge.
+
+The lightcone geometry also makes a raw mode count physically anisotropic. With a roughly 200 Mpc transverse box and 3340 Mpc LOS extent, 16 retained modes correspond nominally to $\sim0.50\ \mathrm{Mpc}^{-1}$ transversely but only $\sim0.030\ \mathrm{Mpc}^{-1}$ along the LOS. Doubling only $m_z$ doubles the spectral branch's LOS communication bandwidth, but it still does not impose or remove a hard output cutoff. See [[Spectral Mode Cutoff in FNOs]] for the full interpretation.
+
+The defensible empirical claim is therefore:
+
+> Increasing the bandwidth of learned global Fourier communication did not improve the solution; the tested model was not bottlenecked by the number of retained modes.
+
+This is stronger and more accurate than saying “high-$k$ information was cut off.” The U-FNO breakthrough already showed that high-frequency-looking bubble walls can be recovered through a different, local basis without changing `n_modes`.
+
+### Siren3D is the next different-basis test
+
+If the global-pooling residual does not break the floor, the next clean representational test is [[Siren3D Residual Refinement Plan]]. The proposed experiment keeps U-FNO as the global density-to-ionization operator and adds a coordinate-conditioned sinusoidal residual head for boundary detail. It is deliberately not a standalone SIREN: bubble placement depends on non-local density and astrophysical context that a coordinate-only MLP does not possess.
+
+The test is falsifiable: freeze U-FNO, zero-initialize a residual logit gate, oversample boundary voxels, and compare SIREN against parameter-matched ReLU/Fourier-feature/convolutional residual heads. A real win must lower held-out H¹ without damaging L², $P(k)$, cross-correlation, or the global ionization history.
 
 ---
 
@@ -408,7 +484,7 @@ The methodological lesson: **numbers tell you when something is wrong; pictures 
 
 The modes=24 and BCE experiments did not break through the plateau. But they each cost only ~5 hours of cluster wall time and ruled out an entire class of explanation. The thesis story is stronger for having them:
 
-> "After parameter conditioning, no further spectral or loss-formulation intervention improved the per-voxel ceiling. This locates the residual error in the conditioning information, not in the FNO architecture or training objective."
+> "After parameter conditioning, no further spectral or loss-formulation intervention improved the pure-FNO ceiling. U-FNO then broke that ceiling with the same inputs and modes, locating the missing capacity in the basis rather than the mode cutoff."
 
 is a much sharper claim than
 
@@ -424,15 +500,23 @@ Several mid-campaign bugs came from configuration mismatches between training an
 
 In priority order:
 
-### 1. Auxiliary global-history output
+### 1. Global-pooling residual
+
+Complete the Act-7 Option-E experiment: per-channel global mean → small MLP → broadcast residual. This is the cleanest test of missing cone-level context and is orthogonal to the failed mode-count and LOS-receptive-field interventions.
+
+### 2. Boundary diagnostic and Siren3D residual
+
+Measure error as a function of distance from true ionization boundaries. If the remaining floor is boundary-dominated, execute [[Siren3D Residual Refinement Plan]] with a frozen U-FNO and parameter-matched controls.
+
+### 3. Auxiliary global-history output
 
 Add a second output head that predicts $\bar{x}_\text{HI}(z)$ (LOS-averaged neutral fraction per redshift) with its own loss term. This gives a strong learning signal on global timing without altering inputs. Cheap (a few-line addition), high signal/effort ratio. Acts as a regulariser pushing the model toward globally-consistent predictions.
 
-### 2. Early-time density as auxiliary input
+### 4. Early-time density as auxiliary input
 
-The information about *where* bubbles form lives in the density field at much earlier redshifts than the slice where we evaluate $x_\text{HI}$. Adding the density field at $z = 30$ (or the linear density field, or the IC realisation) as additional input channels would in principle let the model see the source-position information. **Expensive** — requires either re-running 21cmFAST with early-time density saved out, or computing the linear field analytically from the LHS parameters. But this directly addresses the diagnosed information bottleneck.
+The information about *where* bubbles form lives in the density field at much earlier redshifts than the slice where we evaluate $x_\text{HI}$. Adding the density field at $z = 30$ (or the linear density field, or the IC realisation) as additional input channels would in principle let the model see the source-position information. **Expensive** — requires either re-running 21cmFAST with early-time density saved out, or computing the linear field analytically from the LHS parameters. This remains a useful test of whether better temporal/source context can move the residual U-FNO floor, but it is no longer the primary diagnosis after Act 5.
 
-### 3. Pivot the task to summary statistics
+### 5. Pivot the task to summary statistics
 
 If per-voxel exactness is irreducible, the model can still be useful for inference at the level of:
 - Power spectrum $P_{x_\text{HI} x_\text{HI}}(k, z)$
@@ -441,13 +525,11 @@ If per-voxel exactness is irreducible, the model can still be useful for inferen
 
 For [[P2 Cross-Simulator Inference]] / SBI applications, summary statistics are what matters anyway. Re-train with a loss that explicitly compares power spectra rather than fields and the operational floor may move dramatically.
 
-### 4. FiLM conditioning instead of channel concatenation
+### 6. FiLM conditioning instead of channel concatenation
 
-The current parameter injection (broadcast as constant channels) is the simplest possible strategy. [[FiLM Conditioning]] (modulate FNO block outputs via parameter-derived affine transforms) is the natural next step if **(2)** is not feasible. Expected impact: smaller than (2) — FiLM changes how parameters enter, not what information is available — but worth trying because it is cheap.
+The current parameter injection (broadcast as constant channels) is the simplest possible strategy. [[FiLM Conditioning]] (modulate FNO block outputs via parameter-derived affine transforms) remains a cheap conditioning ablation. Expected impact is smaller than adding genuinely new temporal/source information: FiLM changes how parameters enter, not what information is available.
 
-### 5. Architectural alternative: U-NO
-
-[[U-NO]] has skip connections that may help with sharp transitions on small spatial scales, and is the architecture explicitly recommended in [[FNO Approach for 21cm Emulation]]. Untested here. Not a high priority unless the residual error is shown to come from local spatial coupling that vanilla FNO struggles to represent.
+The local-path architectural alternative has now been tested successfully through U-FNO (Act 5). Further architectural work should change the remaining basis or context mechanism, rather than repeat the vanilla-FNO versus local-convolution comparison.
 
 ---
 
@@ -455,7 +537,7 @@ The current parameter injection (broadcast as constant channels) is the simplest
 
 | Thread | How this connects |
 |---|---|
-| [[P1 EFT Characterization]] | The empirical floor `val_l2 ≈ 0.06` quantifies the small-scale stochasticity that the EFT's $P_{\varepsilon\varepsilon}$ term is supposed to capture analytically. Comparing the FNO residual power spectrum against an EFT-extracted $P_{\varepsilon\varepsilon}$ is a non-trivial consistency check between the two approaches. |
+| [[P1 EFT Characterization]] | The U-FNO residual floor (`val_l2 = 0.0418`, `val_h1 = 8.27`) is the current field-level baseline for testing how much residual power resembles the EFT stochastic term $P_{\varepsilon\varepsilon}$. Comparing their residual power spectra is a non-trivial consistency check. |
 | [[P2 Cross-Simulator Inference]] | The trained operator can drive SBI; its per-voxel ceiling is irrelevant if the summary statistics ($P(k)$, $\bar{x}_\text{HI}(z)$) are accurate. **Need to measure these explicitly** before deploying. |
 | [[FNO Approach for 21cm Emulation]] | This finding validates §"Task 2 — Strategy A" (concatenation parameter injection) as the right starting point and provides empirical motivation to escalate to Strategy B (FiLM) only after exhausting information injection. |
 
