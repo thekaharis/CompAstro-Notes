@@ -1,7 +1,7 @@
 ---
 type: meta
 title: Wiki Index
-updated: 2026-06-20
+updated: 2026-06-21
 ---
 
 # Wiki Index
@@ -51,6 +51,7 @@ updated: 2026-06-20
 - [[Lu et al 2020 (DeepONet)]] — DeepONet; branch-trunk architecture; universal approximation theorem for operators; arbitrary output locations; high-order convergence
 - [[Rahman et al 2023 (U-NO)]] — U-shaped Neural Operator; encoder-decoder with skip connections; 3D spatiotemporal native; 26–44% better than FNO on PDE benchmarks; memory-efficient via domain contraction
 - [[Staddon 2026 (Isotropic FNO)]] — radially-binned spectral kernel $R(|\mathbf{k}|)$; SO(d)-equivariant FNO; ~16x (2D) / ~96x (3D) parameter reduction; right symmetry for the comoving real-space surrogate
+- [[Shi et al 2025 (SirenFNO)]] — SIREN hypernetwork *generates* the Fourier kernel for all modes (no truncation); constant, resolution-independent parameter count; directly targets the FNO low-frequency bias; CP/TT/Tucker kernel decompositions
 
 ### 21 cm Forecasts & Reionization (recent arXiv digest, May 2026)
 - [[Worku et al 2026 (PMFs 21cm Forecasts)]] — `zeus21` extended with primordial magnetic field contribution to $P_\text{lin}(k)$; HERA/SKA forecasts; example of modular new-physics priors on the forward model
@@ -97,10 +98,13 @@ updated: 2026-06-20
 - [[P2 Cross-Simulator Inference]] — P2 plan: EFT-targeted SBI; cross-simulator posterior comparison
 - [[FNO Approach for 21cm Emulation]] — FNO/U-NO emulation of $T_b$ and $x_\text{HI}$; EFT–FNO connection; suggested timeline
 - [[Siren3D Residual Refinement Plan]] — Frozen-U-FNO + coordinate-conditioned sinusoidal residual head for bubble-wall refinement; boundary sampling, controls, and stop criteria
+- [[Windowed Local-FNO U-Net Plan]] — U-FNO with **windowed** spectral mixing (overlapping Hann patches, shifted grids) + one global Fourier bottleneck; a low mode inside a small window = a high effective frequency on the full grid; targets the measured low-frequency collapse at the bubble walls; ~10.2 M params
 
 ## Findings
 
 - [[FNO Lightcone Experimental Findings]] — 3-D FNO $\delta_m \to x_\text{HI}$ on full lightcones (4× H200 DDP, 6600 cones). **Two breakthroughs**: parameter conditioning drops val L² 0.20 → 0.06; U-FNO + SyncBN reaches **val L² = 0.0418, val H¹ = 8.27**. **Nulls**: more isotropic/LOS modes, BCE, GroupNorm, stronger H¹ weighting, and doubled LOS U-Net receptive field do not improve the relevant architecture's floor. The active bottleneck is not retained mode count or LOS receptive field.
+- [[SirenFNO Spectral Bias Investigation]] — new mode-weight diagnostic **measures** the FNO/U-FNO low-frequency collapse (32-mode U-FNO: low 8/32 modes hold 52% of spectral weight). A 3-D **SirenFNO** keeps the learned spectrum flat (no collapse), beats the plain FNO (test L² 0.057→0.050, H¹ 11.6→9.8) but does **not** yet beat the U-FNO floor (0.040) — plausibly because it lacks the local U-Net path. Next: boundary-band/$P(k)$ diagnostics + SirenFNO×U-Net hybrid.
+- [[Windowed Local-FNO U-Net Findings]] — first run of the windowed Local-FNO (local modes `(6,6,12)`, 21 epochs, ~10.2 M params). **Negative result on the design hypothesis**: at epoch 20 the boundary diagnostic is *worse* than the U-FNO benchmark — 10–90% front width **32.2 Mpc vs U-FNO 10.7 Mpc** (truth 3.6), higher peak RMSE (0.32 vs 0.28) and gradient error (0.19 vs 0.16) at the wall. Whole-volume (test L² 0.057 / H¹ 10.2) sits at the plain-FNO level, but the run is **undertrained and still descending**. No patch seams. Windowed-Fourier ≠ the U-FNO's real-space conv path for wall sharpness. Next: finish to 70 ep, widen local modes, boundary-aware loss, conv-path hybrid.
 
 ## Concepts
 

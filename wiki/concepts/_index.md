@@ -37,7 +37,7 @@ updated: 2026-06-20
 - [[Self-Supervised Learning]] ✓ — pre-training without labels; SKATR achieves cross-simulator generalization this way
 - [[Vision Transformer]] ✓ — ViT; global attention over patches; outperforms CNN on 21cm data (SKATR, Starobinsky)
 - [[Fourier Neural Operator]] ✓ — FNO; learns function-to-function maps in Fourier space; resolution-invariant; potential emulator
-- [[Spectral Mode Cutoff in FNOs]] ✓ — `n_modes` limits learned global spectral communication, not the output bandwidth; records the lightcone mode-count null results
+- [[Spectral Mode Cutoff in FNOs]] ✓ — `n_modes` limits learned global spectral communication, not the output bandwidth; now also records the *measured* low-frequency weight collapse
 - [[Training Set Generation]] — ~500 21cmFAST runs for P2 SBI training
 - [[Radiative Transfer]] ✓ — three RT algorithm families; moments/MC/ray-tracing; photon conservation
 - [[Initial Conditions]] — matched $\delta_m(\mathbf{x})$ grid across codes required for P1

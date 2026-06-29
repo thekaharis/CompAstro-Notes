@@ -1,12 +1,67 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-06-20
+updated: 2026-06-21
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-06-28] ingest+synthesis | Windowed Local-FNO U-Net first-run findings filed
+
+**Source**: `Thesis/FNOs/LocalFNO/` — user-supplied training log `lfno-run-6-6-12.jsonl` (21 epochs), boundary comparison `boundary_band_overlay.png`, benchmark `training_trajectories.png`, and the design note `LOCAL_FNO.md`.
+
+**Finding created**:
+- [[Windowed Local-FNO U-Net Findings]] — first training run of the [[Windowed Local-FNO U-Net Plan]] (local modes `(6,6,12)`, ~10.2 M params, 4× H200 DDP). **Negative result against the design hypothesis.** Boundary-band diagnostic vs the U-FNO benchmark (200 test cones): Local-FNO 10–90% front width **32.2 Mpc** vs U-FNO **10.7 Mpc** (truth 3.6 Mpc) — ~3× *broader*; higher peak RMSE at the front (0.32 vs 0.28) and higher gradient error (0.19 vs 0.16, the H¹ axis the design targets). Whole-volume at epoch 20: val L² 0.0593 / H¹ 10.59, test L² 0.0569 / H¹ 10.25 — roughly the plain-FNO L² level, short of the U-FNO floor (0.0418 / 8.27). **Caveat**: run is undertrained (21 vs U-FNO's converged 30 ep, still descending) — but a 3× front-width gap is too large to be undertraining alone. No visible patch seams (Hann taper + overlap-add + shifted grids working).
+
+**Interpretation**: windowed-Fourier mixing is still a Fourier basis (Gibbs within each window) and does not, by itself, reproduce the U-FNO's wall sharpness — evidence the U-FNO's edge comes from its **real-space conv path**, not merely from locality. This is the "local path control" implied by [[SirenFNO Spectral Bias Investigation]]; like SirenFNO, it does not yet beat the U-FNO.
+
+**Next levers** (per plan ablations): finish to 70 epochs + re-run boundary diagnostic; widen local mode budget `(8,8,16)` / smaller window; global-bottleneck on/off; boundary-aware loss; Local-FNO + real-space conv-path hybrid.
+
+**Figures copied to vault**: `_attachments/localfno_boundary_band_overlay.png`, `_attachments/fno_training_trajectories.png`.
+
+**Indexes/cache updated**: `wiki/index.md` (Findings), `wiki/hot.md` (recent facts + active threads).
+
+---
+
+## [2026-06-21] ingest | Windowed Local-FNO U-Net approach filed
+
+**Source**: `Thesis/FNOs/LOCAL_FNO.md` — user-authored design note for a new architecture.
+
+**Plan created**:
+- [[Windowed Local-FNO U-Net Plan]] — a U-FNO whose encoder/decoder spectral mixing happens inside small, overlapping spatial windows (window `(16,16,32)`, stride 50%, retained local modes `(6,6,12)`, square-root Hann analysis/synthesis + normalized overlap-add, Swin-style shifted window grids), with a single global low-resolution Fourier bottleneck (`N_MODES=16³`) retained for large-scale morphology. Key idea: a low mode inside a 16-voxel window is a *high effective frequency* on the full grid → cheap localized fine structure + confined Gibbs ringing at bubble walls. ~10.2 M params (vs ~28 M U-FNO), 13 input channels, sigmoid output, same `0.5·L²+0.5·H¹` objective for a clean architecture-only comparison. v1 predicts on the original grid (higher *effective spectral* resolution, not spatial super-resolution).
+
+**Positioning**: third attack on the bubble-wall floor from [[FNO Lightcone Experimental Findings]] / [[Spectral Mode Cutoff in FNOs]]. SirenFNO and Siren3D change *which modes the kernel represents*; Local-FNO changes *where the transform is applied*. It is the "local path" control implied by [[SirenFNO Spectral Bias Investigation]] (SirenFNO removes the spectral bias but lacks a U-Net local path).
+
+**Success criterion**: improved boundary-band H¹ and 10–90% front width over the strongest U-FNO baseline, ≤5% val-L² regression, no visible patch seams.
+
+**Cross-links added**: [[Spectral Mode Cutoff in FNOs]], [[SirenFNO Spectral Bias Investigation]], [[FNO Approach for 21cm Emulation]] (related lists + next-step pointers).
+
+**Indexes/cache updated**: `wiki/index.md` (Planning Notes), `wiki/hot.md` (active threads).
+
+---
+
+## [2026-06-21] ingest+synthesis | SirenFNO spectral-bias investigation filed
+
+**Sources**: `Thesis/FNOs/SIRENFNO results/` — spectral-weight histories (UFNO 32/64 LOS modes + SirenFNO), `Stable Siren Run`, `ufno benchmark run`, `standard FNO bce run benchmark` metrics, `sirenfno-detailed_20260621-191553_job3999451` viz, and `Thesis/FNOs/SirenFNO.pdf`.
+
+**Paper summarized**:
+- [[Shi et al 2025 (SirenFNO)]] — SIREN hypernetwork generates the Fourier kernel for *all* modes (no truncation), constant resolution-independent parameter count, attacks the FNO low-frequency bias at the kernel; CP/TT/Tucker decompositions. Distinct from the residual-head [[Siren3D Residual Refinement Plan]].
+
+**Finding created**:
+- [[SirenFNO Spectral Bias Investigation]] — (1) new per-mode RMS weight diagnostic; (2) the U-FNO learned spectrum **collapses to low modes within epoch 0** (32-mode: low-quarter holds 52%, cutoff ratio →0.1–0.45); (3) 3-D SirenFNO keeps the spectrum flat (low-quarter pinned 0.25, cutoff ≈1.0) — bias removed; (4) on held-out error SirenFNO (test L²=0.050, H¹=9.82) beats plain FNO (0.057, 11.64) but trails the U-FNO benchmark (0.040, 7.87). Caveat: SirenFNO has no local U-Net path; comparison not yet apples-to-apples.
+
+**Concept updated**:
+- [[Spectral Mode Cutoff in FNOs]] — added the *measured* low-frequency weight collapse, turning the earlier mode-count inference into a direct measurement.
+
+**Figures**: curated set copied to `wiki/thesis/findings/figures/sirenfno-spectral-bias_20260621/`.
+
+**Indexes/cache updated**: `wiki/index.md` (new paper + finding), `wiki/concepts/_index.md`, `wiki/hot.md`.
+
+**Decision order (updated)**: run the boundary-band + $P(k)$/$r(k)$ diagnostic on the existing SirenFNO checkpoint → build a SirenFNO×U-Net hybrid as the controlled test → only then weigh SirenFNO vs the [[Siren3D Residual Refinement Plan]] residual head.
 
 ---
 

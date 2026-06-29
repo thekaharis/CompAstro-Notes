@@ -2,11 +2,12 @@
 type: concept
 title: "Spectral Mode Cutoff in FNOs"
 created: 2026-06-20
-updated: 2026-06-20
+updated: 2026-06-21
 tags:
   - domain/ml
   - domain/operator-learning
   - concept/spectral-truncation
+  - concept/spectral-bias
   - finding/negative
 status: developing
 complexity: advanced
@@ -15,10 +16,14 @@ aliases:
   - FNO mode cutoff
   - spectral cutoff
   - n_modes cutoff
+  - low-frequency bias
 related:
   - "[[Fourier Neural Operator]]"
   - "[[FNO Lightcone Experimental Findings]]"
   - "[[Siren3D Residual Refinement Plan]]"
+  - "[[SirenFNO Spectral Bias Investigation]]"
+  - "[[Shi et al 2025 (SirenFNO)]]"
+  - "[[Windowed Local-FNO U-Net Plan]]"
 ---
 
 # Spectral Mode Cutoff in FNOs
@@ -92,3 +97,14 @@ Future experiments should not be justified as “raising the output cutoff.” T
 - or a loss/sampling scheme that concentrates supervision on ionization boundaries.
 
 The current evidence favours the latter two. U-FNO already demonstrated that changing basis from global Fourier to local convolution matters; further mode increases did not.
+
+## Direct measurement: the learned weights collapse onto low modes
+
+The mode-count nulls above are an *inference* about how the model uses its bandwidth. The mode-weight diagnostic in [[SirenFNO Spectral Bias Investigation]] turns it into a *measurement*. Logging the per-mode RMS of the learned spectral weights $R_\phi(k)$ per epoch shows the U-FNO **collapses onto the lowest modes within the first epoch and stays there**:
+
+- 32-LOS-mode U-FNO: the lowest 8 of 32 modes hold **52%** of the spectral weight at convergence (uniform = 25%); half the spectral energy is reached by mode 7/31; the per-layer high/low cutoff ratio falls from 1.0 at init to 0.1–0.45.
+- 64-LOS-mode U-FNO: same qualitative collapse, spread over more modes (low-quarter fraction 0.36, half-energy at mode 27/63).
+
+This is the concrete mechanism behind the null results: **extra modes are learned but then down-weighted**, so adding bandwidth cannot help. It is the well-known FNO *low-frequency (spectral) bias*, now quantified on the 21cmFAST lightcone.
+
+[[Shi et al 2025 (SirenFNO)]] attacks the bias at its source: a SIREN hypernetwork generates the kernel for *all* modes, and the measured spectrum then stays flat (low-quarter fraction pinned at 0.25, cutoff ratio ≈1.0) across training — confirming the collapse is specific to the per-mode learnable-table parameterization, not inevitable. Whether removing the bias improves bubble-wall fidelity is still open; see [[SirenFNO Spectral Bias Investigation]] §4.

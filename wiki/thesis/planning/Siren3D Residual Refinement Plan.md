@@ -14,6 +14,7 @@ related:
   - "[[FNO Lightcone Experimental Findings]]"
   - "[[Spectral Mode Cutoff in FNOs]]"
   - "[[FNO Approach for 21cm Emulation]]"
+  - "[[Windowed Local-FNO U-Net Plan]]"
   - "[[FiLM Conditioning]]"
 ---
 
