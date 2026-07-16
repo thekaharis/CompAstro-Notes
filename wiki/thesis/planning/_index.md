@@ -2,7 +2,7 @@
 type: meta
 title: "Planning Index"
 created: 2026-04-21
-updated: 2026-06-20
+updated: 2026-07-16
 tags:
   - domain/thesis
   - domain/planning
@@ -19,6 +19,10 @@ Detailed, step-by-step operational plans for each work package. These documents 
 - [[FNO Approach for 21cm Emulation]] — Neural-operator strategy for the density-to-ionization and brightness-temperature maps
 - [[21cmFAST → FNO Pipeline]] — Data-transfer, training, checkpoint, and prediction pipeline
 - [[Siren3D Residual Refinement Plan]] — Coordinate-conditioned residual refinement of U-FNO bubble boundaries, with controls and stop criteria
+- [[Windowed Local-FNO U-Net Plan]] — Windowed spectral mixing (overlapping Hann patches, shifted grids) + global Fourier bottleneck; localizes the transform to buy high effective frequencies
+- [[Smooth-Target Reparametrization Plan]] — Learn a smooth surrogate ($z_\text{re}$, signed distance) instead of $x_\text{HI}$; reconstruct by deterministic thresholding so uncertainty displaces fronts rather than blurring them
+- [[Lightcone z_re Map Target]] — Implementation of the smooth-target plan's candidate 1: per-pixel $z_\text{re}(x,y)$ fitted from the lightcone (Gompertz/step LS), 2-D FNO with mask handling; reconstruction sanity checks done, training pending
+- [[Warped LOS Grid Plan]] — Non-uniform LOS cache grid (density ∝ ensemble-mean $|dx_\text{HI}/d\chi|$, CDF-inverted): the uniform-z cache is ~37 Mpc at low z where fronts live; round-trip evaluation tool + volume-weighted loss merged, real-data run pending
 
 ## Reading Order
 

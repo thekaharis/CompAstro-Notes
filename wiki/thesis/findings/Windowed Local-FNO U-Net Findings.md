@@ -2,7 +2,7 @@
 type: finding
 title: "Windowed Local-FNO U-Net Findings"
 created: 2026-06-28
-updated: 2026-06-28
+updated: 2026-07-16
 tags:
   - domain/thesis
   - domain/ml
@@ -61,6 +61,19 @@ The whole-volume metrics tell the same story relative to the benchmark, though t
 | test H¹ | 11.64 | **8.27** | 9.82 | 10.25 |
 
 So after 21 epochs the Local-FNO sits roughly at the **plain-FNO L² level** (≈ 0.057) and between FNO and SirenFNO on H¹ — well short of the U-FNO floor it was meant to break, and the boundary-band diagnostic it was explicitly built for is moving in the *wrong direction*.
+
+---
+
+## Update (2026-07-05 results, filed 2026-07-16): epoch-38 checkpoint + parity diagnostic
+
+Follow-up diagnostics from the Binac figure backup (`band_out/`, `parity_out/`; localfno at **epoch 38**, 167 test cones):
+
+- **The front-width gap shrank a lot with training but did not close.** Boundary run `4204953`: Local-FNO 10–90% front width **18.5 Mpc vs U-FNO 13.9 Mpc** (truth 3.6) — down from 32.2 vs 10.7 at epoch 20. *Caveat:* the U-FNO reference also reads differently here (13.9 vs 10.7 in the first run), so this evaluation's window/config differs from the original; compare within-run, not across runs.
+- **Still significantly worse, but the margin collapsed ~8×.** Paired bootstrap on boundary-band H¹ (band ±2 cells): mean_diff +0.0031, CI95 (+0.0022, +0.0042), P(localfno better) = 0.000 — versus +0.0247 at epoch 20 (`4005674`) and +0.0167 at an intermediate checkpoint (`4010669`). Direction unchanged: the U-FNO stays ahead at the wall.
+- **The one-sided ionized-wall loss experiment failed.** A 10-epoch run with the new `LOSS_IONIZED_WALL_WEIGHT` penalty (`4014918`) was the *worst* of all checkpoints (H¹_band2 mean_diff +0.0359) — the wall-side penalty did not sharpen the front at that budget.
+- **New parity diagnostic directly measures the hedging bias.** `parity_diagnostic.py` (jobs `4205004/4205005`): in nearly-ionized bins (true $x_\text{HI} \in [0.02, 0.08)$, ~10⁵–10⁶ voxels/bin) **both** models over-predict — U-FNO median pred ≈ 0.11–0.14 vs true 0.03–0.07 (bias ≈ +0.17, RMSE ≈ 0.30); Local-FNO worse (bias ≈ +0.20–0.21, RMSE ≈ 0.32–0.33). Same picture restricted to z = 6–12. This is the plan-level "hedging" failure mode of [[Smooth-Target Reparametrization Plan]] made quantitative: even the best architecture refuses to commit ionized voxels to 0.
+
+**Verdict so far:** more epochs help the Local-FNO substantially but the ordering never flips, and the parity bias is common to both architectures — strengthening the case that the target, not the basis, is the binding constraint (→ [[Lightcone z_re Map Target]], [[Warped LOS Grid Plan]]).
 
 ---
 

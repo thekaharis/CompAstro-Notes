@@ -10,6 +10,37 @@ updated: 2026-06-21
 
 ---
 
+## [2026-07-16] ingest+synthesis | z_re map target implemented + warped LOS grid plan filed
+
+**Source**: new code in `Code/FNO v3` (fno_zre.py, dataset/zre_target.py, dataset/dataset_zre.py, models_zre_2d.py, slurm/train_zre.sbatch, viz/los_grid_evaluation.py, build_cubes.py/fno_21cm_3d.py extensions) + `figures/Z_RE reconstruction/`.
+
+**Notes created**:
+- [[Lightcone z_re Map Target]] — candidate 1 of the [[Smooth-Target Reparametrization Plan]] implemented, with a modification: per-pixel $z_\text{re}(x,y)$ **fitted from existing lightcones** (Gompertz-front midpoint or exact LS step per sightline; sidecar HDF5 cache) instead of the native `z_re_box` — no re-simulation, and the learning problem becomes 2-D (64 density LOS slices + 11 params as channels → $z_\text{re}$ map; NaN pixels edge-clamped + masked; absolute L²/H¹ loss; masked MSE reported separately). Reconstruction sanity (12 cones): lo-z-crossing / optimal-step global $x_\text{HI}(z)$ round-trip at voxel MSE ≈ 0.008–0.05 (hi-z crossing bad); late reionizers 79–99% no-front — sentinel contamination confirmed as the main practical issue. Training pending.
+- [[Warped LOS Grid Plan]] — the cube cache's 256-slice uniform-z LOS grid is ~37 Mpc at low z (where fronts live) vs ~5 Mpc at saturated high z: a model-independent bound on wall fidelity, logically prior to all architecture/target attacks. Candidates: **warped** (density ∝ ensemble-mean $|d\langle x_\text{HI}\rangle/d\chi|$ + 20% floor, CDF-inverted), envelope90, uniform-χ, crop15-χ, at budgets 256/512. Training-free round-trip evaluator with per-timing-class metrics (transition RMSE, sharpness ratio, fronts missed) + selftest; `build_cubes.py --target-z` and `LOSS_LOS_VOLUME_WEIGHTS=1` (Δχ quadrature) merged. Real-data evaluation pending.
+
+**Cross-updates**: [[Smooth-Target Reparametrization Plan]] got a status-update banner pointing to both notes.
+
+**Indexes/cache updated**: `wiki/index.md` (Planning Notes), `wiki/thesis/planning/_index.md`, `wiki/hot.md` (facts + active threads rewritten around the two new items).
+
+---
+
+## [2026-07-15] synthesis | Smooth-Target Reparametrization plan filed
+
+**Source**: discussion with Haris on FNO limitations at sharp fronts — idea: don't learn $x_\text{HI}$ directly; learn a smooth surrogate compatible with the FNO basis and reconstruct $x_\text{HI}$ deterministically.
+
+**Plan created**:
+- [[Smooth-Target Reparametrization Plan]] — reparametrize the *target*, not the basis. Core argument: the measured failure mode (diffuse ≈0.3 interiors, blurred walls, the H¹ ceiling) is L²-optimal *hedging* on a discontinuous target; a smooth-surrogate target converts model uncertainty into front **displacement** instead of front **blurring**, so walls stay step-sharp by construction. Candidates in priority order: (1) **$z_\text{re}(\mathbf{x})$** — native 21cmFAST `z_re_box` output, free targets, deterministic threshold + lightcone-interpolation reconstruction, Battaglia et al. 2013 literature cover, bias-expansion connection to [[P1 EFT Characterization]]; caveat: assumes monotonic ionization + sentinel handling for never-ionized cells; (2) **signed distance to the front** (level-set/DeepSDF trick, survives recombinations, needs truncation-radius and anisotropic-voxel choices); (3) **pre-threshold excursion-set latent** with a fixed physics layer — most principled, needs 21cmFAST code surgery, parked.
+
+**Positioning**: orthogonal axis to all three basis-side attacks ([[SirenFNO Spectral Bias Investigation]], [[Windowed Local-FNO U-Net Plan]], [[Siren3D Residual Refinement Plan]]), which fight the Fourier-vs-step mismatch; this dissolves it. Cheapest remaining lever: same pipeline, same conditioning, one new cache field.
+
+**Success criterion**: reconstructed-field 10–90% front width < 10.7 Mpc (beat U-FNO; truth 3.6) with test L² within 10% of the U-FNO floor and no $P(k)$/$r(k)$/$\bar{x}_\text{HI}(z)$ regression. Evaluation always in reconstructed $x_\text{HI}$-space, never target-space.
+
+**Run order**: (0) ceiling check — reconstruct truth $x_\text{HI}$ from truth `z_re_box`, one afternoon, kills the approach early if the reconstruction ceiling is already worse than the U-FNO floor; then target cache → U-FNO on $z_\text{re}$ → plain-FNO on $z_\text{re}$ (does the smooth target rescue the weak architecture?) → decision point.
+
+**Indexes/cache updated**: `wiki/index.md` (Planning Notes), `wiki/thesis/planning/_index.md` (also back-filled the missing [[Windowed Local-FNO U-Net Plan]] entry), `wiki/hot.md`.
+
+---
+
 ## [2026-06-28] ingest+synthesis | Windowed Local-FNO U-Net first-run findings filed
 
 **Source**: `Thesis/FNOs/LocalFNO/` — user-supplied training log `lfno-run-6-6-12.jsonl` (21 epochs), boundary comparison `boundary_band_overlay.png`, benchmark `training_trajectories.png`, and the design note `LOCAL_FNO.md`.

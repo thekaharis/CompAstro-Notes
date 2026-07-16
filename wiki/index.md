@@ -1,7 +1,7 @@
 ---
 type: meta
 title: Wiki Index
-updated: 2026-06-21
+updated: 2026-07-15
 ---
 
 # Wiki Index
@@ -99,6 +99,9 @@ updated: 2026-06-21
 - [[FNO Approach for 21cm Emulation]] — FNO/U-NO emulation of $T_b$ and $x_\text{HI}$; EFT–FNO connection; suggested timeline
 - [[Siren3D Residual Refinement Plan]] — Frozen-U-FNO + coordinate-conditioned sinusoidal residual head for bubble-wall refinement; boundary sampling, controls, and stop criteria
 - [[Windowed Local-FNO U-Net Plan]] — U-FNO with **windowed** spectral mixing (overlapping Hann patches, shifted grids) + one global Fourier bottleneck; a low mode inside a small window = a high effective frequency on the full grid; targets the measured low-frequency collapse at the bubble walls; ~10.2 M params
+- [[Smooth-Target Reparametrization Plan]] — stop learning $x_\text{HI}$; learn a **smooth surrogate** (primary: $z_\text{re}(\mathbf{x})$, native 21cmFAST output; secondary: signed distance to front) and reconstruct $x_\text{HI}$ by deterministic thresholding — uncertainty becomes front *displacement* instead of front *blurring*; orthogonal to all basis-side attacks; cheapest remaining lever + best EFT synergy
+- [[Lightcone z_re Map Target]] — implementation of the smooth-target plan's candidate 1, modified: per-pixel $z_\text{re}(x,y)$ **fitted from existing lightcones** (Gompertz front / LS step per sightline) instead of the native `z_re_box` — no re-simulation, and the problem becomes 2-D (density LOS slices as channels → $z_\text{re}$ map, NaN pixels masked). Reconstruction sanity: lo-z/optimal step reconstruct global $x_\text{HI}(z)$ at voxel MSE ≈ 0.008–0.05; late reionizers are 79–99% no-front (the sentinel problem is real). Training pending
+- [[Warped LOS Grid Plan]] — the cube cache's uniform-z LOS grid is **~37 Mpc at low z where the fronts live** (vs ~5 Mpc at saturated high z) — a hard, model-independent bound on wall fidelity. Candidate fix: **warped grid** (sampling density ∝ ensemble-mean $|d\langle x_\text{HI}\rangle/d\chi|$ + floor, CDF-inverted) + envelope/uniform-χ/crop variants; training-free round-trip evaluator with per-timing-class metrics; `build_cubes.py --target-z` + Δχ volume-weighted loss merged. Real-data evaluation pending
 
 ## Findings
 

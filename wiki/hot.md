@@ -1,16 +1,21 @@
 ---
 type: meta
 title: "Hot Cache"
-updated: 2026-06-28T00:00:00
+updated: 2026-07-16T00:00:00
 ---
 
 # Recent Context
 
 ## Last Updated
 
-2026-06-28 — Filed [[Windowed Local-FNO U-Net Findings]]: the first Local-FNO run is in, and it's a **negative result** against the design hypothesis. Previously (2026-06-21): filed the [[Windowed Local-FNO U-Net Plan]], [[SirenFNO Spectral Bias Investigation]], and [[Shi et al 2025 (SirenFNO)]].
+2026-07-16 — Filed two advancements: [[Lightcone z_re Map Target]] (the smooth-target plan's candidate 1, implemented as a 2-D fitted-$z_\text{re}$ map pipeline) and [[Warped LOS Grid Plan]] (non-uniform LOS cache grid). Previously (2026-07-15): filed the [[Smooth-Target Reparametrization Plan]].
 
 ## Key Recent Facts
+
+- **The z_re target is now implemented — as a fitted 2-D map, not `z_re_box`.** [[Lightcone z_re Map Target]]: per-pixel $z_\text{re}(x,y)$ least-squares fitted from existing lightcone $x_\text{HI}(z)$ sightlines (primary: Gompertz front $\exp(-e^{-(z-z_0)/\Delta z})$, stored midpoint $z_\text{half}$; alternative: exact LS step). No re-simulation, no code surgery; a **2-D FNO/U-FNO/LocalFNO** maps 64 density LOS slices (+11 params) → the map; NaN pixels (front outside cone) are edge-clamped + masked, loss `0.5·absL2+0.5·absH1`, masked MSE reported separately. Reconstruction sanity check (12 cones): lo-z-crossing and optimal-step reconstructions of global $x_\text{HI}(z)$ reach voxel MSE ≈ 0.008–0.05 (hi-z crossing bad: 0.13–0.32); **late reionizers are 79–99% no-front pixels** — the sentinel problem is the dominant practical issue. Training not yet run.
+- **New data-side attack: warp the LOS cache grid.** [[Warped LOS Grid Plan]]: the current cube cache (256 slices uniform in z) is coarsest **~37 Mpc at low z where the fronts live** — information destroyed at cache time is unlearnable for every model, logically prior to all architecture/target attacks. Candidate grids: **warped** (density ∝ ensemble-mean $|d\langle x_\text{HI}\rangle/d\chi|$ + 20% floor, CDF-inverted), envelope90 (covers early/late timing classes), uniform-χ, crop15. Training-free round-trip evaluator (transition RMSE / sharpness ratio / fronts-missed, per timing class) merged, plus `build_cubes.py --target-z` and a Δχ volume-weighted loss flag (`LOSS_LOS_VOLUME_WEIGHTS=1`). Real-data evaluation pending.
+
+- **Plan: reparametrize the target.** [[Smooth-Target Reparametrization Plan]] — learn a smooth surrogate instead of $x_\text{HI}$ and reconstruct by deterministic thresholding, so model uncertainty becomes front *displacement* rather than front *blurring*. Primary candidate: $z_\text{re}(\mathbf{x})$ (native 21cmFAST `z_re_box`, free targets, Battaglia et al. 2013 cover, bias-expansion link to P1); secondary: signed distance to the front; parked: pre-threshold excursion-set latent + fixed physics layer. Success = reconstructed front width < 10.7 Mpc (U-FNO) at ≤10% L² cost. First step is a one-afternoon **ceiling check** (truth $x_\text{HI}$ from truth $z_\text{re}$). Rationale: both basis-side attacks (Local-FNO, SirenFNO) failed to beat the U-FNO floor; the hedging failure mode is a property of the discontinuous target.
 
 - **Local-FNO does not (yet) sharpen bubble walls — it broadens them.** First run [[Windowed Local-FNO U-Net Findings]] (local modes `(6,6,12)`, 21 epochs): boundary-band diagnostic vs the U-FNO benchmark shows the Local-FNO 10–90% front width = **32.2 Mpc** vs U-FNO **10.7 Mpc** (truth 3.6) — ~3× *broader*, plus higher RMSE (0.32 vs 0.28) and gradient error (0.19 vs 0.16) at the wall. Whole-volume (test L² 0.057 / H¹ 10.2) is at the plain-FNO level, short of the U-FNO floor (0.0418 / 8.27). Run is **undertrained/still descending** (caveat), but the front-width gap is too big for that alone. No patch seams.
 - **Implication:** windowed-Fourier mixing is still a Fourier basis (Gibbs within each window); the U-FNO's wall sharpness likely comes from its **real-space conv path**, not from locality per se. Both Local-FNO and SirenFNO (the two "remove the global spectral bias" attacks) currently fail to beat the U-FNO floor → next clean test is a local-path/conv hybrid.
@@ -25,6 +30,9 @@ updated: 2026-06-28T00:00:00
 
 ## Active Threads
 
+- **First $z_\text{re}$-map training runs** ([[Lightcone z_re Map Target]]): FNO2d → U-FNO2d/LocalFNO2d on the fitted Gompertz target; evaluate always in reconstructed $x_\text{HI}$-space (front width vs U-FNO 10.7 / truth 3.6 Mpc). Open: Gompertz midpoint vs lo-z-crossing step as training target; handling mostly-NaN late reionizers (mask-weighted loss vs cone filtering).
+- **Warped-grid evaluation on real cones** ([[Warped LOS Grid Plan]]): run `los_grid_evaluation.py` on the cluster, pick the winner (warped vs envelope90 vs uniform-χ, budgets 256/512), rebuild the cube cache with `--target-z`, retrain the U-FNO benchmark with `LOSS_LOS_VOLUME_WEIGHTS=1`.
+- **Smooth-target ceiling check** ([[Smooth-Target Reparametrization Plan]]): the full front-width version (reconstruct truth $x_\text{HI}$ and measure L²/H¹/front width) is still open; the global-history version is done and passes ([[Lightcone z_re Map Target]]).
 - **Finish the Local-FNO run** ([[Windowed Local-FNO U-Net Findings]]): carry `lfno-run-6-6-12` from 21 → full 70 epochs (cosine-annealed) and re-run the boundary diagnostic before a final verdict — current numbers are undertrained. Then ablate: widen local modes `(8,8,16)` / smaller window, global-bottleneck on/off, boundary-aware loss, and a Local-FNO + real-space conv-path hybrid.
 - Run the boundary-band + $P(k)$/$r(k)$ high-$k$ diagnostic on the existing SirenFNO checkpoint — does the flat spectrum buy bubble-wall fidelity even where whole-volume L² doesn't move?
 - Build a **SirenFNO × U-Net hybrid** as the controlled test of "does removing spectral bias help, given the local path?"

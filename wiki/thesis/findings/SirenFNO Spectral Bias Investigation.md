@@ -93,11 +93,11 @@ The diagnostic on the same axes:
 
 Held-out metrics, all on the identical seed-42 test split:
 
-| Model | modes | epochs | test L² | test H¹ | test BCE | epoch time |
-|---|---|---:|---:|---:|---:|---:|
-| **Standard FNO** (+BCE) | (16,16,16) | 100 | 0.0570 | 11.64 | 0.0440 | 192 s |
-| **SirenFNO** (stable) | (64,64,64) | 70 | **0.0501** | **9.82** | **0.0412** | 1015 s |
-| **U-FNO** benchmark | (16,16,16) | 100 | 0.0397 | 7.87 | 0.0355 | 522 s |
+| Model                   | modes      | epochs |    test L² |  test H¹ |   test BCE | epoch time |
+| ----------------------- | ---------- | -----: | ---------: | -------: | ---------: | ---------: |
+| **Standard FNO** (+BCE) | (16,16,16) |    100 |     0.0570 |    11.64 |     0.0440 |      192 s |
+| **SirenFNO** (stable)   | (64,64,64) |     70 | **0.0501** | **9.82** | **0.0412** |     1015 s |
+| **U-FNO** benchmark     | (16,16,16) |    100 |     0.0397 |     7.87 |     0.0355 |      522 s |
 
 So SirenFNO lands **between** the two: ~12% better L² and ~16% better H¹ than the plain FNO, but clearly above the U-FNO floor (which this 100-epoch benchmark pushes to test L² 0.0397 / H¹ 7.87, consistent with the Act-5 U-FNO at (0.0408, 8.27)). Field-level predictions are qualitatively good — bubble morphology and timing are captured (test cone 1: R² = 0.93, RMSE = 0.088).
 
