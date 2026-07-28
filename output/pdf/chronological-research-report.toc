@@ -1,0 +1,33 @@
+\contentsline {section}{\numberline {1}Scope, source material, and organizing principle}{1}{section.1}%
+\contentsline {section}{\numberline {2}The neural-operator regeneration programme}{1}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Task definition}{1}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}The first 21cmFAST-to-FNO interface}{1}{subsection.2.2}%
+\contentsline {section}{\numberline {3}The main 3-D FNO experimental campaign}{2}{section.3}%
+\contentsline {subsection}{\numberline {3.1}Production problem and infrastructure}{2}{subsection.3.1}%
+\contentsline {subsection}{\numberline {3.2}Seven acts of diagnosis}{3}{subsection.3.2}%
+\contentsline {subsubsection}{\numberline {3.2.1}Act 1: density alone is not identifiable}{3}{subsubsection.3.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2}Act 2: conditioning is the first breakthrough}{3}{subsubsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.3}Acts 3--4: capacity and loss changes do not remove the floor}{3}{subsubsection.3.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.4}Act 5: the U-FNO local path is decisive}{3}{subsubsection.3.2.4}%
+\contentsline {subsubsection}{\numberline {3.2.5}Acts 6--7: the U-FNO floor survives internal tuning}{7}{subsubsection.3.2.5}%
+\contentsline {subsection}{\numberline {3.3}What the campaign established}{7}{subsection.3.3}%
+\contentsline {section}{\numberline {4}Residual refinement and direct spectral diagnosis}{7}{section.4}%
+\contentsline {subsection}{\numberline {4.1}The Siren3D residual plan}{7}{subsection.4.1}%
+\contentsline {subsection}{\numberline {4.2}A mode-weight diagnostic turns a hypothesis into a measurement}{7}{subsection.4.2}%
+\contentsline {subsection}{\numberline {4.3}SirenFNO removes the collapse but not the U-FNO advantage}{10}{subsection.4.3}%
+\contentsline {section}{\numberline {5}The windowed Local-FNO test}{15}{section.5}%
+\contentsline {subsection}{\numberline {5.1}Architecture and hypothesis}{15}{subsection.5.1}%
+\contentsline {subsection}{\numberline {5.2}First result: a smooth but broader front}{15}{subsection.5.2}%
+\contentsline {subsection}{\numberline {5.3}Later update: training helps, but the ordering does not flip}{17}{subsection.5.3}%
+\contentsline {section}{\numberline {6}Reformulating the target and the data grid}{17}{section.6}%
+\contentsline {subsection}{\numberline {6.1}Smooth-target reparameterization}{17}{subsection.6.1}%
+\contentsline {subsection}{\numberline {6.2}Implemented variant: a fitted 2-D \(z_{\mathrm {re}}(x,y)\) map}{17}{subsection.6.2}%
+\contentsline {subsection}{\numberline {6.3}Warping the line-of-sight cache grid}{18}{subsection.6.3}%
+\contentsline {section}{\numberline {7}Integrated interpretation}{18}{section.7}%
+\contentsline {subsection}{\numberline {7.1}What is now known}{18}{subsection.7.1}%
+\contentsline {subsection}{\numberline {7.2}Regeneration-quality requirements}{19}{subsection.7.2}%
+\contentsline {subsection}{\numberline {7.3}Prioritized next steps}{19}{subsection.7.3}%
+\contentsline {section}{\numberline {8}Conclusions}{19}{section.8}%
+\contentsline {section}{\numberline {A}Technical baseline and reproducibility checklist}{19}{appendix.A}%
+\contentsline {section}{\numberline {B}Consolidated document registry}{20}{appendix.B}%
+\contentsline {section}{\numberline {C}Architecture references named by the source notes}{21}{appendix.C}%

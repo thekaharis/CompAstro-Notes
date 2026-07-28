@@ -1,7 +1,7 @@
 ---
 type: meta
 title: Wiki Index
-updated: 2026-07-15
+updated: 2026-07-27
 ---
 
 # Wiki Index
@@ -52,6 +52,7 @@ updated: 2026-07-15
 - [[Rahman et al 2023 (U-NO)]] — U-shaped Neural Operator; encoder-decoder with skip connections; 3D spatiotemporal native; 26–44% better than FNO on PDE benchmarks; memory-efficient via domain contraction
 - [[Staddon 2026 (Isotropic FNO)]] — radially-binned spectral kernel $R(|\mathbf{k}|)$; SO(d)-equivariant FNO; ~16x (2D) / ~96x (3D) parameter reduction; right symmetry for the comoving real-space surrogate
 - [[Shi et al 2025 (SirenFNO)]] — SIREN hypernetwork *generates* the Fourier kernel for all modes (no truncation); constant, resolution-independent parameter count; directly targets the FNO low-frequency bias; CP/TT/Tucker kernel decompositions
+- [[Pérez Cuadrado et al 2025 (WHNO)]] — replaces Fourier with the **Walsh–Hadamard transform** (global rectangular step-wave basis); no Gibbs on discontinuous fields; same $O(n\log n)$, no trig; **FNO+WHNO ensemble beats either alone** on all 7 configs; the untried step-function basis for bubble walls
 
 ### 21 cm Forecasts & Reionization (recent arXiv digest, May 2026)
 - [[Worku et al 2026 (PMFs 21cm Forecasts)]] — `zeus21` extended with primordial magnetic field contribution to $P_\text{lin}(k)$; HERA/SKA forecasts; example of modular new-physics priors on the forward model
@@ -60,6 +61,7 @@ updated: 2026-07-15
 
 ### Thesis Documents
 - [[Thesis Proposal (EFT of Ionization Field)]] — Supervisor's project proposal; defines P1 + P2; EFT coefficients as simulator-independent inference targets; **thesis foundation document**
+- [[Chronological Research Report]] — LaTeX report on regenerating 21cmFAST neutral-fraction lightcones from ground-truth density fields, including the FNO/U-FNO, SirenFNO, Local-FNO, smooth-target, and LOS-grid results
 
 ## Entities
 
@@ -105,9 +107,11 @@ updated: 2026-07-15
 
 ## Findings
 
+- [[Loss Objective and Operator Basis Sweep]] — **2026-07-26 consolidated report** across all three tasks. **Pure L² beats L²+H¹ by ~35% on $z_\text{re}$ for every architecture**, and the nominal 0.5/0.5 weights were a fiction: H¹ supplied **99.4%** of the 3-D loss, so every archived "L²+H¹" 3-D run was H¹-dominated. SIREN weights rescue Local-FNO on $z_\text{re}$ (0.305 → 0.123); width saturates at 32; mid-run LR comparisons are unreliable. On 2-D $x_\text{HI}$, **Walsh–Hadamard in the GLOBAL slot only** is the new best model (0.1453 vs Local-FNO 0.1487, U-FNO +9%) — the local/global slot matters more than the basis. U-FNO floor still holds in 3-D (0.0397). Retracts the earlier LocalWNO lead as a z-interpolation artifact.
+- [[Contrast Map Sharpening]] — **closed, negative.** Two-parameter $(\theta,\tau)$ output reshaping to recover edge sharpness. Post-hoc: a real **6.2% oracle gain** that is **unrealizable** because τ is unpredictable from anything available at inference ($R^2\approx0$ even given z + 11 cosmological params). End-to-end: given a free differentiable sharpening dial, **gradient descent left it at the identity** (θ 4.75 → 4.43, ~130× less than truth-matched sharpness). Also documents a reusable zero-init/weight-decay collapse pathology and a highK+contrast instability.
 - [[FNO Lightcone Experimental Findings]] — 3-D FNO $\delta_m \to x_\text{HI}$ on full lightcones (4× H200 DDP, 6600 cones). **Two breakthroughs**: parameter conditioning drops val L² 0.20 → 0.06; U-FNO + SyncBN reaches **val L² = 0.0418, val H¹ = 8.27**. **Nulls**: more isotropic/LOS modes, BCE, GroupNorm, stronger H¹ weighting, and doubled LOS U-Net receptive field do not improve the relevant architecture's floor. The active bottleneck is not retained mode count or LOS receptive field.
 - [[SirenFNO Spectral Bias Investigation]] — new mode-weight diagnostic **measures** the FNO/U-FNO low-frequency collapse (32-mode U-FNO: low 8/32 modes hold 52% of spectral weight). A 3-D **SirenFNO** keeps the learned spectrum flat (no collapse), beats the plain FNO (test L² 0.057→0.050, H¹ 11.6→9.8) but does **not** yet beat the U-FNO floor (0.040) — plausibly because it lacks the local U-Net path. Next: boundary-band/$P(k)$ diagnostics + SirenFNO×U-Net hybrid.
-- [[Windowed Local-FNO U-Net Findings]] — first run of the windowed Local-FNO (local modes `(6,6,12)`, 21 epochs, ~10.2 M params). **Negative result on the design hypothesis**: at epoch 20 the boundary diagnostic is *worse* than the U-FNO benchmark — 10–90% front width **32.2 Mpc vs U-FNO 10.7 Mpc** (truth 3.6), higher peak RMSE (0.32 vs 0.28) and gradient error (0.19 vs 0.16) at the wall. Whole-volume (test L² 0.057 / H¹ 10.2) sits at the plain-FNO level, but the run is **undertrained and still descending**. No patch seams. Windowed-Fourier ≠ the U-FNO's real-space conv path for wall sharpness. Next: finish to 70 ep, widen local modes, boundary-aware loss, conv-path hybrid.
+- [[Windowed Local-FNO U-Net Findings]] — first run of the windowed Local-FNO (local modes `(6,6,12)`, 21 epochs, ~10.2 M params). **Negative result on the design hypothesis**: at epoch 20 the boundary diagnostic is *worse* than the U-FNO benchmark — 10–90% front width **32.2 Mpc vs U-FNO 10.7 Mpc** (truth 3.6), higher peak RMSE (0.32 vs 0.28) and gradient error (0.19 vs 0.16) at the wall. Whole-volume (test L² 0.057 / H¹ 10.2) sits at the plain-FNO level, but the run is **undertrained and still descending**. No patch seams. Windowed-Fourier ≠ the U-FNO's real-space conv path for wall sharpness. **Update (ep 38)**: front width 18.5 vs U-FNO 13.9 Mpc, boundary-H¹ margin shrank ~8× but U-FNO still significantly ahead; ionized-wall loss experiment failed; new parity diagnostic shows the hedging bias (+0.17/+0.21 in nearly-ionized bins) is common to both architectures → target-side attacks now prioritized.
 
 ## Concepts
 
@@ -127,8 +131,12 @@ updated: 2026-07-15
 - [[Simulation-Based Inference]], [[Neural Posterior Estimation]], [[Simulator Dependence]]
 - [[Cross-Simulator Generalization]], [[Self-Supervised Learning]]
 - [[Vision Transformer]], [[Fourier Neural Operator]], [[FiLM Conditioning]]
-- [[Spectral Mode Cutoff in FNOs]]
+- [[Spectral Mode Cutoff in FNOs]], [[Walsh-Hadamard Neural Operator]]
 - [[Training Set Generation]], [[Initial Conditions]]
+
+### Loss Design / Boundary Sharpness
+- [[Hedging Bias of Pointwise Losses]] — **NEW** — why L² (and H¹ one derivative up) provably prefer blurred fronts; the mechanism behind every front-width null
+- [[Contrast Map]] — **NEW** — the $(\theta,\tau)$ monotonic output reshaping; definition, why the affine renormalisation is load-bearing, and its closed-negative status
 
 ### Concepts
 - [[Simulator Dependence]] — **NEW** — now has a full concept note with evidence chain and mitigation map
@@ -153,3 +161,6 @@ updated: 2026-07-15
 - How to match ICs between 21cmFAST and SCRIPT?
 - Do EFT coefficients stay stable when 21cmFAST *internal* model is varied (per Berklas & Pober 2025)?
 - What exactly are the simulator-specific morphological features that ML networks learn (per Sooknunan et al.)?
+- [[Square-Wave Basis for Ionization Fields]] — **partially answered (2026-07-26)**: global-slot WHNO is the new 2-D $x_\text{HI}$ leader, but the premise was wrong (the payoff is in the *global* bottleneck, not the local walls) and it does not fix front width. 3-D, $z_\text{re}$, the FNO+WHNO ensemble and the shift-consistency test remain open
+- [[Transport-Based Edge Losses]] — **NEW, high priority**: can a transport metric (SWD) recover wall sharpness by penalising *misplaced* edges rather than rewarding *steep* ones? The last loss-side lever standing; SWD is the only edge term costing <1.2% L²
+- [[LOS Bandwidth as the 3-D Bottleneck]] — **NEW**: mode-weight diagnostics put the binding truncation on the LOS axis (edge/peak 0.60–0.78 vs 0.03–0.20 transverse), with headroom in both knobs — untestable from the 2-D $z_\text{re}$ sweep and so far untested

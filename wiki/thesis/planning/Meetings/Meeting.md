@@ -1,0 +1,4 @@
+- Plot for Bubble Sizes für verschiedene Operator basis
+- Plot für wie scharf Bubble sizes sind für verschiedene x_HI in groud truth
+- Am Input schrauben (high contrast filter, additional mask)
+- LoReLi dataset (Yannic fragen?)
