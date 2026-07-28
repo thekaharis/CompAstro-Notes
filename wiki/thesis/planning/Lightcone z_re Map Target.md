@@ -2,7 +2,7 @@
 type: plan
 title: "Lightcone z_re Map Target"
 created: 2026-07-16
-updated: 2026-07-16
+updated: 2026-07-28
 tags:
   - domain/thesis
   - domain/planning
@@ -10,8 +10,9 @@ tags:
   - domain/reionization
   - concept/target-reparametrization
   - concept/zre-field
-status: implemented-training-pending
+status: trained-results-filed
 related:
+  - "[[z_re Map Training Results]]"
   - "[[Smooth-Target Reparametrization Plan]]"
   - "[[FNO Lightcone Experimental Findings]]"
   - "[[Warped LOS Grid Plan]]"
@@ -47,9 +48,14 @@ Pixels whose fitted transition lies outside the cone (midpoint below the low-z e
 - **Loss**: `0.5·absL2 + 0.5·absH1` in 2-D — absolute norms deliberately, because the clamped target is ≈ 0 over most of a late-reionizing cone and a relative norm would divide by a near-zero target norm. H¹ is now well-posed (smooth target).
 - **Training**: Adam + cosine, 200 epochs default, per-cone split (seed 42), single-A30 SLURM job `slurm/train_zre.sbatch`; per-model-kind checkpoint dirs; end-of-run truth/prediction/error figure for every test cone.
 
-## Status & next steps (2026-07-16)
+## Status & next steps
 
-Implementation, target cache, and reconstruction sanity figures done; **no training results yet**. Next: first FNO2d run → U-FNO2d/LocalFNO2d comparison → the plan's decisive evaluation, always back in $x_\text{HI}$-space (reconstructed front width vs the U-FNO 10.7 Mpc / truth 3.6 Mpc benchmark). Open design questions: whether the lo-z-crossing step target beats the Gompertz midpoint as the training target (the reconstruction test says both reconstruct well), and how to keep mostly-NaN late reionizers from degrading training (mask-weighted loss vs cone filtering).
+> [!info] **Superseded (2026-07-28) — training results are filed in [[z_re Map Training Results]].**
+> 26 runs across five architectures on 660 held-out cones. Best: plain FNO, pure L², RMSE(z) 0.1168; best small model: Local-SirenFNO bw32/ω30/lr3e-4 at 0.1233 with 54× fewer parameters than the U-FNO. Three transferable results came out of it: **pure L² beats L²+H¹ by ~35%** on every architecture (and improves the H¹ metric itself); **SIREN weights rescue the Local-FNO** (worst → second best); and the **nominal loss weights were misleading** (H¹ was supplying 99.4% of the 3-D training loss). The sentinel/NaN problem flagged below turned out to be the root cause of two distinct training failures, both now fixed.
+>
+> **The plan's actual success criterion remains unevaluated.** All of the above is measured in $z_\text{re}$-space; the reconstructed-$x_\text{HI}$ front width vs the U-FNO 10.7 Mpc / truth 3.6 Mpc benchmark has still not been computed. The smooth-target thread is unresolved, not successful.
+
+*(2026-07-16, at filing.)* Implementation, target cache, and reconstruction sanity figures done; no training results yet. Next: first FNO2d run → U-FNO2d/LocalFNO2d comparison → the plan's decisive evaluation, always back in $x_\text{HI}$-space. Open design questions: whether the lo-z-crossing step target beats the Gompertz midpoint as the training target (the reconstruction test says both reconstruct well), and how to keep mostly-NaN late reionizers from degrading training (mask-weighted loss vs cone filtering).
 
 ## Deviations from the parent plan worth remembering
 

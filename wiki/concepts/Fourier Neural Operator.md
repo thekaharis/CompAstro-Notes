@@ -2,7 +2,7 @@
 type: concept
 title: "Fourier Neural Operator"
 created: 2026-04-14
-updated: 2026-05-12
+updated: 2026-07-28
 tags:
   - concept/ml
   - domain/inference
@@ -379,3 +379,14 @@ To complement the parameter-conditioning escalation in [[FiLM Conditioning]] (ch
 3. **Equivariant FNO with explicit LOS input** — if redshift space is folded into the surrogate rather than a downstream layer.
 
 For Task 1 and Task 2 of the planning note as currently specified, step 2 is the natural choice; step 3 only becomes necessary if the design decision changes.
+
+## Generalization: the Fourier basis is a slot, not a commitment (2026-07)
+
+Nothing in the operator block requires the FFT. The structure — **transform → learned per-coefficient weight → inverse transform** — works for any fast orthogonal transform, which turns "which basis" from an architectural decision into a hyperparameter. See [[Structured Transform Neural Operators]] for the family (Haar wavelet, Walsh–Hadamard, SIREN-generated Fourier, and the real-space CNN treated as a degenerate member) and [[Structured-Transform Operator Findings]] for the measurements.
+
+Two results worth carrying back into how the FNO itself is understood:
+
+1. **The Fourier prior hurts most in the global bottleneck, not the local branches.** Replacing Fourier with Walsh–Hadamard in the *whole-field* slot produced the best 2-D $x_\text{HI}$ model; replacing it in the *windowed local* slot consistently underperformed. Intuition: on a small patch, Fourier's global-smoothness prior does little harm; asked to represent an entire 200 Mpc slice's worth of step functions in one basis, it does.
+2. **Structured transforms are far cheaper.** The local-operator models reach better accuracy than the U-FNO with 20–60× fewer parameters and ~40% less peak memory. Walsh–Hadamard costs ~5% throughput over plain FNO (no complex arithmetic); Haar wavelet in the local slot is the expensive one at ~53%.
+
+Both feed the same design question as [[Spectral Mode Cutoff in FNOs]]: what the operator can *represent* has turned out to matter less, for sharp ionization fronts, than what the objective *selects for* — see [[Hedged Edges vs Blurred Edges]].

@@ -2,7 +2,7 @@
 type: meta
 title: "Planning Index"
 created: 2026-04-21
-updated: 2026-07-16
+updated: 2026-07-28
 tags:
   - domain/thesis
   - domain/planning
@@ -21,8 +21,8 @@ Detailed, step-by-step operational plans for each work package. These documents 
 - [[Siren3D Residual Refinement Plan]] — Coordinate-conditioned residual refinement of U-FNO bubble boundaries, with controls and stop criteria
 - [[Windowed Local-FNO U-Net Plan]] — Windowed spectral mixing (overlapping Hann patches, shifted grids) + global Fourier bottleneck; localizes the transform to buy high effective frequencies
 - [[Smooth-Target Reparametrization Plan]] — Learn a smooth surrogate ($z_\text{re}$, signed distance) instead of $x_\text{HI}$; reconstruct by deterministic thresholding so uncertainty displaces fronts rather than blurring them
-- [[Lightcone z_re Map Target]] — Implementation of the smooth-target plan's candidate 1: per-pixel $z_\text{re}(x,y)$ fitted from the lightcone (Gompertz/step LS), 2-D FNO with mask handling; reconstruction sanity checks done, training pending
-- [[Warped LOS Grid Plan]] — Non-uniform LOS cache grid (density ∝ ensemble-mean $|dx_\text{HI}/d\chi|$, CDF-inverted): the uniform-z cache is ~37 Mpc at low z where fronts live; round-trip evaluation tool + volume-weighted loss merged, real-data run pending
+- [[Lightcone z_re Map Target]] — Implementation of the smooth-target plan's candidate 1: per-pixel $z_\text{re}(x,y)$ fitted from the lightcone (Gompertz/step LS), 2-D FNO with mask handling; **trained — see [[z_re Map Training Results]]**
+- [[Warped LOS Grid Plan]] — Non-uniform LOS cache grid (density ∝ ensemble-mean $|dx_\text{HI}/d\chi|$, CDF-inverted): the uniform-z cache is ~37 Mpc at low z where fronts live; round-trip evaluation tool + volume-weighted loss merged; **evaluated on real cones — see [[Warped LOS Grid Evaluation]]**
 
 ## Reading Order
 

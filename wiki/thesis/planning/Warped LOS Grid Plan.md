@@ -2,7 +2,7 @@
 type: plan
 title: "Warped LOS Grid Plan"
 created: 2026-07-16
-updated: 2026-07-16
+updated: 2026-07-28
 tags:
   - domain/thesis
   - domain/planning
@@ -10,8 +10,9 @@ tags:
   - domain/reionization
   - concept/los-sampling
   - concept/data-representation
-status: tooling-complete
+status: evaluated
 related:
+  - "[[Warped LOS Grid Evaluation]]"
   - "[[Smooth-Target Reparametrization Plan]]"
   - "[[FNO Lightcone Experimental Findings]]"
   - "[[Windowed Local-FNO U-Net Findings]]"
@@ -48,9 +49,12 @@ Grids are defined once in redshift via the **ensemble-mean** $\chi(z)$ (per-cone
 - `build_cubes.py --target-z <file> [--target-z-key warped_512]` builds the cube cache on any explicit grid (`.npz`/`.npy`/text, e.g. the `grids.npz` written by the evaluation script).
 - `fno_21cm_3d.py` gains `LOSS_LOS_VOLUME_WEIGHTS=1`: on a non-uniform LOS grid, voxel count *is* loss weight, so densely sampled epochs would dominate the L²/H¹ terms; the flag applies Δχ quadrature weights along the LOS so the loss is volume-weighted regardless of grid (no-op-ish for uniform-χ, mildly reweights uniform-z).
 
-## Status (2026-07-16)
+## Status
 
-Tooling complete with a passing synthetic self-test (warped must beat uniform_z transition RMSE by >2× and preserve gradients better; identity grid must round-trip losslessly). The evaluation on real cones runs on the cluster (`--n-cones 12`, CPU-only login node); **real-data numbers not yet produced/synced**. Next: run the evaluation → pick the winning grid → rebuild the cube cache → retrain the U-FNO benchmark on the warped cache with volume-weighted loss.
+> [!info] **Evaluated (2026-07-28) — real-cone results are filed in [[Warped LOS Grid Evaluation]].**
+> The round-trip evaluator has been run on real lightcones (926,903 front-bearing rays, 8 grids). **The diagnosis is confirmed and it is large**: the production `uniform_z_256` cache recovers only **12.7%** of true front sharpness and misses **11.7%** of fronts entirely. `warped_256` gets sharpness to 0.332 and fronts-missed to 4.9% at the same storage budget — and **beats uniform-$z$ at 512 slices**, i.e. sample *placement* dominates sample *count*. `crop15_chi_256` is nearly as good with no ensemble-derived warp function and is arguably the better default. First `warped256` training runs exist but are **not yet interpretable** (different target grid ⇒ different voxel population; a common-grid re-evaluation is still needed).
+
+*(2026-07-16, at filing.)* Tooling complete with a passing synthetic self-test (warped must beat uniform_z transition RMSE by >2× and preserve gradients better; identity grid must round-trip losslessly). The evaluation on real cones runs on the cluster (`--n-cones 12`, CPU-only login node); **real-data numbers not yet produced/synced**. Next: run the evaluation → pick the winning grid → rebuild the cube cache → retrain the U-FNO benchmark on the warped cache with volume-weighted loss.
 
 ## How it fits the thread
 

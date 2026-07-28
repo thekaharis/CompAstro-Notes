@@ -2,7 +2,7 @@
 type: concept
 title: "Spectral Mode Cutoff in FNOs"
 created: 2026-06-20
-updated: 2026-06-21
+updated: 2026-07-28
 tags:
   - domain/ml
   - domain/operator-learning
@@ -24,6 +24,10 @@ related:
   - "[[SirenFNO Spectral Bias Investigation]]"
   - "[[Shi et al 2025 (SirenFNO)]]"
   - "[[Windowed Local-FNO U-Net Plan]]"
+  - "[[z_re Map Training Results]]"
+  - "[[Hedged Edges vs Blurred Edges]]"
+  - "[[Edge and Wall-Placement Losses]]"
+  - "[[Structured Transform Neural Operators]]"
 ---
 
 # Spectral Mode Cutoff in FNOs
@@ -108,3 +112,25 @@ The mode-count nulls above are an *inference* about how the model uses its bandw
 This is the concrete mechanism behind the null results: **extra modes are learned but then down-weighted**, so adding bandwidth cannot help. It is the well-known FNO *low-frequency (spectral) bias*, now quantified on the 21cmFAST lightcone.
 
 [[Shi et al 2025 (SirenFNO)]] attacks the bias at its source: a SIREN hypernetwork generates the kernel for *all* modes, and the measured spectrum then stays flat (low-quarter fraction pinned at 0.25, cutoff ratio ≈1.0) across training — confirming the collapse is specific to the per-mode learnable-table parameterization, not inevitable. Whether removing the bias improves bubble-wall fidelity is still open; see [[SirenFNO Spectral Bias Investigation]] §4.
+
+## Per-branch resolution: the LOS axis is the binding constraint (2026-07-20)
+
+The diagnostic was extended to report the mode-weight profile **per operator branch** of the windowed Local-FNO (encoder / bottleneck / decoder, and per axis) rather than pooled. It changes the picture from "the model down-weights high modes" to a much more actionable statement about *which* bandwidth is actually scarce. Edge/peak weight ratio in the bottleneck and decoders:
+
+| axis | edge/peak ratio | reading |
+|---|---|---|
+| $x$, $y$ (transverse) | **0.03–0.20** | weight has decayed well before the truncation edge — the retained band is *not* the constraint |
+| $z$ (line of sight) | **0.60–0.78** | weight is still substantial at the truncation edge — **the model wants modes it does not have** |
+
+So the two axes give opposite answers, and pooling them hid it. `LOCALFNO_MODES_Z` (12, cap 17) and the bottleneck $z$ modes (16, cap 33) both have unspent headroom, and spending it is the clearest untested 3-D-specific lever in the campaign ([[z_re Map Training Results]] §3).
+
+This also sharpens the earlier nulls rather than contradicting them: the isotropic mode increases tested in [[FNO Lightcone Experimental Findings]] raised *all three* axes together, which on this evidence spends most of the added capacity on the two axes that did not need it. The one asymmetric-LOS test that was run (`n_modes=(16,16,32)`, "32-modes-in-Z") stopped at 16 epochs and never converged, so the lever has not actually been tested to completion.
+
+> [!gap]
+> The transverse null must **not** be transferred from the 2-D $z_\text{re}$ task, where widening local modes and windows consistently hurt: the $z_\text{re}$ target has 7–11× less small-scale transverse power than an $x_\text{HI}$ slice. Bandwidth conclusions are target-specific.
+
+## What the 2-D work adds: bandwidth is no longer the binding constraint at all
+
+The 2-D $x_\text{HI}$ sharpness work ([[Hedged Edges vs Blurred Edges]], [[Edge and Wall-Placement Losses]]) supplies the missing piece. The local branch (6 modes in a 16 px window) can represent ~1.3–2.7 px transitions; truth transitions are ~0.9–1.5 px and predictions are 2.7–3.4 px. **The models leave representable sharpness unused.** And changing only the loss — to an exponential-in-distance absolute error — moves the predicted front width to 1.16 px with no change of basis or mode budget at all.
+
+That retires the last version of the "spectral capacity is the ceiling" hypothesis for the transverse axes: the objective was selecting against sharpness the whole time. The LOS finding above stands as the one place where retained bandwidth still plausibly binds.

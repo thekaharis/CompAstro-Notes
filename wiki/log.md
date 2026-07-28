@@ -1,12 +1,43 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-06-21
+updated: 2026-07-28
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-07-28] ingest+synthesis | Twelve days of 2-D/z_re work filed: five findings, four concepts
+
+**Sources**: `fno-21cm` repo at `6bded26` (40 commits since 2026-07-17) — `FINDINGS-2026-07-26.md`, `NOTES-contrast-map.md`, `losses.py`, `operators.py`, `README.md` §modular operator slots, `figures/xhi2d_all_variants.md`, `figures/operator_variant_benchmark.json`, `figures/grid_eval_out50_real/`, `figures/bubble_size_out/`, `figures/localfno-mode-weights-{3d,zre}_20260720/`, and 29 completed 2-D + 26 completed z_re checkpoint dirs. Two reports copied verbatim to `.raw/reports/`.
+
+**Findings created**:
+- [[z_re Map Training Results]] — first training results for [[Lightcone z_re Map Target]]. **Pure L² beats L²+H¹ by ~35%** on every architecture *and improves the H¹ metric itself*; **SIREN-generated weights take the Local-FNO from worst (0.305) to second best (0.123)** with the train→test gap collapsing 3.0× → 1.2× and 54× fewer params than the U-FNO; **the nominal loss weights were misleading — H¹ supplies 99.4% of the 3-D training loss**, so every archived "L²+H¹" 3-D run is H¹-dominated and a balanced weighting has never been tested. Local-SirenFNO sweep: width saturates at 32, ω=60 helps only at low width, bandwidth knobs hurt (target-specific — do not transfer to 3-D). Two failure modes root-caused to the mostly-zero target (SIREN NaN via a zero L² norm; relative-mode L1+H2 freeze). Per-branch mode weights: **the LOS axis is the only place bandwidth still binds** (edge/peak 0.60–0.78 vs 0.03–0.20 transverse).
+- [[Structured-Transform Operator Findings]] — operator basis made a *slot* (`operators.py` registry, `MODEL_KIND=localop` pairing local/global freely). Best 2-D $x_\text{HI}$ model is **Walsh–Hadamard in the global bottleneck only** (val RMSE 0.1453 vs LocalFNO 0.1487, U-FNO 0.1595). **Which slot matters more than which basis** (~5% vs ~1% for sequency-vs-natural ordering); every *local*-slot non-Fourier variant underperforms. Local models are 20–60× smaller than the U-FNO at better accuracy and ~40% less peak memory; WHNO costs ~5% throughput, local-slot wavelet ~53%. **Retraction**: the earlier LocalWNO-vs-3-D lead was inflated by a z-interpolation handicap on the 3-D models.
+- [[Edge and Wall-Placement Losses]] — four new terms. Measured: H¹ seminorm and H² change by **exactly 1.00×** between 4 px and 48 px of wall misplacement (L² 3.5×, signed-distance loss 144×) — gradient-only losses are blind to displacement. **`ExponentialWallDistance` (exponential-in-distance *absolute* error) reaches front width 1.16 px against truth 1.46**, where every RMSE-optimal model sits at ~2.9, for ~22% RMSE; high-$k$ power ratio 0.51 → 0.82. Scale is unforgiving (scale 4 collapses). `WallPlacementLoss` alone saturates to a uniform field by epoch 0; `edgeonly` (SWD+highK, no L²) fails outright — **an L² or BCE anchor is not optional**.
+- [[Contrast Map Investigation]] — **closed, negative, and explained.** The $(\theta,\tau)$ map is a working deblurrer (−9.28% on band-limited truth) that buys **0.00%** on the model at matched sharpness. End-to-end, with the dial free over [0.02, 5.0] and gradients verified, 30 epochs of descent moved θ from 4.750 to 4.431 — max |g(x)−x| = 9e-4. The post-hoc 6.2% per-slice gain is an **oracle ceiling**: the τ carrying it is a bias nuisance, not the physical threshold (corr with the geometric τ only +0.309). One surviving regime: per-$\bar{x}_\text{HI}$-band θ buys a genuine held-out **2–9% at $\bar{x}_\text{HI}$ 0.005–0.05**, worth −0.16% pooled. Two methodological gotchas recorded (zero-init last layer collapses the whole head; highK × contrast is NaN-unstable).
+- [[Warped LOS Grid Evaluation]] — real-cone round trip (926,903 front rays, 8 grids). The production `uniform_z_256` cache recovers **12.7%** of true front sharpness and misses **11.7%** of fronts; `warped_256` reaches 33.2% / 4.9% at the same budget and **beats uniform-$z$ at 512 slices** — placement dominates count. `crop15_chi_256` is nearly as good with no ensemble-derived warp. Warped-cache training runs exist but are **flagged as uninterpreted** (different target grid ⇒ different voxel population; a common-grid re-evaluation is the missing comparison).
+
+**Concepts created**:
+- [[Hedged Edges vs Blurred Edges]] — the unifying result. A soft front is either band-limited (repaired by sharpening) or position-hedged (not). The same sharpening map fixes band-limited truth (−9.28%) and does nothing to the model (+0.00%) at matched width; ~86% of the model's error is not blur. Explains the 12–14 Mpc fronts under a 99.4%-H¹ loss, retires the "spectral capacity is the ceiling" reading for the transverse axes, and supplies the independent motivation for both the wall-placement losses and [[Smooth-Target Reparametrization Plan]].
+- [[Structured Transform Neural Operators]] — the operator-basis-as-slot family (Haar wavelet, Walsh–Hadamard sequency/natural, SIREN-Fourier, CNN), the local/global slot distinction, and the engineering the skeleton absorbs (rank projection, windowing policy, circular/replicate padding that lets a power-of-two-only transform run whole-volume).
+- [[Sliced Wasserstein Edge Loss]] — transport distance between unit-mass edge measures; the Wasserstein barycenter of shifted sharp edges is still sharp, so the cost grows with displacement instead of rewarding smearing. Precomputed sort orders make it free of sorting in the training loop.
+- [[Bubble Size Distribution]] — **fills a dead wikilink** that had been in the index since April. Transverse periodic mean-free-path estimator with censoring, plus the first measurement on the best U-FNO: bubbles run **+6.8% / +9.3% too large** at $\bar{x}_\text{HI}$ 0.02–0.20 / 0.20–0.40, crossing to −2.6% at the very end, with JS divergence ≤ 0.017 throughout (shape right, scale drifts).
+
+**Notes updated**:
+- [[Lightcone z_re Map Target]] — status `implemented-training-pending` → `trained-results-filed`, with a banner that the plan's *actual* criterion (reconstructed $x_\text{HI}$ front width) is still unevaluated.
+- [[Warped LOS Grid Plan]] — status `tooling-complete` → `evaluated`.
+- [[Spectral Mode Cutoff in FNOs]] — two new sections: the per-branch LOS-vs-transverse split, and the 2-D result that bandwidth is no longer the binding constraint at all.
+- [[Fourier Neural Operator]] — new section on the basis-as-slot generalization and its parameter/throughput consequences.
+
+**Figures copied to the vault** (`wiki/thesis/findings/figures/`): `operator-benchmark_20260728/` (params-vs-throughput, inference speed, the 29-run shared-slice table), `xhi2d-wall-losses_20260728/` (wall-model grid + representative slices for baseline / expwall16 / ew16_step14_band), `contrast-map_20260727/`, `localfno-mode-weights_20260720/` (3-D and z_re profiles + cutoff ratios), `warped-los-grid_20260716/` (envelope explainer, cache histogram comparison, `grid_eval.csv`), `bubble-size_20260722/`, `power-spectra_20260722/`, `zre-maps_20260719/`.
+
+**Indexes/cache updated**: `wiki/index.md` (5 findings, 4 concepts, 2 planning-note status changes), `wiki/concepts/_index.md`, `wiki/thesis/planning/_index.md`, `wiki/hot.md` (rewritten around the hedging result).
+
+**Where the thread now stands**: three of the four attack axes have reported. Basis-side is *partly* rehabilitated (SIREN weights fix the Local-FNO; Walsh–Hadamard in the global slot is the new 2-D leader) but none of it moved front width. Data-side is confirmed and large but not yet converted into a trained result. **Loss-side is the one that moved front width**, and it did so without changing basis or bandwidth. Target-side is still unresolved because the reconstruction test has not been run. The two decisive open experiments are therefore: **expwall in 3-D**, and **the $z_\text{re}$ reconstruction evaluation**.
 
 ---
 
