@@ -55,7 +55,7 @@ Reported per stage: restricted mean (Mpc), relative mean bias, restricted Wasser
 | active 0.05–0.95 | 153 | 10.4 | 13.4 | +2.4% | 1.54 | 0.0047 |
 
 > [!key-insight]
-> The bias is **systematically positive and grows toward early times**: the emulator makes bubbles too big while reionization is still sparse, and only crosses to slightly-too-small at the very end. This is the morphological signature of the same soft-front behaviour diagnosed in [[Hedged Edges vs Blurred Edges]] — an under-committed wall pushed outward reads as a larger bubble. JS divergences stay small (≤0.017) throughout, so the *shape* of the distribution is well recovered; it is the *scale* that drifts.
+> The bias is **systematically positive and grows toward early times**: the emulator makes bubbles too big while reionization is still sparse, and only crosses to slightly-too-small at the very end. This is the morphological signature of the same soft-front behaviour diagnosed in [[Hedging Bias of Pointwise Losses]] — an under-committed wall pushed outward reads as a larger bubble. JS divergences stay small (≤0.017) throughout, so the *shape* of the distribution is well recovered; it is the *scale* that drifts.
 
 Figures: `wiki/thesis/findings/figures/bubble-size_20260722/`.
 

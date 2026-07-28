@@ -14,13 +14,14 @@ tags:
   - finding/negative
 status: active
 related:
+  - "[[Loss Objective and Operator Basis Sweep]]"
   - "[[Lightcone z_re Map Target]]"
   - "[[Smooth-Target Reparametrization Plan]]"
   - "[[SirenFNO Spectral Bias Investigation]]"
   - "[[Windowed Local-FNO U-Net Findings]]"
   - "[[Spectral Mode Cutoff in FNOs]]"
   - "[[Structured-Transform Operator Findings]]"
-  - "[[Hedged Edges vs Blurred Edges]]"
+  - "[[Hedging Bias of Pointwise Losses]]"
   - "[[Shi et al 2025 (SirenFNO)]]"
 sources:
   - "[[.raw/reports/FINDINGS-2026-07-26.md]]"
@@ -28,6 +29,8 @@ sources:
 ---
 
 # z_re Map Training Results
+
+> **Relation to [[Loss Objective and Operator Basis Sweep]]:** that note is the consolidated 2026-07-26 summary across all three tasks. This one is the detailed companion — it carries the per-run tables, the diagnostics, and the figures, and extends past 07-26 with material the summary predates.
 
 > **Purpose:** first training results for the [[Lightcone z_re Map Target]] — the 2-D problem density lightcone $\to z_\text{re}(x,y)$ map. 26 completed runs across five architectures, evaluated on 660 held-out cones. Three findings that reach well beyond this task: **pure L² beats L²+H¹ by ~35%**, **SIREN-generated spectral weights rescue the Local-FNO**, and **the nominal loss weights everyone has been quoting were badly misleading**.
 

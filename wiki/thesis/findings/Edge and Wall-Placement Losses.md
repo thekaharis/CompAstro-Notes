@@ -12,9 +12,9 @@ tags:
   - finding/positive
 status: active
 related:
-  - "[[Hedged Edges vs Blurred Edges]]"
+  - "[[Hedging Bias of Pointwise Losses]]"
   - "[[Sliced Wasserstein Edge Loss]]"
-  - "[[Contrast Map Investigation]]"
+  - "[[Contrast Map Sharpening]]"
   - "[[Structured-Transform Operator Findings]]"
   - "[[Smooth-Target Reparametrization Plan]]"
   - "[[FNO Lightcone Experimental Findings]]"
@@ -27,7 +27,7 @@ sources:
 
 # Edge and Wall-Placement Losses
 
-> **Purpose:** the constructive follow-up to [[Contrast Map Investigation]]. If the front-width deficit is **hedging** rather than blur ([[Hedged Edges vs Blurred Edges]]), the fix has to live in the objective. Four new loss terms were built and swept on the 2-D $x_\text{HI}$ task. The headline: an **exponential-in-distance absolute-error** term reaches truth-like front width (**1.16 px vs truth 1.46**, against ~2.9 px for every RMSE-optimal model) at a cost of ~22% RMSE. For the first time in the campaign there is a knob that actually moves front sharpness.
+> **Purpose:** the constructive follow-up to [[Contrast Map Sharpening]]. If the front-width deficit is **hedging** rather than blur ([[Hedging Bias of Pointwise Losses]]), the fix has to live in the objective. Four new loss terms were built and swept on the 2-D $x_\text{HI}$ task. The headline: an **exponential-in-distance absolute-error** term reaches truth-like front width (**1.16 px vs truth 1.46**, against ~2.9 px for every RMSE-optimal model) at a cost of ~22% RMSE. For the first time in the campaign there is a knob that actually moves front sharpness.
 
 ## 1. The displacement-blindness measurement
 

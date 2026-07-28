@@ -15,7 +15,7 @@ aliases:
   - SWD edge loss
   - Sliced Wasserstein distance
 related:
-  - "[[Hedged Edges vs Blurred Edges]]"
+  - "[[Hedging Bias of Pointwise Losses]]"
   - "[[Edge and Wall-Placement Losses]]"
   - "[[Ionization Morphology]]"
   - "[[Fourier Neural Operator]]"
@@ -23,7 +23,7 @@ related:
 
 # Sliced Wasserstein Edge Loss
 
-A transport-based loss term that scores **where** a field's transitions sit, designed as the direct answer to the hedging pathology of pointwise losses ([[Hedged Edges vs Blurred Edges]]).
+A transport-based loss term that scores **where** a field's transitions sit, designed as the direct answer to the hedging pathology of pointwise losses ([[Hedging Bias of Pointwise Losses]]).
 
 ## Construction
 

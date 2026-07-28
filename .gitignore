@@ -37,3 +37,16 @@ wiki/thesis/findings/figures/**/*.png
 !wiki/thesis/findings/figures/ufno-detailed_20260606-234954_job3966888/lightcone_3d_validation_cone1982.png
 !wiki/thesis/findings/figures/ufno-detailed_20260606-234954_job3966888/lightcone_grid_3d_validation.png
 !wiki/thesis/findings/figures/**/run_info.txt
+
+#   2026-07-28 batch — images embedded in the 07-26/28 finding and concept notes
+!wiki/thesis/findings/figures/operator-benchmark_20260728/operator_params_vs_throughput.png
+!wiki/thesis/findings/figures/operator-benchmark_20260728/inference_speed_comparison.png
+!wiki/thesis/findings/figures/xhi2d-wall-losses_20260728/xhi2d_wall_models_grid_v2.png
+!wiki/thesis/findings/figures/xhi2d-wall-losses_20260728/expwall16_representative_z_slices.png
+!wiki/thesis/findings/figures/xhi2d-wall-losses_20260728/whno_glob_baseline_representative_z_slices.png
+!wiki/thesis/findings/figures/contrast-map_20260727/contrast_map_examples.png
+!wiki/thesis/findings/figures/localfno-mode-weights_20260720/mode_weight_profiles_3d.png
+!wiki/thesis/findings/figures/warped-los-grid_20260716/envelope_explainer.png
+!wiki/thesis/findings/figures/warped-los-grid_20260716/xhi_hist_cache_comparison.png
+!wiki/thesis/findings/figures/bubble-size_20260722/bubble_size_summary.png
+!wiki/thesis/findings/figures/zre-maps_20260719/fno_l2only_maps_sample000406.png

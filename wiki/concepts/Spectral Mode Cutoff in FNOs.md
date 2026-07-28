@@ -25,7 +25,7 @@ related:
   - "[[Shi et al 2025 (SirenFNO)]]"
   - "[[Windowed Local-FNO U-Net Plan]]"
   - "[[z_re Map Training Results]]"
-  - "[[Hedged Edges vs Blurred Edges]]"
+  - "[[Hedging Bias of Pointwise Losses]]"
   - "[[Edge and Wall-Placement Losses]]"
   - "[[Structured Transform Neural Operators]]"
 ---
@@ -131,6 +131,6 @@ This also sharpens the earlier nulls rather than contradicting them: the isotrop
 
 ## What the 2-D work adds: bandwidth is no longer the binding constraint at all
 
-The 2-D $x_\text{HI}$ sharpness work ([[Hedged Edges vs Blurred Edges]], [[Edge and Wall-Placement Losses]]) supplies the missing piece. The local branch (6 modes in a 16 px window) can represent ~1.3–2.7 px transitions; truth transitions are ~0.9–1.5 px and predictions are 2.7–3.4 px. **The models leave representable sharpness unused.** And changing only the loss — to an exponential-in-distance absolute error — moves the predicted front width to 1.16 px with no change of basis or mode budget at all.
+The 2-D $x_\text{HI}$ sharpness work ([[Hedging Bias of Pointwise Losses]], [[Edge and Wall-Placement Losses]]) supplies the missing piece. The local branch (6 modes in a 16 px window) can represent ~1.3–2.7 px transitions; truth transitions are ~0.9–1.5 px and predictions are 2.7–3.4 px. **The models leave representable sharpness unused.** And changing only the loss — to an exponential-in-distance absolute error — moves the predicted front width to 1.16 px with no change of basis or mode budget at all.
 
 That retires the last version of the "spectral capacity is the ceiling" hypothesis for the transverse axes: the objective was selecting against sharpness the whole time. The LOS finding above stands as the one place where retained bandwidth still plausibly binds.

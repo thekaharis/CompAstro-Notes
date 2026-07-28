@@ -13,6 +13,7 @@ tags:
   - finding/positive
 status: active
 related:
+  - "[[Loss Objective and Operator Basis Sweep]]"
   - "[[Structured Transform Neural Operators]]"
   - "[[Fourier Neural Operator]]"
   - "[[Windowed Local-FNO U-Net Findings]]"
@@ -28,6 +29,8 @@ sources:
 ---
 
 # Structured-Transform Operator Findings
+
+> **Relation to [[Loss Objective and Operator Basis Sweep]]:** that note is the consolidated 2026-07-26 summary across all three tasks. This one is the detailed companion — it carries the per-run tables, the diagnostics, and the figures, and extends past 07-26 with material the summary predates.
 
 > **Purpose:** results from making the operator basis a *slot* rather than an architectural commitment ([[Structured Transform Neural Operators]]). Wavelet (Haar) and Walsh–Hadamard operators are competitive with Fourier on the 2-D $x_\text{HI}$ task, and the best model so far uses **Walsh–Hadamard in the global bottleneck only**. The sharper structural result is that *which slot* gets the non-Fourier operator matters more than *which basis* it is.
 

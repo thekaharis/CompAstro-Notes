@@ -1,0 +1,9 @@
+\contentsline {figure}{\numberline {1}{\ignorespaces Validation summary for sixteen U-FNO lightcones spanning heavily reionized to fully neutral cases. Residuals are concentrated in the transition regions rather than in the saturated parts of the lightcone.}}{5}{figure.caption.4}%
+\contentsline {figure}{\numberline {2}{\ignorespaces Three diagnostic U-FNO cones. The model captures global timing and morphology; the remaining discrepancies trace bubble boundaries.}}{6}{figure.caption.5}%
+\contentsline {figure}{\numberline {3}{\ignorespaces The U-FNO kernel rapidly learns a low-frequency preference. Extra modes exist in the parameterization but receive much less weight.}}{9}{figure.caption.6}%
+\contentsline {figure}{\numberline {4}{\ignorespaces The same learned low-frequency collapse for a U-FNO with 64 LOS modes. The bias persists when more bandwidth is made available.}}{9}{figure.caption.7}%
+\contentsline {figure}{\numberline {5}{\ignorespaces SirenFNO Fourier-weight profiles. Unlike the standard kernel table, the SIREN-generated kernel remains nearly flat across modes and epochs.}}{11}{figure.caption.8}%
+\contentsline {figure}{\numberline {6}{\ignorespaces Two views of full-frequency kernel learning in SirenFNO.}}{12}{figure.caption.9}%
+\contentsline {figure}{\numberline {7}{\ignorespaces SirenFNO captures timing and bubble morphology, but its aggregate error remains above the U-FNO benchmark.}}{14}{figure.caption.11}%
+\contentsline {figure}{\numberline {8}{\ignorespaces Benchmark training trajectories used to contextualize the Local-FNO run. The Local-FNO metrics were logged separately and remained descending at the first reported checkpoint.}}{16}{figure.caption.13}%
+\contentsline {figure}{\numberline {9}{\ignorespaces Boundary-band comparison of U-FNO and the first Local-FNO checkpoint. The Local-FNO has higher error around the front and a substantially broader stacked transition profile.}}{16}{figure.caption.14}%

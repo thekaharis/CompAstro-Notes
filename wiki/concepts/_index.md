@@ -39,7 +39,7 @@ updated: 2026-07-28
 - [[Fourier Neural Operator]] ✓ — FNO; learns function-to-function maps in Fourier space; resolution-invariant; potential emulator
 - [[Spectral Mode Cutoff in FNOs]] ✓ — `n_modes` limits learned global spectral communication, not the output bandwidth; records the *measured* low-frequency weight collapse and the per-branch result that the **LOS axis is the only place bandwidth still binds**
 - [[Structured Transform Neural Operators]] ✓ — the operator basis as a hyperparameter slot: Haar wavelet (WNO), Walsh–Hadamard (WHNO), SIREN-Fourier, CNN; local vs global slot
-- [[Hedged Edges vs Blurred Edges]] ✓ — a soft front is either band-limited (fixable by sharpening) or position-hedged (not); the FNO family's deficit is measured to be **hedging**; ~86% of the model error is not blur
+- [[Hedging Bias of Pointwise Losses]] ✓ — a soft front is either band-limited (fixable by sharpening) or position-hedged (not); the FNO family's deficit is measured to be **hedging**; ~86% of the model error is not blur
 - [[Sliced Wasserstein Edge Loss]] ✓ — optimal-transport distance between edge measures; the Wasserstein barycenter of shifted sharp edges is still sharp, so it penalises displacement instead of rewarding it
 - [[Training Set Generation]] — ~500 21cmFAST runs for P2 SBI training
 - [[Radiative Transfer]] ✓ — three RT algorithm families; moments/MC/ray-tracing; photon conservation

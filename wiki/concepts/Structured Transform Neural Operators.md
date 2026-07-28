@@ -15,19 +15,23 @@ domain: Inference and ML
 aliases:
   - WNO
   - Wavelet Neural Operator
-  - Walsh-Hadamard Neural Operator
-  - WHNO
+  - structured-transform operators
 related:
   - "[[Fourier Neural Operator]]"
+  - "[[Walsh-Hadamard Neural Operator]]"
+  - "[[Square-Wave Basis for Ionization Fields]]"
+  - "[[Loss Objective and Operator Basis Sweep]]"
   - "[[Spectral Mode Cutoff in FNOs]]"
   - "[[Structured-Transform Operator Findings]]"
-  - "[[Hedged Edges vs Blurred Edges]]"
+  - "[[Hedging Bias of Pointwise Losses]]"
   - "[[Windowed Local-FNO U-Net Plan]]"
 sources:
   - "[[.raw/reports/FINDINGS-2026-07-26.md]]"
 ---
 
 # Structured Transform Neural Operators
+
+> **Scope.** This note covers the *slot abstraction* — the operator basis as a swappable hyperparameter and the local-vs-global slot distinction. For the Walsh–Hadamard basis specifically (sequency, global-support step waves, the Gibbs argument, and [[Pérez Cuadrado et al 2025 (WHNO)]]) see [[Walsh-Hadamard Neural Operator]], which is the canonical note for that operator.
 
 Generalization of the [[Fourier Neural Operator]] in which the fixed FFT is replaced by any fast orthogonal transform. The operator block is unchanged in form — **transform → learned per-coefficient weight → inverse transform** — only the basis changes. This makes basis choice a *hyperparameter slot* rather than an architectural commitment.
 
@@ -37,7 +41,7 @@ Generalization of the [[Fourier Neural Operator]] in which the fixed FFT is repl
 |---|---|---|---|
 | **Fourier** | truncated rFFT over signed quadrants | `n_modes` per axis | smooth global structure; the baseline |
 | **Wavelet (WNO)** | multilevel orthonormal **Haar** | all bands retained; depth = `LEVELS` | Haar atoms *are* step functions — a sharp bubble wall is sparse in this basis, unlike in Fourier where it needs all frequencies (Gibbs) |
-| **Walsh–Hadamard (WHNO)** | Walsh–Hadamard in **sequency order** | truncate to lowest sequencies | square-wave basis: piecewise-constant fields are sparse; $O(N\log N)$, no complex arithmetic, power-of-two sizes only |
+| **Walsh–Hadamard (WHNO)** | Walsh–Hadamard in **sequency order** | truncate to lowest sequencies | see [[Walsh-Hadamard Neural Operator]]: global-support *square* waves — step edges are sparse *and* long-range coupling survives; $O(N\log N)$, no complex arithmetic, power-of-two sizes only |
 | **SIREN-Fourier** | rFFT with SIREN-generated per-mode weights | none (all modes) | removes the low-frequency weight collapse — see [[SirenFNO Spectral Bias Investigation]] |
 | **CNN** | (identity; real-space convolution) | — | the U-FNO's local path, isolated as an operator |
 

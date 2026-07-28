@@ -13,7 +13,7 @@ tags:
 status: active
 related:
   - "[[Warped LOS Grid Plan]]"
-  - "[[Hedged Edges vs Blurred Edges]]"
+  - "[[Hedging Bias of Pointwise Losses]]"
   - "[[FNO Lightcone Experimental Findings]]"
   - "[[z_re Map Training Results]]"
   - "[[Edge and Wall-Placement Losses]]"
@@ -75,7 +75,7 @@ The Δχ volume-weighted loss (`LOSS_LOS_VOLUME_WEIGHTS=1`) does help within the
 
 This is the **data-side** attack, and the round-trip numbers argue it should have been first. The three architecture-side attacks ([[SirenFNO Spectral Bias Investigation]], [[Windowed Local-FNO U-Net Findings]], [[Structured-Transform Operator Findings]]) and the loss-side attack ([[Edge and Wall-Placement Losses]]) were all fighting for front sharpness inside a cache that had already discarded 87% of it.
 
-It does not, however, explain the hedging result: [[Hedged Edges vs Blurred Edges]] shows the 2-D models leave *representable* sharpness unused, and the 2-D slice task does not go through the LOS cache at all. **The two diagnoses are independent and both are real** — the cache bounds what is achievable, and the objective determines whether the model reaches that bound.
+It does not, however, explain the hedging result: [[Hedging Bias of Pointwise Losses]] shows the 2-D models leave *representable* sharpness unused, and the 2-D slice task does not go through the LOS cache at all. **The two diagnoses are independent and both are real** — the cache bounds what is achievable, and the objective determines whether the model reaches that bound.
 
 ## 4. Next
 
