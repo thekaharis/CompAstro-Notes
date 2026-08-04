@@ -1,0 +1,9 @@
+**Title:** 
+*Neural Operator Architectures for the 21cm Reionization Field: Fourier and Beyond*
+
+**Abstract**: 
+Fourier Neural Operators (FNOs) and related architectures have emerged as promising surrogates for physical systems, with notable success in fluid dynamics, where they achieve high accuracy at a small fraction of the cost of conventional solvers. Reionization cosmology is a demanding test of that promise: the neutral fraction field in 21cm simulations is near-binary, dominated by sharp ionization fronts separating fully ionized bubbles from neutral gas - a structure that a smooth global basis represents poorly, since a step edge requires all frequencies and any truncation rings.
+
+We train a family of neural operator variants for the map from the matter density field to the neutral fraction, on several thousand 21cmFAST lightcones conditioned on eleven astrophysical and cosmological parameters and spanning the full reionization history. All variants share a U-shaped backbone with a distinct local/global architecture: windowed local transforms and a global whole-field bottleneck which we fill with Fourier, wavelet and Walsh–Hadamard bases, implicit-network-generated spectral kernels, and convolutional paths. This lets basis choice be varied independently of everything else, in controlled comparisons on identical data, splits and resolution.
+
+Validation uses transverse and cylindrical power spectra, cross-correlation coherence, ionized bubble-size distributions, and the global ionization history. We report where each configuration is reliable and where it fails, as the most competitive variants match or exceed a standard U-shaped FNO with one to two orders of magnitude fewer parameters, at speeds suited to use inside an inference loop. 
