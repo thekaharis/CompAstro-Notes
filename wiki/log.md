@@ -10,6 +10,29 @@ updated: 2026-07-28
 
 ---
 
+## [2026-08-06] ingest | 3-D matrix campaign: BatchNorm defect found and fixed; theta key pre-registration answered
+
+**Sources**: `fno-21cm` at `ce8f385` — live 3-D architecture x loss matrix (runs 4425979–4457034), `checkpoints_3d_*/metrics.jsonl`, `logs/watch-3dmatrix.log`, `notes/NOTES-contrast-map.md` §8, checkpoint introspection of `checkpoints_3d_ufno_hybrid/best_model_state_dict.pt`.
+
+**New pages**
+- [[U-FNO BatchNorm Train-Eval Mismatch]] — closed, positive.
+- [[LOS-Monotone Theta Key in 3-D]] — open, negative so far.
+
+**Headline**: U-FNO's default `batchnorm` is unusable at batch size 1 in 3-D. Training loss was normal while `val_l2` was 4.6x worse; the cause was located in the saved checkpoint (31/32 channels of `unet3.conv3_1` with `running_var` below `eps`, a 28.6x train/eval scale discrepancy) rather than by ablation. Switching to `UFNO_NORM=groupnorm` made U-FNO the **best completed cell of the matrix** — val_l2 0.0471 / val_h1 9.15 in 23.6 h, against fno_whno-plain 0.0611 / 10.97 in 53.1 h.
+
+**Theta**: §8's pre-registered stop condition fired on both architectures at epoch 1. `key_jitter` ~0 means the per-slice means are already monotone, so LOS isotonic smoothing has no jitter to remove and the key error is bias. `frac_band` fell 0.5% -> 0.1%, i.e. 2-10 of 2048 refit slices in the responsive band. Runs left going at the owner's request to inspect predictions qualitatively.
+
+**Also measured, not yet filed as pages**
+- fno_whno row completed: plain 0.0611 / 10.97 beats hybrid 0.0650 / 11.63; `sat_low` stays exactly 0 for plain but drifts to 0.063 for hybrid. The expwall term helped at epochs 3-6 and cost slightly by epoch 19.
+- Wavelet local operator is **~3x slower per epoch** (459 min vs fourier 151, hadamard 120) and cannot finish 20 epochs inside the 96 h walltime. Cause is implementation, not mathematics: `wavelet_operator.py` does 14 `_split_axis` + 14 `_merge_axis` strided slice/scatter operations per forward at `levels=2`, ~170-200 small kernels per call against ~3-5 for the cuFFT path. Its strong epoch-0 result did **not** persist (5.3% epoch-1 gain vs 27-32% for the others).
+- whno_whno (hadamard/hadamard) trains at 120 min/epoch and **12.4 GB peak** — small enough for an A30, unlike the 22-25 GB cells.
+
+**Infrastructure**: `fno_21cm_3d.py:415` crashed every non-Fourier architecture (whno_whno, wno_whno — 6 of 12 matrix cells) because `SpectralWeightHistory.record(-1)` sat outside the try/except written for exactly that case. Fixed in `fc53545`, verified in production. Two separate sick-node incidents (gpu2-05, gpu2-03) destroyed 15 queued jobs with `ExitCode 0:53` in seconds; both nodes self-recovered within the hour and no exclusions were used.
+
+**Note relocation**: repo notes consolidated into `fno-21cm/notes/`; `wiki/thesis/notes/NOTES-contrast-map.md` refreshed from 13 KB to the current 28 KB version (it was missing §7 and §8).
+
+---
+
 ## [2026-07-28] ingest+synthesis | 07-28 work filed; merged with the 07-26/27 parallel ingest
 
 **Sources**: `fno-21cm` at `6bded26` (40 commits since 07-17) — `FINDINGS-2026-07-26.md`, `NOTES-contrast-map.md`, `losses.py`, `operators.py`, `README.md` §modular operator slots, `figures/xhi2d_all_variants.md`, `figures/operator_variant_benchmark.json`, `figures/grid_eval_out50_real/`, `figures/bubble_size_out/`, `figures/localfno-mode-weights-{3d,zre}_20260720/`, plus 29 completed 2-D and 26 completed z_re checkpoint dirs.
