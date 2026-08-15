@@ -10,6 +10,20 @@ updated: 2026-07-28
 
 ---
 
+## [2026-08-10] ingest | BSD auxiliary loss works; 3-D leaderboard re-scored on a 20-epoch cap
+
+**Sources**: `fno-21cm` — runs 4485729/30/31 (seed-matched ufno expwall/hybrid/bsd), BSD evaluation job 4494775 (`figures/bubble_size_out/ufno_trio/`), `losses.py` `GranulometrySpectrum`, all completed 3-D `metrics.jsonl`.
+
+**New page**: [[Granulometry (BSD) Auxiliary Loss]] — positive.
+
+**Headline**: the granulometry term halves the bubble-size bias (+0.060 -> +0.029) for 6.5% of val_l2. It is the first auxiliary loss in the campaign to improve its target metric; expwall, theta and BSD all cost whole-volume accuracy, but only this one buys something measurable back.
+
+**Leaderboard re-scored.** Section 3 of [[Loss Objective and Operator Basis Sweep]] now caps **every** run at its best epoch <= 19, so a 20-epoch cell and a 100-epoch cell compete on equal budget. This moves numbers that were previously headline: `ufno_16modes_weights_viz` was the leader at 0.0397 on epoch 91 and is **0.0478** within 20 epochs; `archive/checkpoints_3d_ufno` reads 0.0426 rather than 0.0408. The U-FNO floor holds either way -- the top six rows are all U-FNO -- but the cost picture changes: `ufno_plain_gnorm` reaches **0.0467 in 20 epochs / 21 h** where `localsirenfno_bw48om60_l2only` needed 50 epochs / ~71 h for 0.0453, and only 0.0488 on equal budget. 30 completed runs; still-training and warped256 rows excluded.
+
+**Loss ordering, now consistent across three architectures** (ufno, fno_whno, whno_whno): plain L2 < hybrid < bsd < expwall < expwall+theta on whole-volume metrics. Every added term costs; only BSD returns anything on its own axis.
+
+---
+
 ## [2026-08-06] ingest | 3-D matrix campaign: BatchNorm defect found and fixed; theta key pre-registration answered
 
 **Sources**: `fno-21cm` at `ce8f385` — live 3-D architecture x loss matrix (runs 4425979–4457034), `checkpoints_3d_*/metrics.jsonl`, `logs/watch-3dmatrix.log`, `notes/NOTES-contrast-map.md` §8, checkpoint introspection of `checkpoints_3d_ufno_hybrid/best_model_state_dict.pt`.

@@ -107,20 +107,49 @@ All runs pure L² except `localwno_lr3e4_h1e3` (L²+0.001·H¹, val 0.1543). Ful
 
 `RMSE` = mean per-cone RMSE in $x_\text{HI}$ units. Test-set variance: total 0.09322 (std 0.305), within-slice 0.01237 (std 0.111) — **87% of the variance is the global reionization history**, which is why `R2_total` saturates and `R2_struct` is the column to read. Warped256 runs excluded (different target grid).
 
-| run | best test RMSE | @epoch | epochs | R2_total | R2_struct |
+| run | test RMSE @<=20ep | @epoch | run length | R2_total | R2_struct |
 |---|---|---|---|---|---|
-| archive/checkpoints_3d_ufno_16modes_weights_viz | **0.0397** | 91 | 100 | 0.9831 | **0.8724** |
-| archive/checkpoints_3d_ufno | 0.0408 | 29 | 30 | 0.9821 | 0.8652 |
-| archive/checkpoints_3d_ufno_v3_anisoz | 0.0422 | 28 | 30 | 0.9809 | 0.8558 |
-| checkpoints_3d_localsirenfno_bw48om60_l2only | 0.0453 | 48 | 50 | 0.9780 | 0.8343 |
-| checkpoints_3d_localfno_1gpu | 0.0458 | 49 | 50 | 0.9775 | 0.8301 |
-| checkpoints_3d_localsirenfno_bw32om60_l2only | 0.0461 | 49 | 50 | 0.9772 | 0.8280 |
-| checkpoints_3d_localsirenfno_l2only | 0.0480 | 48 | 50 | 0.9753 | 0.8136 |
-| checkpoints_3d_localsirenfno | 0.0501 | 48 | 50 | 0.9731 | 0.7972 |
-| archive/checkpoints_3d_BCE | 0.0570 | 94 | 100 | 0.9651 | 0.7371 |
+| archive/checkpoints_3d_ufno | **0.0426** | 19 | 30 | 0.9805 | **0.8534** |
+| archive/checkpoints_3d_ufno_v3_anisoz | 0.0438 | 19 | 30 | 0.9794 | 0.8446 |
+| archive/checkpoints_3d_ufno_v2 | 0.0439 | 18 | 30 | 0.9793 | 0.8443 |
+| archive/checkpoints_3d_ufno_v3_globalres | 0.0444 | 19 | 30 | 0.9789 | 0.8409 |
+| archive/checkpoints_ufno_z16_seed41 | 0.0456 | 19 | 30 | 0.9777 | 0.8320 |
+| archive/checkpoints_3d_ufno_z64_seed41 | 0.0465 | 19 | 30 | 0.9768 | 0.8255 |
+| **checkpoints_3d_ufno_plain_gnorm** | **0.0467** | 19 | **20** | 0.9766 | 0.8235 |
+| archive/checkpoints_3d_ufno_16modes_weights_viz | 0.0478 | 15 | 100 | 0.9755 | 0.8155 |
+| checkpoints_3d_ufno_hybrid_gnorm | 0.0485 | 19 | 20 | 0.9748 | 0.8098 |
+| checkpoints_3d_localsirenfno_bw48om60_l2only | 0.0488 | 18 | 50 | 0.9745 | 0.8079 |
+| checkpoints_3d_ufno_bsd_gnorm | 0.0488 | 19 | 20 | 0.9745 | 0.8079 |
+| checkpoints_3d_localsirenfno_bw32om60_l2only | 0.0505 | 18 | 50 | 0.9727 | 0.7940 |
+| checkpoints_3d_localfno_1gpu | 0.0513 | 19 | 50 | 0.9718 | 0.7875 |
+| checkpoints_3d_localsirenfno_l2only | 0.0533 | 19 | 50 | 0.9696 | 0.7706 |
+| checkpoints_3d_localsirenfno | 0.0548 | 18 | 50 | 0.9678 | 0.7577 |
+| archive/checkpoints_3d_sirenfno_m64_stable | 0.0548 | 18 | 70 | 0.9678 | 0.7573 |
+| archive/checkpoints_3d_localfno_pre_ionized_wall_loss | 0.0555 | 18 | 42 | 0.9670 | 0.7510 |
+| checkpoints_3d_ufno_expwall_gnorm | 0.0592 | 19 | 20 | 0.9624 | 0.7167 |
+| archive/checkpoints_3d_params_16modes | 0.0605 | 19 | 43 | 0.9608 | 0.7043 |
+| checkpoints_3d_fno_whno_plain | 0.0605 | 19 | 20 | 0.9607 | 0.7041 |
+| archive/checkpoints_3d_sirenfno_m64 | 0.0606 | 17 | 39 | 0.9606 | 0.7033 |
+| archive/checkpoints_3d_params_24modes | 0.0607 | 15 | 30 | 0.9604 | 0.7017 |
+| checkpoints_3d_ufno_expwall_theta_gnorm | 0.0617 | 18 | 20 | 0.9591 | 0.6918 |
+| archive/checkpoints_3d_BCE | 0.0619 | 15 | 100 | 0.9589 | 0.6901 |
+| checkpoints_3d_fno_whno_hybrid | 0.0637 | 19 | 20 | 0.9565 | 0.6719 |
+| checkpoints_3d_fno_whno_expwall_theta | 0.0678 | 18 | 20 | 0.9507 | 0.6283 |
+| checkpoints_3d_whno_whno_expwall | 0.0700 | 19 | 20 | 0.9475 | 0.6044 |
+| checkpoints_3d_fno_whno_expwall | 0.0708 | 19 | 20 | 0.9463 | 0.5952 |
+| archive/checkpoints_3d_ufno_pre_syncbn | 0.1443 | 16 | 21 | 0.7766 | -0.6835 |
 | archive/checkpoints_3d_no_params | 0.1964 | 18 | 30 | 0.5861 | -2.1189 |
 
-**The U-FNO floor still holds in 3-D** (0.0397). Nothing in the $z_\text{re}$ or 2-D sweeps has yet dislodged it.
+> **All rows are capped at the first 20 epochs** (2026-08-10). Runs that
+> trained longer are scored on their best epoch <= 19, not their lifetime best,
+> so a 20-epoch cell and a 100-epoch cell are compared on equal budget. This
+> moves several numbers: `archive/checkpoints_3d_ufno_16modes_weights_viz` was
+> the table leader at 0.0397 on epoch 91 and sits at **0.0478** within 20
+> epochs; `archive/checkpoints_3d_ufno` reads 0.0426 rather than 0.0408. Runs
+> still training are excluded, as are warped256 (different target grid).
+> `R2_total = 1 - RMSE^2/0.09322`, `R2_struct = 1 - RMSE^2/0.01237`.
+
+**The U-FNO floor still holds in 3-D, and on equal budget it is 0.0426.** The top six rows are all U-FNO variants; the best non-U-FNO cell (`localsirenfno_bw48om60_l2only`, 0.0488) is 15% behind. What the cap changes is the *cost*: `ufno_plain_gnorm` reaches 0.0467 in **20 epochs and 21 h**, where `localsirenfno_bw48om60_l2only` needed 50 epochs and ~71 h to reach 0.0453 — and only 0.0488 within the same 20. See [[U-FNO BatchNorm Train-Eval Mismatch]] for why every earlier U-FNO run here carries a `SyncBN`-shaped caveat, and [[Granulometry (BSD) Auxiliary Loss]] for the one auxiliary term that buys something measurable.
 
 ### Diagnostics
 
