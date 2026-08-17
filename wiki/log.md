@@ -10,6 +10,26 @@ updated: 2026-08-17
 
 ---
 
+## [2026-08-17] measure | Inference cost of the matrix checkpoints; the parameter-efficiency headline is storage-only
+
+**Sources**: `fno-21cm` — job 4584895 (`figures/final_eval/matrix/speed/`), new `viz/inference_speed_eval.py` and `viz/plot_inference_speed.py`, `speed` suite added to `slurm/final_eval_suite.sbatch`.
+
+**Updates**: [[3-D Operator Matrix Final Results]] §1, §2.1 (new), §8.
+
+**Method**: same trained checkpoints, forward pass only, one A100 80GB, batch 1, whole 140x140x256 cubes, `LOCALFNO_PATCH_CHUNK_SIZE=64` throughout, median of 15 timed passes after 3 discarded warmup passes with `cuda.synchronize()` around each. p16-p84 spread under 0.5% per model.
+
+**Headline**: **parameter count carries no information about inference cost.** Pearson correlation between log-params and throughput is **0.011**; the rank correlation is mildly *positive* (Spearman 0.53). U-FNO carries **299x** the parameters of `swhno/swhno` and runs **60% faster**.
+
+**This qualifies the campaign's parameter-efficiency headline.** `sfno/swhno` — within 2.3% of U-FNO's RMSE at 271x fewer parameters — is the **second slowest model in the matrix**, 1.7x slower than the U-FNO it undercuts on size. The saving is storage; the SIREN pays it back in compute by regenerating its kernel every forward pass. On inference cost at equal accuracy the recommendation is instead **`cnn/whno`**: 2.4x faster than U-FNO, 2.4x lighter on peak memory, +6.1% RMSE. `cnn/whno` and U-FNO are the **only two members** of the speed-accuracy Pareto front — every Walsh/SIREN cell is beaten on both axes at once.
+
+**The global operator is free.** `fno/fno` and `fno/whno` time at **347.07 and 347.06 ms**, identical to 0.005%, across a 14.7 M parameter difference. The 2-D benchmark's "<1% between global slots" reproduces on trained 3-D cubes. Combined with §5's finding that the *local* slot sets bubble size: the local/global split governs cost and morphology, the global basis governs accuracy.
+
+**Memory does not track parameters either**: U-FNO peaks at 10.3 GB, but the ~1 M-parameter `bw48om60` cells peak at 8.3 GB against 3.8 GB for the 2.6 M-parameter `whno/whno`. Activation shape and window chunking set peak memory.
+
+**Caveat recorded**: `LOCALFNO_PATCH_CHUNK_SIZE` is a speed/memory knob only the windowed local operators have. It was held at the eval-config value rather than tuned per model, so those timings are movable in a way U-FNO's and the CNN's are not.
+
+---
+
 ## [2026-08-17] ingest | 3-D matrix campaign closed; final held-out evaluation of every cell
 
 **Sources**: `fno-21cm` — 27 completed `checkpoints_3d_*/metrics.jsonl`, final eval suite jobs 4580652–4580663 (`figures/final_eval/matrix/{rmse,bsd,edge3d,edgeslice,parity,ps}/`), loss-axis edge comparison (`figures/final_eval/lossaxis/`), transverse runs (`figures/edge_metrics_out/tsw_*_slice/`), regenerated `figures/operator_variant_benchmark.json`.

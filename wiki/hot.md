@@ -22,6 +22,14 @@ updated: 2026-08-17T00:00:00
 - **Every model is +0.19 biased high at true $x_\text{HI} \approx 0.05$** and unbiased above 0.90, flipping sign at 0.40-0.56. The ordering tracks RMSE exactly — nothing in the sweep trades accuracy for calibration in ionized gas.
 - **Transverse-only edge losses**: nothing for U-FNO (8.728 -> 8.736 Mpc for 4.7% val_l2), 22% width gain for `fno/whno`. Unexplained asymmetry.
 
+## Inference Cost (2026-08-17)
+
+- **Parameter count says nothing about inference cost.** Pearson(log params, throughput) = **0.011**; rank correlation mildly *positive*. U-FNO is **299x** the parameters of `swhno/swhno` and **60% faster**.
+- **The parameter-efficiency headline is storage-only.** `sfno/swhno` (271x smaller, +2.3% RMSE) is the **second slowest model in the matrix**. On inference cost at equal accuracy the answer is **`cnn/whno`** — 2.4x faster than U-FNO, 2.4x less peak memory, +6.1% RMSE.
+- **Speed-accuracy Pareto front = {`cnn/whno`, U-FNO}** only. Every Walsh/SIREN cell is beaten on both axes.
+- **The global operator is free**: `fno/fno` and `fno/whno` differ by 0.005% in time across 14.7 M parameters. Cost lives in the local slot — which §5 also finds sets bubble size.
+- Memory tracks activation shape, not weights: U-FNO 10.3 GB, the ~1 M-param `bw48om60` cells 8.3 GB, the 2.6 M-param `whno/whno` 3.8 GB.
+
 ## Earlier Context (2026-07-28)
 
 2026-07-28 — Merged two parallel ingests of the same period. The 07-26/27 branch filed [[Loss Objective and Operator Basis Sweep]], [[Contrast Map Sharpening]], [[Hedging Bias of Pointwise Losses]], [[Contrast Map]], [[Walsh-Hadamard Neural Operator]] and three gaps; the 07-28 branch added [[Edge and Wall-Placement Losses]], [[Warped LOS Grid Evaluation]], [[Bubble Size Distribution]], [[Sliced Wasserstein Edge Loss]], [[Structured Transform Neural Operators]] and two detailed companions ([[z_re Map Training Results]], [[Structured-Transform Operator Findings]]). Duplicate pairs were reconciled onto the earlier names.

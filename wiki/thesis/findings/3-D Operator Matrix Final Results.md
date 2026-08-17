@@ -35,10 +35,12 @@ related:
 sources:
   - "`checkpoints/checkpoints_3d_*/metrics.jsonl` (27 completed 3-D matrix runs)"
   - "`figures/final_eval/matrix/{rmse,bsd,edge3d,edgeslice,parity,ps}/` (final eval suite, jobs 4580652-4580663)"
+  - "`figures/final_eval/matrix/speed/` (inference timing, job 4584895, A100 80GB)"
   - "`figures/final_eval/lossaxis/{edge3d,edgeslice}/` (loss-axis edge comparison)"
   - "`figures/edge_metrics_out/tsw_*_slice/` (transverse-only edge runs)"
   - "`figures/operator_variant_benchmark.json` (23-variant cost benchmark, a30, regenerated 2026-08-16)"
   - "`viz/rmse_r2_eval.py`, `viz/plot_params_vs_accuracy.py`, `slurm/final_eval_suite.sbatch`"
+  - "`viz/inference_speed_eval.py`, `viz/plot_inference_speed.py` (added 2026-08-17)"
 ---
 
 # 3-D Operator Matrix Final Results
@@ -88,6 +90,14 @@ is 15% behind. The accuracy-per-parameter frontier is not close: every model
 between ranks 2 and 6 is under 3.5 M parameters, and the two largest models in
 the sweep sit at ranks 1 and 9.
 
+**Read that as a statement about storage, not about compute.** §2.1 measures
+inference on the same checkpoints: `sfno/swhno` is the **second slowest model in
+the matrix**, 1.7x slower than the U-FNO it undercuts by 271x on parameters. If
+the argument for a small operator was that it would be cheap to run, that
+argument does not survive the measurement — the parameter saving is storage,
+and the SIREN pays it back in compute by regenerating its kernel every forward
+pass.
+
 ![[matrix_params_vs_rmse.png]]
 
 ![[matrix_params_vs_r2.png]]
@@ -106,6 +116,8 @@ the best global operator tested on this task.
 the Walsh cells, for 92 h of A100 time to reach the bottom of the table.
 
 ## 2. Cost
+
+### 2.0 Training
 
 Median epoch wall-clock over each run, one A100 (H200 for two late cells):
 
@@ -138,6 +150,74 @@ The separate throughput benchmark (23 variants, matched a30, inference only)
 agrees and isolates the same effect:
 
 ![[operator_params_vs_throughput.png]]
+
+### 2.1 Inference
+
+Training wall-clock confounds the optimiser, the data pipeline and the loss.
+This is the clean measurement: the same trained checkpoints, forward pass only,
+one A100 80GB, batch 1, whole 140x140x256 cubes, `LOCALFNO_PATCH_CHUNK_SIZE=64`
+for every windowed model, median of 15 timed passes after 3 warmup with
+`cuda.synchronize()` around each. Run-to-run spread is under 0.5% p16-p84 for
+every model, so the ordering is not noise.
+
+| local / global | params | ms/cube | slices/s | RMSE | peak MiB |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| **cnn / whno** | 3,468,081 | **115.9** | **2208** | 0.06134 | 4345 |
+| cnn / swhno | 1,405,921 | 116.2 | 2203 | 0.06184 | 4338 |
+| **U-FNO** | 202,902,721 | 274.1 | 934 | **0.05781** | 10271 |
+| whno / whno | 2,609,137 | 279.9 | 915 | 0.07405 | 3847 |
+| fno / fno | 20,385,777 | 347.1 | 738 | 0.07989 | 3915 |
+| fno / whno | 5,705,713 | 347.1 | 738 | 0.07594 | 3859 |
+| whno / swhno | 1,050,241 | 389.6 | 657 | 0.06544 | 8283 |
+| swhno / swhno | 677,857 | 437.4 | 585 | 0.06632 | 8282 |
+| sfno / swhno | 747,841 | 458.1 | 559 | 0.05914 | 8285 |
+| wno / whno | 2,182,129 | 625.2 | 410 | 0.08933 | 3846 |
+
+![[matrix_inference_speed_vs_size.png]]
+
+**Parameter count carries no information about inference cost.** Pearson
+correlation between $\log_{10}$ params and throughput is **0.011**. The rank
+correlation is not merely absent but mildly *positive* (Spearman **0.53**) — if
+anything the larger models are the faster ones. U-FNO carries **299x** the
+parameters of `swhno/swhno` and runs **60% faster**. The intuition that a
+smaller operator is a cheaper one is simply false on this task, in both
+directions.
+
+**The global operator is free.** `fno/fno` and `fno/whno` time at **347.07 and
+347.06 ms** — identical to 0.005% — across a 14.7 M parameter difference. That
+is the 2-D benchmark's "<1% between global slots" reproduced on trained 3-D
+cubes, and it explains the null correlation above: essentially all of the cost
+lives in the local slot, which is also the slot §5 finds sets bubble size. The
+local/global split governs cost and morphology; the global basis governs
+accuracy.
+
+**What the windowed operators pay for is the window loop.** Every windowed
+local slot (`whno`, `swhno`, `sfno`, `wno`) is slower than the unwindowed dense
+U-FNO despite being 2-3 orders of magnitude smaller, and the `cnn` local slot —
+U-FNO's own U-Net path without the window machinery — is **2.4x faster than
+U-FNO at 1.7% of its size**. `LOCALFNO_PATCH_CHUNK_SIZE` is a real tuning knob
+that only these models have, so their timings are movable in a way U-FNO's and
+the CNN's are not; it was held fixed at the eval-config value rather than tuned
+per model.
+
+**Memory does not track parameters either.** U-FNO peaks at 10.3 GB, 2.4x the
+`cnn` cells, but the `bw48om60` cells at ~1 M parameters peak at 8.3 GB — 2.2x
+the 2.6 M-parameter `whno/whno`. Activation shape and window chunking set peak
+memory, not weight count.
+
+![[matrix_inference_speed_vs_rmse.png]]
+
+**The speed-accuracy Pareto front has only two members: `cnn/whno` and
+U-FNO.** Everything else is beaten on both axes at once — including all four
+Walsh/SIREN cells that lead the parameter-efficiency ranking. `cnn/whno` is
+2.4x faster than U-FNO, third on RMSE (+6.1%), and 2.4x lighter on peak memory;
+U-FNO buys the last 6% of accuracy for 2.4x the time and 2.4x the memory.
+
+**This reorders the practical recommendation from §1.** On parameters the answer
+was `sfno/swhno`; on inference cost at equal accuracy it is `cnn/whno`. The two
+disagree because they measure different scarcities, and for a forward model
+called repeatedly inside an SBI loop it is throughput, not checkpoint size, that
+binds.
 
 ## 3. Loss axis, on matched architecture
 
@@ -323,12 +403,17 @@ and it inverts the leaderboard. **No model in the matrix is good at both.**
 
 1. **The Walsh–Hadamard global slot transfers from 2-D to 3-D**, and the SIREN
    -generated variant is the best global operator tested.
-2. **271x fewer parameters costs 2.3% RMSE.** `sfno/swhno` at 748 k is the
-   accuracy-per-parameter winner and a credible thesis default; U-FNO's lead is
-   real but marginal and it is not the cheapest model to *train* per unit
-   accuracy only because the windowed local operators are slow.
-3. **Parameter count no longer predicts wall-clock.** Cost is dominated by the
-   window loop and by SIREN kernel regeneration, not by weights.
+2. **271x fewer parameters costs 2.3% RMSE** — but that is a storage result,
+   not a compute one. `sfno/swhno` at 748 k wins accuracy-per-parameter and is
+   the **second slowest model in the matrix**. On inference cost at equal
+   accuracy the answer is instead **`cnn/whno`**: 2.4x faster than U-FNO, 2.4x
+   lighter on memory, +6.1% RMSE. `cnn/whno` and U-FNO are the only two members
+   of the speed-accuracy Pareto front.
+3. **Parameter count predicts neither wall-clock nor memory.** Pearson
+   correlation between log-params and inference throughput is **0.011**, and
+   the rank correlation is mildly *positive*. Cost is set by the window loop
+   and by SIREN kernel regeneration; the **global operator is free** (`fno/fno`
+   and `fno/whno` are identical to 0.005% across 14.7 M parameters).
 4. **Auxiliary loss terms all cost val_l2, consistently, across four
    architectures** — and two of them deliver on their own axis anyway: hybrid
    halves front width (§4), BSD halves bubble-size bias
