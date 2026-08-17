@@ -2,7 +2,7 @@
 type: finding
 title: "LOS-Monotone Theta Key in 3-D"
 created: 2026-08-06
-updated: 2026-08-07
+updated: 2026-08-17
 tags:
   - domain/thesis
   - domain/ml
@@ -12,14 +12,14 @@ tags:
   - architecture/ufno
   - architecture/whno
   - finding/negative
-  - finding/open
-status: open
-verdict: negative-so-far
+status: closed
+verdict: negative
 related:
   - "[[Contrast Map]]"
   - "[[Contrast Map Sharpening]]"
   - "[[Hedging Bias of Pointwise Losses]]"
   - "[[U-FNO BatchNorm Train-Eval Mismatch]]"
+  - "[[3-D Operator Matrix Final Results]]"
 sources:
   - "wiki/thesis/notes/NOTES-contrast-map.md §8 (pre-registration)"
   - "runs 4457033 (fno_whno), 4457034 (ufno, groupnorm)"
@@ -162,8 +162,18 @@ theta ~ 4.9 (near identity, "do not sharpen") where ufno fits 0.25 (the floor,
 
 ## Status
 
+**Closed 2026-08-17.** `fno_whno-expwall_theta` also completed its 20 epochs at
+**val_l2 0.0689 / val_h1 12.58** (best ep18), against the same architecture's
+plain-L2 cell at **0.0611** -- the second architecture to pay ~13% for the map,
+confirming the ufno result rather than contradicting it. Both cells are in the
+final matrix evaluation, [[3-D Operator Matrix Final Results]], where the
+loss ordering plain < hybrid < bsd < expwall holds on all four architectures and
+the theta cell is the worst of all on U-FNO -- though marginally *better* than
+plain expwall on `fno_whno` (0.0689 vs 0.0721), the same architecture-dependent
+inconsistency the theta-schedule comparison above already flagged. No further theta runs are planned.
+
 `ufno-expwall_theta-gnorm` completed 20 epochs (best val_l2 0.0616 at ep18).
-`fno_whno-expwall_theta` continues at the owner's request, to inspect
+`fno_whno-expwall_theta` ran to completion at the owner's request, to inspect
 predictions qualitatively -- the refit diagnostics say nothing about what the
 output cubes look like, and detailed visualisations exist
 (`figures/fno_whno-expwall_theta-detailed_*`).

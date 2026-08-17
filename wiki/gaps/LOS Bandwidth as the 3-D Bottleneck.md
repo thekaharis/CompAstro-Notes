@@ -2,7 +2,7 @@
 type: gap
 title: "LOS Bandwidth as the 3-D Bottleneck"
 created: 2026-07-27
-updated: 2026-07-27
+updated: 2026-08-17
 tags:
   - gap/open-question
   - domain/operator-learning
@@ -16,6 +16,7 @@ related:
   - "[[SirenFNO Spectral Bias Investigation]]"
   - "[[Windowed Local-FNO U-Net Findings]]"
   - "[[Warped LOS Grid Plan]]"
+  - "[[3-D Operator Matrix Final Results]]"
 ---
 
 # LOS Bandwidth as the 3-D Bottleneck

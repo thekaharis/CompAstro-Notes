@@ -2,7 +2,7 @@
 type: finding
 title: "Granulometry (BSD) Auxiliary Loss"
 created: 2026-08-10
-updated: 2026-08-10
+updated: 2026-08-17
 tags:
   - domain/thesis
   - domain/ml
@@ -20,6 +20,7 @@ related:
   - "[[Hedging Bias of Pointwise Losses]]"
   - "[[U-FNO BatchNorm Train-Eval Mismatch]]"
   - "[[Loss Objective and Operator Basis Sweep]]"
+  - "[[3-D Operator Matrix Final Results]]"
 sources:
   - "implementation: `losses.py` `GranulometrySpectrum`, `LOSS=bsd` in `slurm/train_3d_matrix.sbatch`"
   - "runs 4485729/30/31 (ufno expwall / hybrid / bsd, all groupnorm, seed-matched)"

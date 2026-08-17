@@ -2,7 +2,7 @@
 type: finding
 title: "U-FNO BatchNorm Train-Eval Mismatch"
 created: 2026-08-06
-updated: 2026-08-06
+updated: 2026-08-17
 tags:
   - domain/thesis
   - domain/ml
@@ -18,6 +18,7 @@ related:
   - "[[U-FNO]]"
   - "[[Fourier Neural Operator]]"
   - "[[3-D Architecture x Loss Matrix]]"
+  - "[[3-D Operator Matrix Final Results]]"
 sources:
   - "runs 4425989 / 4425990 (batchnorm), 4447576 (groupnorm)"
   - "implementation: `models_ufno.py`, `modeling.py:297`"

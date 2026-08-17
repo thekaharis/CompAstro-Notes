@@ -1,12 +1,34 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-07-28
+updated: 2026-08-17
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-08-17] ingest | 3-D matrix campaign closed; final held-out evaluation of every cell
+
+**Sources**: `fno-21cm` — 27 completed `checkpoints_3d_*/metrics.jsonl`, final eval suite jobs 4580652–4580663 (`figures/final_eval/matrix/{rmse,bsd,edge3d,edgeslice,parity,ps}/`), loss-axis edge comparison (`figures/final_eval/lossaxis/`), transverse runs (`figures/edge_metrics_out/tsw_*_slice/`), regenerated `figures/operator_variant_benchmark.json`.
+
+**New page**: [[3-D Operator Matrix Final Results]] — the campaign result for the 3-D task.
+
+**Headline**: `sfno/swhno` reaches **RMSE 0.0591 against U-FNO's 0.0578 with 271x fewer parameters** (748 k vs 202.9 M) on 200 held-out cones. The **Walsh–Hadamard global slot transfers from 2-D to 3-D** — the open question left by [[Square-Wave Basis for Ionization Fields]] — and the SIREN-generated variant (`swhno`) is the best global operator tested, beating plain Walsh by 11% *while being smaller*.
+
+**Parameter counts corrected campaign-wide.** `numel()` counts a complex tensor as one number, which halved every FNO-family count and made Fourier and Walsh models incomparable. Counting complex weights as two reals: U-FNO **202.9 M** (not 102.2 M), `fno/fno` 20.4 M, `fno/whno` 5.71 M. All Walsh/wavelet models are real-valued and unchanged. Every size comparison in the campaign was understating the FNO family by ~2x.
+
+**Cost is no longer predicted by size.** U-FNO is the largest model and the third fastest per epoch; `sfno/swhno` is 271x smaller and 2.6x slower (the SIREN regenerates the kernel each forward pass); the wavelet local slot costs **460 min/epoch** — 7.2x U-FNO — for last place. The `wno` row is the one cell that did not get its 20 epochs (cut at 12).
+
+**The loss axis, measured on its own target at last.** The plain < hybrid < bsd < expwall ordering on `val_l2` now holds across all four architectures (the theta cell is the only one not consistently ordered: worst of all on U-FNO, marginally better than plain expwall on `fno/whno`). But `val_l2` is the metric these terms are guaranteed to lose on, and the front width was not measured until the end: **hybrid halves the U-FNO front width, 16.32 → 8.72 Mpc against truth 3.60, for 4% of val_l2**. Pure expwall without the L² anchor is worse on *both* axes than hybrid — the same anchoring result already found for BSD. That is an explicit frontier the thesis has to choose a point on, and it is bounded above by [[Warped LOS Grid Evaluation]]'s 12.7% cache sharpness ceiling, not by the objective.
+
+**Four metric families, four different leaders.** RMSE → U-FNO. Bubble size → `cnn/swhno` (within 2% of truth at every stage 0.20–0.80, vs U-FNO +5.7%); the sign is structured — U-FNO oversizes, everything with a Walsh global slot and no CNN local slot undersizes by 35–43%, so the *local* operator sets bubble size. $P(k)$ amplitude → `swhno/swhno` (6.5% error at $k>1$) vs U-FNO's 48%. $P(k)$ coherence → U-FNO, which holds $r>0.9$ to 3–5x higher $k$ than any Walsh model. Phase coherence and amplitude fidelity are **anti-correlated across the matrix**; no model is good at both, which is a concrete new motivation for the untried FNO+WHNO ensemble.
+
+**Universal, untouched**: every model is biased **+0.19 high at true $x_\text{HI}\approx0.05$** and unbiased above 0.90, flipping sign only at 0.40–0.56 — the asymmetric hedge of [[Hedging Bias of Pointwise Losses]], and its ordering tracks the RMSE ordering exactly. Nothing in the sweep trades accuracy for calibration in ionized gas.
+
+**Transverse-only (XY-slice) edge losses**: negative for U-FNO (front width 8.728 → 8.736, i.e. nothing, for 4.7% val_l2), mildly positive for `fno/whno` (25.34 → 19.86 Mpc for 5.1%). Unexplained asymmetry; plausibly the U-FNO's U-Net path already resolves the transverse direction.
 
 ---
 

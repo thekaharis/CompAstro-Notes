@@ -2,7 +2,7 @@
 type: concept
 title: "Walsh-Hadamard Neural Operator"
 created: 2026-07-24
-updated: 2026-07-27
+updated: 2026-08-17
 tags:
   - concept/ml
   - domain/inference
@@ -23,6 +23,7 @@ related:
   - "[[Square-Wave Basis for Ionization Fields]]"
   - "[[Loss Objective and Operator Basis Sweep]]"
   - "[[Hedging Bias of Pointwise Losses]]"
+  - "[[3-D Operator Matrix Final Results]]"
 sources:
   - "[[Pérez Cuadrado et al 2025 (WHNO)]]"
   - "wiki/thesis/notes/FINDINGS-2026-07-26.md §2 (first 2-D results)"

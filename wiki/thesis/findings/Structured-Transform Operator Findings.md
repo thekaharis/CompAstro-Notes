@@ -2,7 +2,7 @@
 type: finding
 title: "Structured-Transform Operator Findings"
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-17
 tags:
   - domain/thesis
   - domain/ml
@@ -22,6 +22,7 @@ related:
   - "[[Spectral Mode Cutoff in FNOs]]"
   - "[[Bubble Size Distribution]]"
   - "[[FNO Lightcone Experimental Findings]]"
+  - "[[3-D Operator Matrix Final Results]]"
 sources:
   - "[[.raw/reports/FINDINGS-2026-07-26.md]]"
   - "figures/xhi2d_all_variants.md (29 runs, 384 shared held-out slices)"

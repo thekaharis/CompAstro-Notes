@@ -2,7 +2,7 @@
 type: finding
 title: "Edge and Wall-Placement Losses"
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-17
 tags:
   - domain/thesis
   - domain/ml
@@ -19,6 +19,7 @@ related:
   - "[[Smooth-Target Reparametrization Plan]]"
   - "[[FNO Lightcone Experimental Findings]]"
   - "[[Bubble Size Distribution]]"
+  - "[[3-D Operator Matrix Final Results]]"
 sources:
   - "[[.raw/reports/NOTES-contrast-map.md]]"
   - "losses.py (SlicedWassersteinEdges, HighKPowerRatio, WallPlacementLoss, ExponentialWallDistance, H1Seminorm)"

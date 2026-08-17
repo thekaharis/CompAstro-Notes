@@ -2,7 +2,7 @@
 type: finding
 title: "Warped LOS Grid Evaluation"
 created: 2026-07-28
-updated: 2026-07-28
+updated: 2026-08-17
 tags:
   - domain/thesis
   - domain/ml
@@ -18,6 +18,7 @@ related:
   - "[[z_re Map Training Results]]"
   - "[[Edge and Wall-Placement Losses]]"
   - "[[Neutral Fraction]]"
+  - "[[3-D Operator Matrix Final Results]]"
 sources:
   - "figures/grid_eval_out50_real/grid_eval.csv (real cones, 926,903 front rays)"
   - "checkpoints_3d_localfno_warped256*"

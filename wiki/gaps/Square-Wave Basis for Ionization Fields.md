@@ -2,11 +2,12 @@
 type: gap
 title: "Square-Wave Basis for Ionization Fields"
 created: 2026-07-24
-updated: 2026-07-27
+updated: 2026-08-17
 tags:
   - gap/open-question
   - gap/thesis-opportunity
   - gap/partially-answered
+  - gap/answered
   - domain/operator-learning
 status: partially-answered
 domain: "[[Inference and ML]]"
@@ -17,6 +18,7 @@ related:
   - "[[SirenFNO Spectral Bias Investigation]]"
   - "[[Smooth-Target Reparametrization Plan]]"
   - "[[Ionization Morphology]]"
+  - "[[3-D Operator Matrix Final Results]]"
 ---
 
 # Square-Wave Basis for Ionization Fields
@@ -61,3 +63,40 @@ Origin: idea raised 2026-07-24; turns out to be almost exactly [[Pérez Cuadrado
 2. **The FNO+WHNO ensemble** (the source paper's headline result) has not been fitted at all.
 3. **The shift-consistency test** for the dyadic-convolution / translation-equivariance caveat has not been run.
 4. Evaluation in the **boundary-band + $P(k)$/$r(k)$** framework against the U-FNO floor (0.0397 test RMSE in 3-D) is still pending.
+
+
+## Status update — 3-D answered (2026-08-17)
+
+Question 1 is answered: **global-slot Walsh transfers to 3-D**, and the 2-D result
+was a reliable predictor after all. From [[3-D Operator Matrix Final Results]]
+(200 held-out cones, 20-epoch budget):
+
+- **Every `*/whno` and `*/swhno` pairing beats the `fno/fno` cell.** `whno/swhno`
+  reaches RMSE 0.0654 against `fno/fno`'s 0.0799.
+- **SIREN-generating the Walsh weights is the improvement**, not the Walsh basis
+  alone: at a matched local slot, `whno/swhno` 0.0654 vs `whno/whno` 0.0741
+  (**-11%**) while being *smaller* (1.05 M vs 2.61 M real params). `swhno` is the
+  best global operator tested on either task.
+- **The premise revision from 2-D holds in 3-D and sharpens.** The local slot
+  still wants a *smooth* operator — the two best local slots are `sfno` and `cnn`
+  — and §5 of the matrix page localises what the local slot controls:
+  **bubble size**. Walsh-global models with no CNN local slot undersize bubbles
+  by 35-43% in mid-reionization; the CNN local slot is the only one that gets the
+  scale right.
+- ❌ **Still does not solve the wall problem**, as expected. `whno/whno`'s slice
+  front width does not even admit a fit; the objective sets front width, not the
+  basis.
+
+**Question 4 is answered** (boundary band, $P(k)$, $r(k)$, BSD and parity are all
+in the matrix page), and it produced the strongest new argument for **question 2,
+the untried ensemble**: phase coherence and amplitude fidelity are
+**anti-correlated across the matrix**. U-FNO holds $r > 0.9$ to 3-5x higher $k$
+than any Walsh model but is wrong about small-scale amplitude by 48%; the Walsh
+models reproduce amplitude to 6-12% and lose coherence immediately. The two bases
+fail in complementary ways — which is precisely the condition under which
+[[Pérez Cuadrado et al 2025 (WHNO)]]'s ensemble result should reproduce.
+
+**Question 3 (shift-consistency) is still unrun.** The Walsh undersizing and
+amplitude-without-coherence signature is what a dyadic-convolution artifact would
+plausibly look like, so this test is now diagnostic rather than merely
+precautionary.

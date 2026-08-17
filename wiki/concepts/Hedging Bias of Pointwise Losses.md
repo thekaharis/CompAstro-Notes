@@ -2,7 +2,7 @@
 type: concept
 title: "Hedging Bias of Pointwise Losses"
 created: 2026-07-27
-updated: 2026-07-28
+updated: 2026-08-17
 tags:
   - concept/ml
   - concept/loss-design
@@ -27,6 +27,7 @@ related:
   - "[[Edge and Wall-Placement Losses]]"
   - "[[Sliced Wasserstein Edge Loss]]"
   - "[[Warped LOS Grid Evaluation]]"
+  - "[[3-D Operator Matrix Final Results]]"
 sources:
   - "wiki/thesis/notes/NOTES-contrast-map.md §1"
   - "wiki/thesis/notes/FINDINGS-2026-07-26.md §3 (boundary band)"
