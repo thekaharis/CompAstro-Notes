@@ -1,14 +1,14 @@
 ---
 type: meta
 title: "Hot Cache"
-updated: 2026-08-17T00:00:00
+updated: 2026-08-23T00:00:00
 ---
 
 # Recent Context
 
 ## Last Updated
 
-2026-08-17 — The 3-D architecture x loss matrix is closed and fully evaluated on held-out cones; filed as [[3-D Operator Matrix Final Results]]. Earlier this cycle: [[Granulometry (BSD) Auxiliary Loss]], [[U-FNO BatchNorm Train-Eval Mismatch]], [[LOS-Monotone Theta Key in 3-D]].
+2026-08-23 — Reanalysed the closed matrix's eval outputs and filed [[Phase Coherence and Bubble Size Bias]]: small-scale **phase** accuracy, not small-scale amplitude, controls bubble morphology. Previously: 2026-08-17 — The 3-D architecture x loss matrix is closed and fully evaluated on held-out cones; filed as [[3-D Operator Matrix Final Results]]. Earlier this cycle: [[Granulometry (BSD) Auxiliary Loss]], [[U-FNO BatchNorm Train-Eval Mismatch]], [[LOS-Monotone Theta Key in 3-D]].
 
 ## Key Facts From The Matrix (2026-08-17)
 
@@ -29,6 +29,14 @@ updated: 2026-08-17T00:00:00
 - **Speed-accuracy Pareto front = {`cnn/whno`, U-FNO}** only. Every Walsh/SIREN cell is beaten on both axes.
 - **The global operator is free**: `fno/fno` and `fno/whno` differ by 0.005% in time across 14.7 M parameters. Cost lives in the local slot — which §5 also finds sets bubble size.
 - Memory tracks activation shape, not weights: U-FNO 10.3 GB, the ~1 M-param `bw48om60` cells 8.3 GB, the 2.6 M-param `whno/whno` 3.8 GB.
+
+## Phase / BSD Connection (2026-08-23)
+
+- **$r(k)$ at $k > 1$ predicts bubble-size bias at $\rho = +0.88$** ($R^2 = 0.88$, zero bias at $r \approx 0.73$); JS divergence at $-0.92$. Survives controlling for RMSE ($+0.71$) and ionized-fraction error ($+0.79$).
+- **Small-scale amplitude predicts nothing** ($-0.27$, $p = 0.49$; partial $+0.35$ given $r$). "More detail" does not fix the BSD — the detail the Walsh cells add is wrong-phase power. This **revises the §5 reading**: the local slot appeared to set bubble size because local slots differ in how much decorrelated power they inject.
+- **Fragmentation, not under-ionization**: at $\bar{x}_\text{HI} = 0.4$–$0.6$ every cell gets the ionized area right to 1–3% while the MFP bias spans $-0.006$ to $-0.487$.
+- **Mediator is the $k^2$-weighted level-crossing rate** $\nu = \sigma_1/\sigma_0$, $\rho = -0.83$ against the MFP ratio. MFP is a first-passage statistic — the shortest obstruction dominates the mean, which is why $k > 1$ is the band that matters.
+- Caveat: the CNN cells' near-zero bias is **partly cancellation** ($\nu \approx 0.86$, too few boundaries); quote their JS/Wasserstein instead.
 
 ## Earlier Context (2026-07-28)
 

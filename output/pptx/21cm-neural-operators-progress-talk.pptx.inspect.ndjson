@@ -1,0 +1,162 @@
+{"kind":"deck","id":"pr/mmkqkc","name":"Deck"}
+{"kind":"layout","layoutId":"3328ecc6-7c72-403f-9cf6-d8609c02f076","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"2c4e0b84-4cc6-463f-a9c5-81f9df5d5a33","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/le5g88","slide":1,"title":"MASTER'S THESIS • WORK IN PROGRESS","textShapes":4}
+{"kind":"textbox","id":"sh/jqlk7up4","slide":1,"name":"cover-kicker","text":"MASTER'S THESIS • WORK IN PROGRESS","textPreview":"MASTER'S THESIS • WORK IN PROGRESS","textChars":34,"textLines":1,"bbox":[42,46,650,42]}
+{"kind":"textbox","id":"sh/kre10zqp","slide":1,"name":"cover-title","text":"Learning the 21 cm\nreionization field","textPreview":"Learning the 21 cm | reionization field","textChars":37,"textLines":2,"bbox":[42,178,1050,235]}
+{"kind":"textbox","id":"sh/5sn29k7a","slide":1,"name":"cover-subtitle","text":"From Fourier operators to local/global SirenFNO surrogates","textPreview":"From Fourier operators to local/global SirenFNO surrogates","textChars":58,"textLines":1,"bbox":[42,505,820,84]}
+{"kind":"textbox","id":"sh/6twj2p8v","slide":1,"name":"cover-author","text":"Haris • August 2026","textPreview":"Haris • August 2026","textChars":19,"textLines":1,"bbox":[42,624,360,34]}
+{"kind":"notes","id":"nt/le5g88","slide":1,"text":"Timing: 0:15\n\nSet up the question: can a compact neural operator regenerate the near-binary 21cmFAST neutral-fraction lightcone accurately enough for inference, including its morphology?\n\n[Sources]\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/Talks/euCAIF Talk FNOs.md\n[/Sources]"}
+{"kind":"slide","id":"sl/2aqvd3","slide":2,"title":"21 cm maps the ionization field","textShapes":6}
+{"kind":"textbox","id":"sh/vqdcnul0","slide":2,"name":"slide-title","text":"21 cm maps the ionization field","textPreview":"21 cm maps the ionization field","textChars":31,"textLines":1,"bbox":[42,34,1196,80]}
+{"kind":"textbox","id":"sh/wbmdgz2l","slide":2,"name":"theory-label","text":"SATURATED-SPIN-TEMPERATURE LIMIT","textPreview":"SATURATED-SPIN-TEMPERATURE LIMIT","textChars":32,"textLines":1,"bbox":[42,175,565,30]}
+{"kind":"textbox","id":"sh/xcfep436","slide":2,"name":"theory-equation","text":"δTᵦ ∝ x_HI (1 + δₘ) × RSD","textPreview":"δTᵦ ∝ x_HI (1 + δₘ) × RSD","textChars":25,"textLines":1,"bbox":[42,218,565,62]}
+{"kind":"textbox","id":"sh/idovi9kr","slide":2,"name":"theory-body","text":"When Tₛ ≫ T_CMB, the spin-temperature factor is ≈ 1.\n\nx_HI = 1: neutral gas, bright 21 cm signal\nx_HI = 0: ionized bubble, signal suppressed\n\nThe mean x̄_HI(z) gives the global history; the spatial boundaries give the morphology.","textPreview":"When Tₛ ≫ T_CMB, the spin-temperature factor is ≈ 1. |  | x_HI = 1: neutral gas, bright 21 cm signal | x_HI = 0: ionized bubble, signal s...","textChars":229,"textLines":6,"bbox":[42,308,565,305]}
+{"kind":"textbox","id":"sh/kf6dkz2h","slide":2,"name":"footer-label-2","text":"PHYSICS","textPreview":"PHYSICS","textChars":7,"textLines":1,"bbox":[42,665,360,24]}
+{"kind":"textbox","id":"sh/5gfet432","slide":2,"name":"footer-number-2","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1170,660,68,28]}
+{"kind":"image","id":"im/elkb6lwn","slide":2,"name":"","geometry":"roundRect","alt":"Matter density and ground-truth neutral-fraction slice from a partially reionized 21cmFAST cone","bbox":[658,145,582,485]}
+{"kind":"notes","id":"nt/2aqvd3","slide":2,"text":"Timing: 0:50\n\nKeep the theory short. The observable depends on neutral fraction, matter density, spin temperature, and velocities. In the heated EoR limit, x_HI is the dominant on/off morphology. Point to the image: the target is nearly binary and its sharp walls are physically meaningful.\n\n[Sources]\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/concepts/Brightness Temperature.md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/concepts/Neutral Fraction.md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/figures/ufno-detailed_20260606-234954_job3966888/comparison_3d_test_cone3553.png\n[/Sources]"}
+{"kind":"slide","id":"sl/pnwtkd","slide":3,"title":"The task is a conditional field-to-field operator","textShapes":12}
+{"kind":"textbox","id":"sh/0vm54zeh","slide":3,"name":"slide-title","text":"The task is a conditional field-to-field operator","textPreview":"The task is a conditional field-to-field operator","textChars":49,"textLines":1,"bbox":[42,34,1196,92]}
+{"kind":"shape","id":"sh/zud4bedw","slide":3,"name":"pipeline-arrow-1","bbox":[378,376,92,0]}
+{"kind":"shape","id":"sh/et4329wr","slide":3,"name":"pipeline-arrow-2","bbox":[798,376,92,0]}
+{"kind":"shape","id":"sh/90fmhove","slide":3,"name":"input-node","bbox":[50,230,330,286]}
+{"kind":"shape","id":"sh/8zm58jet","slide":3,"name":"operator-node","bbox":[470,230,330,286]}
+{"kind":"shape","id":"sh/nyd4fed8","slide":3,"name":"target-node","bbox":[890,230,330,286]}
+{"kind":"textbox","id":"sh/mx4n69wn","slide":3,"name":"input-label","text":"INPUTS","textPreview":"INPUTS","textChars":6,"textLines":1,"bbox":[78,260,270,28]}
+{"kind":"textbox","id":"sh/p4bm5kvu","slide":3,"name":"input-main","text":"δₘ(x, y, z)\n+ 11 parameters\n+ 1/(1+z)","textPreview":"δₘ(x, y, z) | + 11 parameters | + 1/(1+z)","textChars":37,"textLines":3,"bbox":[78,310,275,160]}
+{"kind":"textbox","id":"sh/432lwfe9","slide":3,"name":"operator-label","text":"NEURAL OPERATOR","textPreview":"NEURAL OPERATOR","textChars":15,"textLines":1,"bbox":[498,260,270,28]}
+{"kind":"textbox","id":"sh/et0rids3","slide":3,"name":"operator-symbol","text":"Gθ","textPreview":"Gθ","textChars":2,"textLines":1,"bbox":[498,302,270,80]}
+{"kind":"textbox","id":"sh/fu98bito","slide":3,"name":"operator-body","text":"One set of weights learns a map between fields—not a lookup on one fixed image grid.","textPreview":"One set of weights learns a map between fields—not a lookup on one fixed image grid.","textChars":84,"textLines":1,"bbox":[505,400,260,90]}
+{"kind":"textbox","id":"sh/gvi9k3a9","slide":3,"name":"target-label","text":"GROUND TRUTH","textPreview":"GROUND TRUTH","textChars":12,"textLines":1,"bbox":[918,260,270,28]}
+{"kind":"textbox","id":"sh/1wrqd8bu","slide":3,"name":"target-main","text":"x_HI(x, y, z)\n∈ [0, 1]","textPreview":"x_HI(x, y, z) | ∈ [0, 1]","textChars":22,"textLines":2,"bbox":[918,320,270,105]}
+{"kind":"textbox","id":"sh/2x0rmdsf","slide":3,"name":"target-body","text":"Sharp ionization fronts across cosmic time","textPreview":"Sharp ionization fronts across cosmic time","textChars":42,"textLines":1,"bbox":[930,440,245,56]}
+{"kind":"textbox","id":"sh/ny98fit0","slide":3,"name":"dataset-strip","text":"6,600 cones  •  140 × 140 × 256  •  z = 5 → 25  •  80 / 10 / 10 split","textPreview":"6,600 cones  •  140 × 140 × 256  •  z = 5 → 25  •  80 / 10 / 10 split","textChars":69,"textLines":1,"bbox":[115,580,1050,45]}
+{"kind":"textbox","id":"sh/oz29ona5","slide":3,"name":"footer-label-3","text":"DATA + TASK","textPreview":"DATA + TASK","textChars":11,"textLines":1,"bbox":[42,665,360,24]}
+{"kind":"textbox","id":"sh/pkbqhsbq","slide":3,"name":"footer-number-3","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1170,660,68,28]}
+{"kind":"notes","id":"nt/pnwtkd","slide":3,"text":"Timing: 0:45\n\nExplain the learning problem before the architectures. Each sample is a full lightcone. Conditioning on all eleven astrophysical/cosmological parameters was essential; it changed the problem from an ambiguous density-only map into a learnable conditional operator.\n\n[Sources]\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/FNO Lightcone Experimental Findings.md\n[/Sources]"}
+{"kind":"slide","id":"sl/7rh2wm","slide":4,"title":"Operator slot mattered more than basis choice","textShapes":9}
+{"kind":"textbox","id":"sh/by5ob2xw","slide":4,"name":"slide-title","text":"Operator slot mattered more than basis choice","textPreview":"Operator slot mattered more than basis choice","textChars":45,"textLines":1,"bbox":[42,34,1196,92]}
+{"kind":"shape","id":"sh/cje547yh","slide":4,"name":"journey-line","bbox":[36,350,1200,0]}
+{"kind":"shape","id":"sh/xkn6dcf2","slide":4,"name":"journey-dot-1","bbox":[42,343,14,14]}
+{"kind":"shape","id":"sh/ylwn6hg7","slide":4,"name":"journey-dot-2","bbox":[452,343,14,14]}
+{"kind":"shape","id":"sh/zm5ofmxs","slide":4,"name":"journey-dot-3","bbox":[864,343,14,14]}
+{"kind":"textbox","id":"sh/kne58ryd","slide":4,"name":"journey-label-1","text":"01  GLOBAL OPERATOR","textPreview":"01  GLOBAL OPERATOR","textChars":19,"textLines":1,"bbox":[42,287,300,32]}
+{"kind":"textbox","id":"sh/lon6hwfy","slide":4,"name":"journey-label-2","text":"02  MATCH THE BASIS","textPreview":"02  MATCH THE BASIS","textChars":19,"textLines":1,"bbox":[452,287,300,32]}
+{"kind":"textbox","id":"sh/epsnudg3","slide":4,"name":"journey-label-3","text":"03  MEASURED LESSON","textPreview":"03  MEASURED LESSON","textChars":19,"textLines":1,"bbox":[864,287,330,32]}
+{"kind":"textbox","id":"sh/fql43iho","slide":4,"name":"journey-body-1","text":"FNO\nFFT → learned low-mode weights → inverse FFT.\n\nFast global context, but a smooth truncated basis is awkward for discontinuities.","textPreview":"FNO | FFT → learned low-mode weights → inverse FFT. |  | Fast global context, but a smooth truncated basis is awkward for discontinuities.","textChars":132,"textLines":4,"bbox":[42,396,330,205]}
+{"kind":"textbox","id":"sh/3apwvul0","slide":4,"name":"journey-body-2","text":"Wavelet NO\nLocal, multiscale Haar features.\n\nWHNO\nGlobal Walsh–Hadamard step waves for piecewise-constant structure.","textPreview":"Wavelet NO | Local, multiscale Haar features. |  | WHNO | Global Walsh–Hadamard step waves for piecewise-constant structure.","textChars":116,"textLines":5,"bbox":[452,396,330,205]}
+{"kind":"textbox","id":"sh/29gvmpkf","slide":4,"name":"journey-body-3","text":"Global-slot WHNO reached 2-D RMSE 0.1453.\n\nChanging where the transform acts mattered more than changing the local branch itself.","textPreview":"Global-slot WHNO reached 2-D RMSE 0.1453. |  | Changing where the transform acts mattered more than changing the local branch itself.","textChars":129,"textLines":3,"bbox":[864,396,330,205]}
+{"kind":"textbox","id":"sh/pw7ex43q","slide":4,"name":"footer-label-4","text":"MODEL JOURNEY","textPreview":"MODEL JOURNEY","textChars":13,"textLines":1,"bbox":[42,665,360,24]}
+{"kind":"textbox","id":"sh/4vydoz2l","slide":4,"name":"footer-number-4","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1170,660,68,28]}
+{"kind":"notes","id":"nt/7rh2wm","slide":4,"text":"Timing: 1:00\n\nDescribe neural operators as learnable integral/convolutional maps. The first move was FNO. Wavelets and Walsh–Hadamard then changed the representation. The surprising empirical lesson was architectural: the global bottleneck benefited most from the non-Fourier transform.\n\n[Sources]\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/concepts/Fourier Neural Operator.md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/papers/Pérez Cuadrado et al 2025 (WHNO).md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/Structured-Transform Operator Findings.md\n[/Sources]"}
+{"kind":"slide","id":"sl/0jkdbb","slide":5,"title":"The final design gives each ingredient a distinct job","textShapes":16}
+{"kind":"textbox","id":"sh/l0vixgnq","slide":5,"name":"slide-title","text":"The final design gives each ingredient a distinct job","textPreview":"The final design gives each ingredient a distinct job","textChars":53,"textLines":1,"bbox":[42,34,1196,92]}
+{"kind":"textbox","id":"sh/yd4j21of","slide":5,"name":"ingredient-1-title","text":"U-NET BACKBONE","textPreview":"U-NET BACKBONE","textChars":14,"textLines":1,"bbox":[42,174,540,30]}
+{"kind":"textbox","id":"sh/zed0v650","slide":5,"name":"ingredient-1-body","text":"Multiscale local paths and skip connections preserve compact structure.","textPreview":"Multiscale local paths and skip connections preserve compact structure.","textChars":71,"textLines":1,"bbox":[42,214,540,70]}
+{"kind":"textbox","id":"sh/cb210b69","slide":5,"name":"ingredient-2-title","text":"LOCAL / GLOBAL SPLIT","textPreview":"LOCAL / GLOBAL SPLIT","textChars":20,"textLines":1,"bbox":[42,315,540,30]}
+{"kind":"textbox","id":"sh/xcvitwnu","slide":5,"name":"ingredient-2-body","text":"Windowed operators handle detail; one whole-field bottleneck handles timing and long-range morphology.","textPreview":"Windowed operators handle detail; one whole-field bottleneck handles timing and long-range morphology.","textChars":102,"textLines":1,"bbox":[42,355,540,94]}
+{"kind":"textbox","id":"sh/a9kjy1o3","slide":5,"name":"ingredient-3-title","text":"SIREN HYPERNETWORK","textPreview":"SIREN HYPERNETWORK","textChars":18,"textLines":1,"bbox":[42,486,540,30]}
+{"kind":"textbox","id":"sh/bat0r65o","slide":5,"name":"ingredient-3-body","text":"k → Rφ(k): generate the spectral kernel over the full grid instead of storing a truncated mode table.","textPreview":"k → Rφ(k): generate the spectral kernel over the full grid instead of storing a truncated mode table.","textChars":101,"textLines":1,"bbox":[42,526,540,95]}
+{"kind":"shape","id":"sh/o721wr6x","slide":5,"name":"arch-input-encoder","bbox":[694,365,52,0]}
+{"kind":"shape","id":"sh/p8bipwni","slide":5,"name":"arch-encoder-global","bbox":[842,288,96,145]}
+{"kind":"shape","id":"sh/xgnq1w32","slide":5,"name":"arch-global-decoder","bbox":[1022,288,82,145]}
+{"kind":"shape","id":"sh/wfe98r2x","slide":5,"name":"arch-decoder-output","bbox":[1204,365,16,0]}
+{"kind":"shape","id":"sh/vel8zmlc","slide":5,"name":"arch-skip-top","bbox":[792,240,362,0]}
+{"kind":"shape","id":"sh/adcr6hkr","slide":5,"name":"arch-skip-left","bbox":[792,240,0,48]}
+{"kind":"shape","id":"sh/9c3qxc36","slide":5,"name":"arch-skip-right","bbox":[1154,240,0,48]}
+{"kind":"shape","id":"sh/8bup472l","slide":5,"name":"siren-to-global","bbox":[963,225,24,170]}
+{"kind":"shape","id":"sh/nal8vml0","slide":5,"name":"siren-to-local","bbox":[860,226,37,52]}
+{"kind":"shape","id":"sh/m9c72hkf","slide":5,"name":"arch-input","bbox":[650,330,92,70]}
+{"kind":"textbox","id":"sh/l83qtc3a","slide":5,"name":"arch-input-text","text":"13 ch","textPreview":"13 ch","textChars":5,"textLines":1,"bbox":[660,350,72,32]}
+{"kind":"shape","id":"sh/07ap072p","slide":5,"name":"arch-encoder","bbox":[746,278,144,92]}
+{"kind":"textbox","id":"sh/cre9g7al","slide":5,"name":"arch-encoder-text","text":"local\noperator","textPreview":"local | operator","textChars":14,"textLines":2,"bbox":[762,300,112,54]}
+{"kind":"shape","id":"sh/dsnqpcbq","slide":5,"name":"arch-global","bbox":[938,395,156,92]}
+{"kind":"textbox","id":"sh/qpwrexsf","slide":5,"name":"arch-global-text","text":"global\nbottleneck","textPreview":"global | bottleneck","textChars":17,"textLines":2,"bbox":[954,417,124,54]}
+{"kind":"shape","id":"sh/rq58n2t0","slide":5,"name":"arch-decoder","bbox":[1104,278,100,92]}
+{"kind":"textbox","id":"sh/4ne9c7a9","slide":5,"name":"arch-decoder-text","text":"decode","textPreview":"decode","textChars":6,"textLines":1,"bbox":[1114,311,80,30]}
+{"kind":"shape","id":"sh/ponqlcbu","slide":5,"name":"arch-output","bbox":[1220,330,52,70]}
+{"kind":"textbox","id":"sh/2lw7axc3","slide":5,"name":"arch-output-text","text":"x","textPreview":"x","textChars":1,"textLines":1,"bbox":[1230,349,32,32]}
+{"kind":"shape","id":"sh/3m58j2to","slide":5,"name":"arch-siren","bbox":[897,150,194,76]}
+{"kind":"textbox","id":"sh/ojy9orad","slide":5,"name":"arch-siren-text","text":"SIREN\nk → Rφ(k)","textPreview":"SIREN | k → Rφ(k)","textChars":15,"textLines":2,"bbox":[912,166,164,48]}
+{"kind":"textbox","id":"sh/9krqxwby","slide":5,"name":"arch-skip-label","text":"U-Net skip","textPreview":"U-Net skip","textChars":10,"textLines":1,"bbox":[938,235,120,25]}
+{"kind":"textbox","id":"sh/jetcnqdg","slide":5,"name":"footer-label-5","text":"MODEL JOURNEY","textPreview":"MODEL JOURNEY","textChars":13,"textLines":1,"bbox":[42,665,360,24]}
+{"kind":"textbox","id":"sh/ydkbelcv","slide":5,"name":"footer-number-5","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1170,660,68,28]}
+{"kind":"notes","id":"nt/0jkdbb","slide":5,"text":"Timing: 1:05\n\nThis is the synthesis. U-FNO supplied the local convolutional path; the Local-FNO introduced explicit windowed/local and whole-field/global slots; SirenFNO replaced per-mode tables with an implicit full-frequency kernel. Keeping the slots swappable made the experiments controlled rather than anecdotal.\n\n[Sources]\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/papers/Shi et al 2025 (SirenFNO).md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/FNO Lightcone Experimental Findings.md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/planning/Windowed Local-FNO U-Net Plan.md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/z_re Map Training Results.md\n[/Sources]"}
+{"kind":"slide","id":"sl/3dp78l","slide":6,"title":"Local SirenFNO nearly reaches the plain U-FNO floor","textShapes":11}
+{"kind":"textbox","id":"sh/gzyl0ryx","slide":6,"name":"slide-title","text":"Local SirenFNO nearly reaches the plain U-FNO floor","textPreview":"Local SirenFNO nearly reaches the plain U-FNO floor","textChars":51,"textLines":1,"bbox":[42,34,1196,92]}
+{"kind":"textbox","id":"sh/uxg3yhg7","slide":6,"name":"rank-axis-caption","text":"Held-out 3-D RMSE at each run’s best epoch ≤ 19  →  lower is better","textPreview":"Held-out 3-D RMSE at each run’s best epoch ≤ 19  →  lower is better","textChars":67,"textLines":1,"bbox":[42,620,720,26]}
+{"kind":"shape","id":"sh/twn25czm","slide":6,"name":"rank-callout-1","bbox":[806,146,432,132]}
+{"kind":"textbox","id":"sh/svelw7y1","slide":6,"name":"rank-callout-1-value","text":"0.0467","textPreview":"0.0467","textChars":6,"textLines":1,"bbox":[836,171,150,48]}
+{"kind":"textbox","id":"sh/7u5k32hg","slide":6,"name":"rank-callout-1-body","text":"plain U-FNO\nGroupNorm baseline","textPreview":"plain U-FNO | GroupNorm baseline","textChars":30,"textLines":2,"bbox":[998,174,204,65]}
+{"kind":"shape","id":"sh/6tw3uxgv","slide":6,"name":"rank-callout-2","bbox":[806,304,432,132]}
+{"kind":"textbox","id":"sh/dsrmhgfq","slide":6,"name":"rank-callout-2-value","text":"0.0488","textPreview":"0.0488","textChars":6,"textLines":1,"bbox":[836,329,150,48]}
+{"kind":"textbox","id":"sh/cril8by5","slide":6,"name":"rank-callout-2-body","text":"Local SirenFNO\nonly 4.5% higher","textPreview":"Local SirenFNO | only 4.5% higher","textChars":31,"textLines":2,"bbox":[998,332,204,65]}
+{"kind":"shape","id":"sh/mx83658n","slide":6,"name":"rank-callout-3","bbox":[806,462,432,132]}
+{"kind":"textbox","id":"sh/nyhkfap8","slide":6,"name":"rank-callout-3-value","text":"0.0548","textPreview":"0.0548","textChars":6,"textLines":1,"bbox":[836,487,150,48]}
+{"kind":"textbox","id":"sh/ozql8fqt","slide":6,"name":"rank-callout-3-body","text":"global SirenFNO\n17% higher","textPreview":"global SirenFNO | 17% higher","textChars":26,"textLines":2,"bbox":[998,490,204,65]}
+{"kind":"textbox","id":"sh/90z2h07e","slide":6,"name":"rank-method","text":"Best epoch ≤ 19 on the common 3-D grid; held-out cones.","textPreview":"Best epoch ≤ 19 on the common 3-D grid; held-out cones.","textChars":55,"textLines":1,"bbox":[806,618,432,32]}
+{"kind":"textbox","id":"sh/e9oj2l8r","slide":6,"name":"footer-label-6","text":"RESULTS • GLOBAL L²","textPreview":"RESULTS • GLOBAL L²","textChars":19,"textLines":1,"bbox":[42,665,360,24]}
+{"kind":"textbox","id":"sh/zaxkbqpc","slide":6,"name":"footer-number-6","text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1170,660,68,28]}
+{"kind":"chart","id":"ch/vitsb294","slide":6,"name":"","chartType":"bar","bbox":[42,146,720,472]}
+{"kind":"notes","id":"nt/3dp78l","slide":6,"text":"Timing: 1:05\n\nThis is the plain held-out RMSE ranking at the common twenty-epoch score cap. U-FNO still leads. The important result is how close the implicit-kernel models come: Local SirenFNO is within 4.5 percent of the plain U-FNO score, while the global-only SirenFNO also closes much of the pure-operator gap.\n\n[Sources]\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/Loss Objective and Operator Basis Sweep.md\n[/Sources]"}
+{"kind":"slide","id":"sl/93qsq7","slide":7,"title":"Sharper walls cost global L² accuracy","textShapes":20}
+{"kind":"textbox","id":"sh/y9kju14v","slide":7,"name":"slide-title","text":"Sharper walls cost global L² accuracy","textPreview":"Sharper walls cost global L² accuracy","textChars":37,"textLines":1,"bbox":[42,34,1196,92]}
+{"kind":"textbox","id":"sh/lcbi5gnm","slide":7,"name":"edge-baseline-label","text":"L² BASELINE","textPreview":"L² BASELINE","textChars":11,"textLines":1,"bbox":[52,158,250,30]}
+{"kind":"textbox","id":"sh/kb21wbm1","slide":7,"name":"edge-expwall-label","text":"EXPWALL  s = 16","textPreview":"EXPWALL  s = 16","textChars":15,"textLines":1,"bbox":[326,158,250,30]}
+{"kind":"textbox","id":"sh/x8bi1gnq","slide":7,"name":"edge-truth","text":"Truth front width: 1.46 px","textPreview":"Truth front width: 1.46 px","textChars":26,"textLines":1,"bbox":[52,475,524,36]}
+{"kind":"textbox","id":"sh/w7ihsbm5","slide":7,"name":"edge-scope","text":"2-D x_HI slices • 384 shared held-out examples","textPreview":"2-D x_HI slices • 384 shared held-out examples","textChars":46,"textLines":1,"bbox":[52,526,524,34]}
+{"kind":"textbox","id":"sh/n290vm58","slide":7,"name":"edge-table-head-1","text":"METRIC","textPreview":"METRIC","textChars":6,"textLines":1,"bbox":[650,174,210,28]}
+{"kind":"textbox","id":"sh/m10zmh4n","slide":7,"name":"edge-table-head-2","text":"L²","textPreview":"L²","textChars":2,"textLines":1,"bbox":[900,174,100,28]}
+{"kind":"textbox","id":"sh/8r6hsvu9","slide":7,"name":"edge-table-head-3","text":"EXPWALL","textPreview":"EXPWALL","textChars":7,"textLines":1,"bbox":[1080,174,140,28]}
+{"kind":"shape","id":"sh/tsfyl0vu","slide":7,"name":"edge-row-rule-0","bbox":[650,220,570,0]}
+{"kind":"shape","id":"sh/mpozqlcj","slide":7,"name":"edge-row-rule-1","bbox":[650,308,570,0]}
+{"kind":"shape","id":"sh/7qxgjqdo","slide":7,"name":"edge-row-rule-2","bbox":[650,396,570,0]}
+{"kind":"shape","id":"sh/kn6hobud","slide":7,"name":"edge-row-rule-3","bbox":[650,484,570,0]}
+{"kind":"textbox","id":"sh/lofyhgvy","slide":7,"name":"edge-row-1-label","text":"Held-out RMSE","textPreview":"Held-out RMSE","textChars":13,"textLines":1,"bbox":[650,240,250,40]}
+{"kind":"textbox","id":"sh/y14fmlc7","slide":7,"name":"edge-row-1-l2","text":"0.1448","textPreview":"0.1448","textChars":6,"textLines":1,"bbox":[900,240,100,40]}
+{"kind":"textbox","id":"sh/z2dgf6ds","slide":7,"name":"edge-row-1-exp","text":"0.1767","textPreview":"0.1767","textChars":6,"textLines":1,"bbox":[1080,240,140,40]}
+{"kind":"textbox","id":"sh/4jqh0fuh","slide":7,"name":"edge-row-2-label","text":"Front width","textPreview":"Front width","textChars":11,"textLines":1,"bbox":[650,328,250,40]}
+{"kind":"textbox","id":"sh/5kzitkv2","slide":7,"name":"edge-row-2-l2","text":"2.89 px","textPreview":"2.89 px","textChars":7,"textLines":1,"bbox":[900,328,100,40]}
+{"kind":"textbox","id":"sh/dgvydkn6","slide":7,"name":"edge-row-2-exp","text":"1.16 px","textPreview":"1.16 px","textChars":7,"textLines":1,"bbox":[1080,328,140,40]}
+{"kind":"textbox","id":"sh/cfmh4fml","slide":7,"name":"edge-row-3-label","text":"High-k power ratio","textPreview":"High-k power ratio","textChars":18,"textLines":1,"bbox":[650,416,250,40]}
+{"kind":"textbox","id":"sh/redgba50","slide":7,"name":"edge-row-3-l2","text":"0.51","textPreview":"0.51","textChars":4,"textLines":1,"bbox":[900,416,100,40]}
+{"kind":"textbox","id":"sh/qd4z254v","slide":7,"name":"edge-row-3-exp","text":"0.82","textPreview":"0.82","textChars":4,"textLines":1,"bbox":[1080,416,140,40]}
+{"kind":"shape","id":"sh/pcvy90na","slide":7,"name":"edge-takeaway","bbox":[650,520,570,104]}
+{"kind":"textbox","id":"sh/4bmx0vmp","slide":7,"name":"edge-takeaway-text","text":"No free lunch yet: truth-like edges cost ≈22% in global RMSE.","textPreview":"No free lunch yet: truth-like edges cost ≈22% in global RMSE.","textChars":61,"textLines":1,"bbox":[680,546,510,56]}
+{"kind":"textbox","id":"sh/3adg7q54","slide":7,"name":"footer-label-7","text":"RESULTS • EDGES","textPreview":"RESULTS • EDGES","textChars":15,"textLines":1,"bbox":[42,665,360,24]}
+{"kind":"textbox","id":"sh/29kfyl4j","slide":7,"name":"footer-number-7","text":"07","textPreview":"07","textChars":2,"textLines":1,"bbox":[1170,660,68,28]}
+{"kind":"image","id":"im/ip87atoj","slide":7,"name":"","geometry":"roundRect","alt":"Representative L2 prediction showing softened ionization bubble boundaries","bbox":[52,198,250,250]}
+{"kind":"image","id":"im/jqho3y54","slide":7,"name":"","geometry":"roundRect","alt":"Representative exponential wall-distance prediction showing sharper bubble boundaries","bbox":[326,198,250,250]}
+{"kind":"notes","id":"nt/93qsq7","slide":7,"text":"Timing: 1:15\n\nThis is the central tradeoff. L2 prefers a conditional mean when the wall position is uncertain, so it hedges with a ramp. Exponential wall-weighted absolute error instead selects a side. It recovers truth-like width and much more high-k power, but the field RMSE rises by about twenty-two percent.\n\n[Sources]\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/Edge and Wall-Placement Losses.md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/figures/xhi2d-wall-losses_20260728/whno_glob_baseline_representative_z_slices.png\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/figures/xhi2d-wall-losses_20260728/expwall16_representative_z_slices.png\n[/Sources]"}
+{"kind":"slide","id":"sl/qpupgi","slide":8,"title":"Bubble scales drift even when topology looks right","textShapes":8}
+{"kind":"textbox","id":"sh/i9wbitcb","slide":8,"name":"slide-title","text":"Bubble scales drift even when topology looks right","textPreview":"Bubble scales drift even when topology looks right","textChars":50,"textLines":1,"bbox":[42,34,1196,92]}
+{"kind":"shape","id":"sh/kbetk3uh","slide":8,"name":"bsd-callout-1","bbox":[806,150,432,132]}
+{"kind":"textbox","id":"sh/7e5cvid8","slide":8,"name":"bsd-callout-1-value","text":"+9.3%","textPreview":"+9.3%","textChars":5,"textLines":1,"bbox":[834,175,160,48]}
+{"kind":"textbox","id":"sh/6dwbmdcn","slide":8,"name":"bsd-callout-1-body","text":"largest mean\nscale bias","textPreview":"largest mean | scale bias","textChars":23,"textLines":2,"bbox":[1010,178,195,62]}
+{"kind":"shape","id":"sh/tg7ux8vy","slide":8,"name":"bsd-callout-2","bbox":[806,308,432,132]}
+{"kind":"textbox","id":"sh/sfyto3ud","slide":8,"name":"bsd-callout-2-value","text":"≤ 0.017","textPreview":"≤ 0.017","textChars":7,"textLines":1,"bbox":[834,333,160,48]}
+{"kind":"textbox","id":"sh/f2pczid4","slide":8,"name":"bsd-callout-2-body","text":"JS divergence:\ndistribution shape is close","textPreview":"JS divergence: | distribution shape is close","textChars":42,"textLines":2,"bbox":[1010,326,195,78]}
+{"kind":"shape","id":"sh/uhgvqdcj","slide":8,"name":"bsd-callout-3","bbox":[806,466,432,132]}
+{"kind":"textbox","id":"sh/gfm5wnud","slide":8,"name":"bsd-callout-3-text","text":"The topology can look right while its characteristic scale drifts.","textPreview":"The topology can look right while its characteristic scale drifts.","textChars":66,"textLines":1,"bbox":[842,493,360,78]}
+{"kind":"textbox","id":"sh/hgv6psby","slide":8,"name":"footer-label-8","text":"RESULTS • MORPHOLOGY","textPreview":"RESULTS • MORPHOLOGY","textChars":20,"textLines":1,"bbox":[42,665,360,24]}
+{"kind":"textbox","id":"sh/ud4nudcn","slide":8,"name":"footer-number-8","text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1170,660,68,28]}
+{"kind":"chart","id":"ch/d0f2d07a","slide":8,"name":"","chartType":"bar","bbox":[42,150,730,460]}
+{"kind":"notes","id":"nt/qpupgi","slide":8,"text":"Timing: 0:55\n\nRMSE does not ask whether the bubble population is physically right. The U-FNO recovers the distribution shape well, with small JS divergence, but the characteristic size is biased by several percent and peaks near nine percent in one stage bin. That is a physically meaningful error for power spectra and EFT-scale interpretation.\n\n[Sources]\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/concepts/Bubble Size Distribution.md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/figures/bubble-size_20260722/bubble_size_metrics.csv\n[/Sources]"}
+{"kind":"slide","id":"sl/npbt6g","slide":9,"title":"Next: optimize for inference—not voxel RMSE","textShapes":10}
+{"kind":"textbox","id":"sh/fipcb6d8","slide":9,"name":"slide-title","text":"Next: optimize for inference—not voxel RMSE","textPreview":"Next: optimize for inference—not voxel RMSE","textChars":43,"textLines":1,"bbox":[42,34,1196,92]}
+{"kind":"shape","id":"sh/gjydkbed","slide":9,"name":"outlook-line","bbox":[36,350,1200,0]}
+{"kind":"shape","id":"sh/1k7udwvy","slide":9,"name":"outlook-dot-1","bbox":[42,343,14,14]}
+{"kind":"shape","id":"sh/2lgvm1wj","slide":9,"name":"outlook-dot-2","bbox":[452,343,14,14]}
+{"kind":"shape","id":"sh/3mpwf6d4","slide":9,"name":"outlook-dot-3","bbox":[864,343,14,14]}
+{"kind":"textbox","id":"sh/onidobep","slide":9,"name":"outlook-label-1","text":"01  3-D SHARPNESS","textPreview":"01  3-D SHARPNESS","textChars":17,"textLines":1,"bbox":[42,287,300,32]}
+{"kind":"textbox","id":"sh/porehgva","slide":9,"name":"outlook-label-2","text":"02  DATA FIDELITY","textPreview":"02  DATA FIDELITY","textChars":17,"textLines":1,"bbox":[452,287,300,32]}
+{"kind":"textbox","id":"sh/qp0vqlwv","slide":9,"name":"outlook-label-3","text":"03  INFERENCE CRITERION","textPreview":"03  INFERENCE CRITERION","textChars":23,"textLines":1,"bbox":[864,287,330,32]}
+{"kind":"textbox","id":"sh/bq9wjqd0","slide":9,"name":"outlook-body-1","text":"Run expwall in 3-D.\n\nRe-check front width, high-k power, and BSD together—not as isolated metrics.","textPreview":"Run expwall in 3-D. |  | Re-check front width, high-k power, and BSD together—not as isolated metrics.","textChars":98,"textLines":3,"bbox":[42,396,330,180]}
+{"kind":"textbox","id":"sh/felo3mhk","slide":9,"name":"outlook-body-2","text":"Rebuild the warped LOS cache and compare on a common physical grid with proper volume weighting.","textPreview":"Rebuild the warped LOS cache and compare on a common physical grid with proper volume weighting.","textChars":96,"textLines":1,"bbox":[452,396,330,180]}
+{"kind":"textbox","id":"sh/udc7ahgz","slide":9,"name":"outlook-body-3","text":"Choose the operating point using SBI summaries and cross-simulator robustness—not voxel RMSE alone.","textPreview":"Choose the operating point using SBI summaries and cross-simulator robustness—not voxel RMSE alone.","textChars":99,"textLines":1,"bbox":[864,396,330,180]}
+{"kind":"shape","id":"sh/hg365wfa","slide":9,"name":"closing-band","bbox":[190,596,900,58]}
+{"kind":"textbox","id":"sh/gfupcryp","slide":9,"name":"closing-band-text","text":"Goal: a fast surrogate that is honest about morphology.","textPreview":"Goal: a fast surrogate that is honest about morphology.","textChars":55,"textLines":1,"bbox":[220,610,840,30]}
+{"kind":"textbox","id":"sh/7q1oz2h8","slide":9,"name":"footer-label-9","text":"OUTLOOK","textPreview":"OUTLOOK","textChars":7,"textLines":1,"bbox":[42,665,360,24]}
+{"kind":"textbox","id":"sh/6psn6hgn","slide":9,"name":"footer-number-9","text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1170,660,68,28]}
+{"kind":"notes","id":"nt/npbt6g","slide":9,"text":"Timing: 0:45\n\nClose by resolving the opening. The architecture is now competitive and compact; the unresolved decision is what fidelity the inference pipeline actually needs. The next experiments connect the sharpness lever, the LOS sampling limit, and the physical summary statistics in one evaluation.\n\n[Sources]\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/hot.md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/Edge and Wall-Placement Losses.md\n- /Users/kaharis/Documents/Vaults/CompAstro/wiki/thesis/findings/Warped LOS Grid Evaluation.md\n[/Sources]"}

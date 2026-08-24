@@ -16,6 +16,7 @@ related:
   - "[[Effective Field Theory]]"
   - "[[Power Spectrum]]"
   - "[[McQuinn & D'Aloisio 2018]]"
+  - "[[Phase Coherence and Bubble Size Bias]]"
 sources:
   - "[[McQuinn & D'Aloisio 2018]]"
   - "[[Qin et al 2022 (EFT Redshift Space)]]"

@@ -18,6 +18,7 @@ related:
   - "[[Bubble Size Distribution]]"
   - "[[Excursion Set Formalism]]"
   - "[[Lyman Limit Systems]]"
+  - "[[Phase Coherence and Bubble Size Bias]]"
 sources:
   - "[[Choudhury 2022 (Reionization Intro)]]"
   - "[[Trac & Gnedin 2009 (Reionization Simulations)]]"

@@ -20,6 +20,7 @@ related:
   - "[[2D Power Spectrum]]"
   - "[[Foreground Wedge]]"
   - "[[Ionizing Photon Sources]]"
+  - "[[Phase Coherence and Bubble Size Bias]]"
 sources:
   - "[[Pietschke et al 2026 (cross-correlation)]]"
   - "[[Park et al 2014 (21cm-Ly-alpha correlation)]]"

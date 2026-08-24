@@ -21,6 +21,7 @@ related:
   - "[[U-FNO BatchNorm Train-Eval Mismatch]]"
   - "[[Loss Objective and Operator Basis Sweep]]"
   - "[[3-D Operator Matrix Final Results]]"
+  - "[[Phase Coherence and Bubble Size Bias]]"
 sources:
   - "implementation: `losses.py` `GranulometrySpectrum`, `LOSS=bsd` in `slurm/train_3d_matrix.sbatch`"
   - "runs 4485729/30/31 (ufno expwall / hybrid / bsd, all groupnorm, seed-matched)"

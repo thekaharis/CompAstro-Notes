@@ -1,12 +1,28 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-08-17
+updated: 2026-08-23
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-08-23] analyse | Phase coherence, not small-scale amplitude, controls the bubble-size distribution
+
+**Sources**: no new runs — reanalysis of `figures/final_eval/matrix/{ps/ps_results.npz, bsd/bubble_size_metrics.csv, rmse/rmse_r2.csv}` from the closed matrix. New scripts `Poster/euCAIF/make_coh_bsd_fig.py`, `Poster/euCAIF/make_mechanism_fig.py`.
+
+**Updates**: new [[Phase Coherence and Bubble Size Bias]]; pointers added to [[3-D Operator Matrix Final Results]] §5, §7.
+
+**Method**: correlate per-cell $P(k)$ diagnostics against the MFP bubble-size metrics across the 9 `localop` cells at the active stage (U-FNO carried as reference, excluded from fits). Rank correlations throughout, plus rank partial correlations controlling for RMSE and ionized-fraction error, a per-$k$-bin scan, and a level-crossing-rate ($\sigma_1/\sigma_0$) test of the proposed mechanism.
+
+**Headline**: **the cross-correlation $r(k)$ at $k > 1\,\text{Mpc}^{-1}$ predicts bubble-size bias at Spearman $+0.88$ ($R^2 = 0.88$, zero bias at $r \approx 0.73$) and JS divergence at $-0.92$ — while the small-scale amplitude ratio predicts nothing** ($-0.27$, $p = 0.49$; partial $+0.35$ once $r$ is held fixed). This revises the §5/§7 reading: the local slot appeared to "set bubble size" because the local slots differ in how much *wrong-phase* power they inject, and the amplitude leader has no morphology claim to make.
+
+**Mechanism, tested three ways**: (1) the per-$k$-bin correlation rises monotonically from $+0.73$ at $k = 0.036$ to **$+0.97$ at $k = 1.9$** — the signal really is at small scales; (2) at $\bar{x}_\text{HI} = 0.40$–$0.60$ every cell reproduces the ionized *area* to within 1–3% while the MFP bias spans $-0.006$ to $-0.487$, so the failure is **fragmentation of ionized regions, not under-ionization**; (3) the $k^2$-weighted level-crossing rate $\nu = \sigma_1/\sigma_0$ tracks the mean-MFP ratio at $\rho = -0.83$ — Walsh/SIREN cells at $\nu = 1.16$–$1.19$ (too many boundaries), CNN cells and U-FNO at $0.84$–$0.87$ (too few, hence bias $\ge 0$). The MFP estimator is a first-passage statistic, so the shortest obstruction scale dominates the mean.
+
+**Caveat filed with the result**: the CNN cells' near-zero bias is partly cancellation — they under-produce boundaries and land near zero — so their real BSD evidence is the JS/Wasserstein, not the bias. $n = 9$ non-independent cells; pooling across stages inverts the sign (Simpson's paradox).
 
 ---
 

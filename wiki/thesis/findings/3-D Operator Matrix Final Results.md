@@ -2,7 +2,7 @@
 type: finding
 title: "3-D Operator Matrix Final Results"
 created: 2026-08-17
-updated: 2026-08-17
+updated: 2026-08-23
 tags:
   - domain/thesis
   - domain/ml
@@ -20,6 +20,7 @@ tags:
 status: active
 verdict: complete
 related:
+  - "[[Phase Coherence and Bubble Size Bias]]"
   - "[[Loss Objective and Operator Basis Sweep]]"
   - "[[Structured-Transform Operator Findings]]"
   - "[[Walsh-Hadamard Neural Operator]]"
@@ -332,6 +333,15 @@ Walsh global slot and no CNN local slot makes them **too small**. Only the CNN
 local slot gets the scale right, which points at the local operator — not the
 global basis — as what sets bubble size.
 
+> **Amended 2026-08-23** — see [[Phase Coherence and Bubble Size Bias]]. The local
+> slot is the *carrier*, not the cause. The controlling variable is small-scale
+> **phase** accuracy: $\langle r(k)\rangle_{k>1}$ predicts this column at
+> Spearman $+0.88$ and the JS column at $-0.92$, monotone 4/4 within the
+> fixed-`swhno`-global family, and it survives controlling for RMSE. The CNN
+> local slot wins here because it injects the least decorrelated small-scale
+> power — and its near-zero bias is partly cancellation, so the JS/Wasserstein
+> column is the honest evidence.
+
 ## 6. Parity — the hedging bias, everywhere
 
 Conditional prediction distribution binned by true $x_\text{HI}$
@@ -398,6 +408,14 @@ plausible-looking but misregistered structure.
 
 For SBI on power-spectrum summaries this is the more relevant axis than RMSE,
 and it inverts the leaderboard. **No model in the matrix is good at both.**
+
+> **Amended 2026-08-23** — see [[Phase Coherence and Bubble Size Bias]]. The two
+> axes are **not symmetric in value**. For ionization morphology only the phase
+> axis carries information: the amplitude ratio correlates with bubble-size bias
+> at $-0.27$ ($p = 0.49$) and adds nothing once $r$ is held fixed, so the
+> amplitude leaders (`fno/fno`, `swhno/swhno`) have no BSD claim to make. The
+> anti-correlation between the two columns is itself only $\rho = -0.47$
+> ($p = 0.21$) — a property of these architectures, not a law.
 
 ## 8. What this establishes
 

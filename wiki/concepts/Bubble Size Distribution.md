@@ -15,6 +15,7 @@ aliases:
   - BSD
   - Mean free path bubble size
 related:
+  - "[[Phase Coherence and Bubble Size Bias]]"
   - "[[Ionization Morphology]]"
   - "[[Mean Free Path]]"
   - "[[Excursion Set Formalism]]"
