@@ -71,18 +71,18 @@ One best-in-class checkpoint per architecture combination, scored by
 voxels; `R2_cone` is the per-cone mean with p16/p84, which is the honest
 spread because the pooled figure is inflated by cone-to-cone timing variance.
 
-| rank | local / global | loss | params | RMSE | R² | R²_cone (p16–p84) |
-| --- | --- | --- | ---: | ---: | ---: | --- |
-| 1 | **U-FNO** (dense ref.) | plain | 202,902,721 | **0.05781** | 0.9508 | 0.878 (0.798–0.965) |
-| 2 | **sfno / swhno** | plain | **747,841** | **0.05914** | 0.9485 | 0.875 (0.786–0.967) |
-| 3 | cnn / whno | plain | 3,468,081 | 0.06134 | 0.9446 | 0.844 (0.768–0.964) |
-| 4 | cnn / swhno | plain | 1,405,921 | 0.06184 | 0.9437 | 0.842 (0.764–0.963) |
-| 5 | whno / swhno | plain | 1,050,241 | 0.06544 | 0.9369 | 0.860 (0.736–0.963) |
-| 6 | swhno / swhno | plain | 677,857 | 0.06632 | 0.9352 | 0.857 (0.729–0.962) |
-| 7 | whno / whno | plain | 2,609,137 | 0.07405 | 0.9192 | 0.804 (0.671–0.949) |
-| 8 | fno / whno | plain | 5,705,713 | 0.07594 | 0.9150 | 0.786 (0.682–0.942) |
-| 9 | fno / fno | bsd | 20,385,777 | 0.07989 | 0.9060 | 0.795 (0.680–0.940) |
-| 10 | wno / whno | plain | 2,182,129 | 0.08933 | 0.8824 | 0.754 (0.639–0.923) |
+| rank | local / global         | loss  |      params |        RMSE |     R² | R²_cone (p16–p84)   |
+| ---- | ---------------------- | ----- | ----------: | ----------: | -----: | ------------------- |
+| 1    | **U-FNO** (dense ref.) | plain | 202,902,721 | **0.05781** | 0.9508 | 0.878 (0.798–0.965) |
+| 2    | **sfno / swhno**       | plain | **747,841** | **0.05914** | 0.9485 | 0.875 (0.786–0.967) |
+| 3    | cnn / whno             | plain |   3,468,081 |     0.06134 | 0.9446 | 0.844 (0.768–0.964) |
+| 4    | cnn / swhno            | plain |   1,405,921 |     0.06184 | 0.9437 | 0.842 (0.764–0.963) |
+| 5    | whno / swhno           | plain |   1,050,241 |     0.06544 | 0.9369 | 0.860 (0.736–0.963) |
+| 6    | swhno / swhno          | plain |     677,857 |     0.06632 | 0.9352 | 0.857 (0.729–0.962) |
+| 7    | whno / whno            | plain |   2,609,137 |     0.07405 | 0.9192 | 0.804 (0.671–0.949) |
+| 8    | fno / whno             | plain |   5,705,713 |     0.07594 | 0.9150 | 0.786 (0.682–0.942) |
+| 9    | fno / fno              | bsd   |  20,385,777 |     0.07989 | 0.9060 | 0.795 (0.680–0.940) |
+| 10   | wno / whno             | plain |   2,182,129 |     0.08933 | 0.8824 | 0.754 (0.639–0.923) |
 
 **The headline is rank 2.** `sfno/swhno` — a SIREN-generated Fourier local slot
 against a SIREN-generated Walsh–Hadamard global slot — is **2.3% behind U-FNO on
