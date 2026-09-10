@@ -53,7 +53,7 @@ The core insight is that the **Effective Field Theory (EFT) of the ionization fi
 
 ### P1: EFT Characterization of the Ionization Field (Core Deliverable)
 
-**Objective:** Measure and validate the EFT description of $x_\text{HII}$ across ≥2 simulation codes; map regime of validity; quantify simulator variation in EFT space.
+This work package measures and validates the EFT description of $x_\text{HII}$ across at least two simulation codes, maps its regime of validity, and quantifies simulator variation in EFT space.
 
 #### Detailed Steps
 
@@ -115,7 +115,7 @@ Based on McQuinn & D'Aloisio 2018 (which validated EFT on RT codes):
 
 ### P2: EFT-Informed Cross-Simulator Inference (Stretch Goal / Secondary Focus)
 
-**Objective:** Test whether inference targeting EFT coefficients generalizes better across simulators than native-parameter inference, demonstrating the practical value of the EFT framework.
+This work package tests whether inference targeting EFT coefficients generalizes better across simulators than inference over native parameters, and whether that provides a practical benefit.
 
 #### Detailed Steps
 
@@ -192,7 +192,7 @@ If cross-simulator inference is too ambitious or doesn't show improvement:
 
 ## Background Reading (Status: Completed)
 
-Four foundational reviews have been absorbed into the wiki:
+Four foundational reviews have been read and summarized in the wiki:
 
 | Paper | What it provides | Status |
 |-------|-----------------|--------|

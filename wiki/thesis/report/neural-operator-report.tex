@@ -1,0 +1,519 @@
+\documentclass[11pt,a4paper]{article}
+
+% This file is deliberately compatible with the default pdfLaTeX compiler on
+% Overleaf/ShareLaTeX.  The accompanying zip contains the figures in figures/.
+\usepackage[a4paper,margin=25mm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{placeins}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{navy}{HTML}{17365D}
+\definecolor{blue}{HTML}{2F6690}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=navy,
+  urlcolor=blue,
+  pdftitle={Neural Operators for 21cmFAST Lightcone Regeneration},
+  pdfauthor={Haris}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\setlist[itemize]{leftmargin=1.5em,itemsep=0.2em,topsep=0.2em}
+\setlist[enumerate]{leftmargin=1.7em,itemsep=0.2em,topsep=0.2em}
+\captionsetup{font=small,labelfont=bf}
+\renewcommand{\arraystretch}{1.15}
+
+\newcommand{\xhi}{x_{\mathrm{HI}}}
+\newcommand{\Ltwo}{L^2}
+\newcommand{\Hone}{H^1}
+\newcommand{\FNO}{\textsc{FNO}}
+\newcommand{\UFNO}{\textsc{U-FNO}}
+\newcommand{\WHNO}{\textsc{WHNO}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{\textbf{Neural Operators for 21cmFAST Lightcone Regeneration}\\
+\large From Fourier baselines to generalized bases and local--global operators}
+\author{Haris}
+\date{August 2026}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{abstract}
+This report develops and evaluates neural-operator surrogates for regenerating
+21cmFAST neutral-fraction lightcones from matter-density fields and the
+simulation parameters that determine their reionization histories. The work
+follows a clear architectural progression. A conditioned Fourier Neural
+Operator (\FNO) establishes a useful global baseline; a U-shaped Fourier
+operator (\UFNO) then adds a local real-space path; and a generalized operator
+matrix tests Fourier, SIREN-generated Fourier, Walsh--Hadamard, wavelet, and
+convolutional choices independently in local and global slots.
+
+Parameter conditioning reduces validation \(\Ltwo\) from about \(0.20\) to
+\(0.06\), showing that the density field alone does not identify the timing of
+reionization. The \UFNO subsequently reaches validation
+\((\Ltwo,\Hone)=(0.0418,8.27)\), improving on the pure-\FNO result. In the
+final 3-D matrix, \code{sfno/swhno} comes within \(2.3\%\) of \UFNO RMSE with
+271 times fewer parameters, while \code{cnn/whno} is the fastest accurate
+model. The Walsh--Hadamard transform transfers from the 2-D experiments to
+the 3-D lightcone task, particularly in the global slot. The results point to
+a practical design principle: global operators determine large-scale
+communication, while the local path has the greater influence on sharp
+structure and computational cost.
+\end{abstract}
+
+\tableofcontents
+\clearpage
+
+\section{Introduction}
+
+The goal is to replace the expensive forward calculation of a 21cmFAST
+lightcone with a learned field-to-field map,
+\begin{equation}
+  \mathcal{G}:\bigl(\delta_m(\mathbf{x},z),\theta\bigr)
+  \longmapsto \widehat{\xhi}(\mathbf{x},z),
+  \label{eq:map}
+\end{equation}
+where \(\delta_m\) is the matter-density lightcone and \(\theta\) contains the
+cosmological and astrophysical parameters used to generate the target. The
+output is a three-dimensional neutral-fraction field rather than a single
+summary statistic. This makes the problem useful as a test of neural operators
+in a setting with both long-range correlations and thin, spatially organized
+ionization fronts. Fourier neural operators provide the global spectral
+construction used here \cite{li2021fno}.
+
+The experiments were not designed as a search over arbitrary network
+architectures. They follow a sequence of increasingly specific questions:
+\begin{enumerate}
+  \item Can a global Fourier operator learn the lightcone map at all?
+  \item Which input information is needed to determine the reionization
+  history?
+  \item Does changing the representation of the global operator help?
+  \item Does a local path improve the reconstruction more than additional
+  global spectral capacity?
+\end{enumerate}
+The report concentrates on the positive results that answer these questions.
+Negative comparisons are included only where they explain why the next
+architectural step was taken.
+
+\section{Data, task, and evaluation}
+
+\subsection{Lightcones and inputs}
+
+The production data contain \(6600\) 21cmFAST lightcones
+\cite{mesinger2010}. The cached cubes have
+shape \(140\times140\times256\) and cover \(z=5\)--\(25\). The input to the
+production models has thirteen channels:
+\begin{itemize}
+  \item the matter-density field, scaled by a factor of ten;
+  \item \(1/(1+z)\), broadcast along the volume; and
+  \item eleven cosmological and astrophysical parameters, standardized using
+  training-set statistics and broadcast over the volume.
+\end{itemize}
+The target is \(\xhi\) on the same grid. Splits are made at the cone level,
+so chunks from one lightcone cannot occur in both training and validation
+sets. This matters because neighboring chunks share both density structure and
+reionization history.
+
+The main runs use distributed data parallel training on four H200 GPUs. The
+per-rank batch size is one. Adam with cosine annealing is used throughout the
+baseline comparisons. The original cache is uniform in redshift; this report
+does not include the later line-of-sight grid experiments, since they change
+the sampled target rather than the operator architecture.
+
+\subsection{Metrics}
+
+The primary optimization metrics are the absolute field error \(\Ltwo\) and
+the Sobolev error \(\Hone\). The held-out analysis adds diagnostics that
+measure different aspects of the regenerated field:
+\begin{itemize}
+  \item per-cone RMSE and \(R^2\), separating overall timing from spatial
+  structure;
+  \item the global neutral-fraction history \(\overline{\xhi}(z)\);
+  \item the power-spectrum ratio and the cross-correlation \(r(k)\);
+  \item the mean-free-path bubble-size distribution; and
+  \item the width and error of the transition band around an ionization front.
+\end{itemize}
+No single metric describes this task. A model can obtain a good volume-averaged
+error while still smoothing the fronts, because most of the volume is close to
+the saturated values zero or one.
+
+\section{A conditioned Fourier baseline}
+
+\subsection{Why the parameters are part of the input}
+
+The first useful baseline is a standard spectral operator applied to the
+density field. A density-only model converges to a nearly constant prediction:
+different lightcones can have similar density structure but different
+reionization histories. This is an identifiability problem, not simply a
+training failure.
+
+Broadcasting the eleven simulation parameters changes the problem. The model
+can now distinguish cones with similar density fields but different global
+histories. Validation \(\Ltwo\) falls from approximately \(0.20\) for the
+density-only input to approximately \(0.06\) with conditioning, while
+\(\Hone\) falls from \(17.85\) to about \(11.5\). The first major gain is
+therefore supplied by information in the input rather than by a larger
+operator.
+
+\subsection{Fourier layers}
+
+An \FNO layer combines a pointwise map with a truncated Fourier convolution,
+\begin{equation}
+  v^{(\ell+1)}(\mathbf{x}) =
+  \sigma\!\left(
+  W^{(\ell)}v^{(\ell)}(\mathbf{x})+
+  \mathcal{F}^{-1}\!\left[
+    R^{(\ell)}(\mathbf{k})\,
+    \mathcal{F}[v^{(\ell)}](\mathbf{k})
+  \right](\mathbf{x})
+  \right).
+  \label{eq:fno-layer}
+\end{equation}
+Here \(R^{(\ell)}\) is learned only for the retained modes. The spectral path
+communicates across the full field in one layer, which makes it a natural
+starting point for a lightcone with large bubbles and long-range timing
+correlations.
+
+The conditioned pure \FNO reaches a test \(\Ltwo\) of about \(0.057\) and a
+test \(\Hone\) of \(11.64\) in the main spectral comparison. Increasing the
+retained modes from \(16^3\) to \(24^3\) does not improve the converged
+solution. This result motivates changing the representation and the
+architecture, rather than continuing to increase the Fourier cutoff.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/fno_training_trajectories.png}
+\caption{Training trajectories for the principal lightcone models. Conditioning
+and the local path produce the clearest improvements over the initial global
+Fourier baseline.}
+\label{fig:trajectories}
+\end{figure}
+
+\section{Generalized operator bases}
+
+\subsection{Measuring the learned spectral preference}
+
+The nominal mode cutoff does not tell us which modes the trained network uses.
+To measure this directly, the RMS weight of each spectral mode was logged
+throughout training. In a 32-mode \UFNO, the lowest eight modes eventually
+carry about \(52\%\) of the spectral weight, compared with \(25\%\) for a
+uniform profile. The same qualitative preference appears in a 64-mode model.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.84\textwidth]{figures/mode_weight_profiles_3d.png}
+\caption{Mode-weight profiles from the 3-D operator diagnostics. The nominal
+bandwidth is larger than the effective bandwidth used by the trained Fourier
+kernel.}
+\label{fig:mode-weights}
+\end{figure}
+
+This measurement distinguishes two ideas that are often conflated. A model
+may have enough modes to represent a sharp feature while still assigning most
+of its learned weight to low modes. In this task, the output of the nonlinear
+network is not determined by the retained Fourier modes alone. The diagnostic
+therefore provides a basis for comparing different operator representations
+without treating the mode count as a complete explanation.
+
+\subsection{SIREN-generated Fourier kernels}
+
+SirenFNO \cite{shi2025siren} replaces the table of independent weights with a sinusoidal
+hypernetwork that generates the Fourier kernel as a function of mode
+coordinates. In the tested implementation, the generator is evaluated across
+the full mode grid rather than stopping at a conventional low-frequency
+cutoff. The number of generator parameters is independent of the resolution
+at which the kernel is queried.
+
+The learned spectrum remains approximately flat in the 3-D experiment. More
+importantly, this representation improves the plain Fourier baseline:
+\begin{table}[H]
+\centering
+\caption{Held-out comparison of the principal spectral representations.}
+\label{tab:siren}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Model & Test \(\Ltwo\) & Test \(\Hone\)\\
+\midrule
+Plain FNO & 0.0570 & 11.64\\
+SirenFNO & 0.0501 & 9.82\\
+\UFNO & \textbf{0.0397} & \textbf{7.87}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+SirenFNO therefore demonstrates that full-frequency kernel parameterization is
+useful for this map. It does not, by itself, reach the \UFNO result. The
+comparison is informative: the SIREN model changes the global spectral
+representation, whereas the \UFNO also supplies a local real-space route.
+
+\subsection{Walsh--Hadamard operators}
+
+The Walsh--Hadamard transform (WHT) \cite{perez2025whno} provides a different
+generalization of the spectral basis. Its basis functions are rectangular
+\(\pm1\) step waves, and
+the fast transform has \(O(n\log n)\) complexity using additions and
+subtractions. Coefficients are ordered by sequency, the step-wave analogue of
+frequency.
+
+The WHT is especially attractive for a target containing extended regions
+separated by sharp fronts. In the 2-D slice experiments, replacing the global
+Fourier operator with \WHNO gives the best result when the local slot remains
+Fourier-based. The improvement comes from the global slot; placing the WHT
+only in the local window does not provide the same benefit.
+
+The final 3-D matrix confirms that the global WHT transfers beyond the 2-D
+task. At a matched local operator, \code{whno/swhno} reaches RMSE \(0.0654\),
+compared with \(0.0741\) for \code{whno/whno}. The stronger Walsh-global
+pairings outperform the all-Fourier \code{fno/fno} reference in the matrix.
+This is the first indication in the project that a generalized basis can
+improve the global part of the lightcone operator without increasing its
+parameter count.
+
+\section{The local--global operator design}
+
+\subsection{The U-FNO result}
+
+The \UFNO combines global Fourier blocks with a small 3-D U-Net branch,
+following the U-shaped operator constructions described by Wen et al.
+\cite{wen2022ufno} and Rahman et al. \cite{rahman2023uno}. The Fourier path
+supplies long-range communication,
+while strided convolutions,
+upsampling, and skip connections provide a local route for high-resolution
+features. With the same conditioned inputs and training objective as the pure
+\FNO, the \UFNO reaches
+\begin{equation}
+\boxed{\mathrm{val}\ \Ltwo=0.0418,\qquad
+\mathrm{val}\ \Hone=8.27.}
+\end{equation}
+Its test \(\Ltwo\) is \(0.0408\) in the corresponding benchmark. This is a
+25--29\% improvement over the main pure-\FNO result and is the strongest
+single architectural improvement in the baseline sequence.
+
+\begin{figure}[p]
+\centering
+\includegraphics[width=0.78\textwidth]{figures/lightcone_grid_3d_validation.png}
+\caption{Representative validation lightcones for the \UFNO. The model
+reproduces global timing and bubble morphology; the visible residuals are
+concentrated near transition regions.}
+\label{fig:ufno-grid}
+\end{figure}
+
+\begin{figure}[p]
+\centering
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{figures/comparison_3d_validation_cone61.png}
+\caption{Heavily reionized cone.}
+\end{subfigure}\hfill
+\begin{subfigure}[t]{0.48\textwidth}
+\centering
+\includegraphics[width=\linewidth]{figures/comparison_3d_validation_cone2322.png}
+\caption{Patchy transition.}
+\end{subfigure}
+\caption{Two slices from held-out \UFNO predictions. Large-scale structure and
+the location of the transition are reproduced across different histories.}
+\label{fig:ufno-slices}
+\end{figure}
+\FloatBarrier
+
+\subsection{Separating the local and global roles}
+
+The final matrix treats the operator as two slots: a local operator acts in
+overlapping windows and a global operator acts on the bottleneck. Fourier,
+SIREN-Fourier, WHT, SIREN-WHT, wavelet, and convolutional operators can be
+placed in either slot. This setup makes it possible to ask whether the basis
+or the spatial role is responsible for an observed change.
+
+The held-out leaderboard is shown in Table~\ref{tab:leaderboard}. The \UFNO
+remains the most accurate model, but several much smaller local--global
+operators are close to it.
+
+\begin{table}[H]
+\centering
+\caption{Best held-out 3-D results for the main operator combinations. The
+parameter counts treat a complex Fourier weight as two real parameters.}
+\label{tab:leaderboard}
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Local / global & Parameters & RMSE & \(R^2\)\\
+\midrule
+\UFNO & 202,902,721 & \textbf{0.05781} & \textbf{0.9508}\\
+\code{sfno/swhno} & 747,841 & 0.05914 & 0.9485\\
+\code{cnn/whno} & 3,468,081 & 0.06134 & 0.9446\\
+\code{cnn/swhno} & 1,405,921 & 0.06184 & 0.9437\\
+\code{whno/swhno} & 1,050,241 & 0.06544 & 0.9369\\
+\code{swhno/swhno} & 677,857 & 0.06632 & 0.9352\\
+\code{whno/whno} & 2,609,137 & 0.07405 & 0.9192\\
+\code{fno/whno} & 5,705,713 & 0.07594 & 0.9150\\
+\code{fno/fno} & 20,385,777 & 0.07989 & 0.9060\\
+\code{wno/whno} & 2,182,129 & 0.08933 & 0.8824\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two results stand out. First, \code{sfno/swhno} is within \(2.3\%\) of the
+\UFNO RMSE with 271 times fewer parameters. This is a substantial storage
+reduction, although the SIREN kernel regeneration makes this model slower at
+inference. Second, the convolutional local slot is consistently strong:
+\code{cnn/whno} is close to \UFNO accuracy while using only \(1.7\%\) of its
+parameters.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\textwidth]{figures/matrix_params_vs_rmse.png}
+\caption{Parameter count and held-out RMSE for the final matrix. Several
+generalized-basis models are close to \UFNO accuracy at much smaller size.}
+\label{fig:params-rmse}
+\end{figure}
+
+\subsection{Inference cost}
+
+Parameter count is not a reliable proxy for inference speed in this design.
+On an A100, batch size one, and complete \(140\times140\times256\) cubes,
+\code{cnn/whno} takes \(115.9\) ms per cube, compared with \(274.1\) ms for
+\UFNO. Its peak memory is \(4345\) MiB, compared with \(10271\) MiB for
+\UFNO. The very small \code{sfno/swhno} model takes \(458.1\) ms because the
+SIREN generator rebuilds the kernel on each forward pass.
+
+The global basis has almost no effect on the measured runtime: \code{fno/fno}
+and \code{fno/whno} both take about \(347.1\) ms. Most of the cost is in the
+local path, particularly the window loop for the windowed operators. The
+practical choice therefore depends on the intended use. \UFNO gives the
+lowest RMSE, \code{cnn/whno} gives the best speed--accuracy trade-off, and
+\code{sfno/swhno} gives the smallest checkpoint among the near-best models.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.78\textwidth]{figures/matrix_inference_speed_vs_rmse.png}
+\caption{Inference speed versus RMSE for the final matrix. The two useful
+speed--accuracy choices are \UFNO and the convolutional-local
+\code{cnn/whno} model.}
+\label{fig:speed-rmse}
+\end{figure}
+
+\subsection{Morphology and phase coherence}
+
+Whole-volume RMSE does not fully rank the models by morphology. The matrix
+analysis finds that the mean small-scale cross-correlation
+\(\langle r(k)\rangle_{k>1}\) predicts the bubble-size bias with Spearman
+\(\rho=+0.88\), whereas the small-scale power amplitude has no independent
+relationship with that bias. This is useful for the operator comparison:
+adding small-scale power is not enough if the added structure is out of phase
+with the target.
+
+The convolutional local models perform well on this morphological diagnostic.
+For example, \code{cnn/swhno} has bubble-size bias \(+0.006\), while its RMSE
+is \(0.0618\). The result supports the architectural split suggested by the
+matrix: the local branch should preserve spatially coherent boundaries, while
+the global basis should communicate the large-scale field.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\textwidth]{figures/matrix_coherence_vs_bsd_bias.png}
+\caption{Small-scale cross-correlation against bubble-size bias. Phase
+coherence is more informative for this morphology statistic than power
+amplitude alone.}
+\label{fig:coherence-bsd}
+\end{figure}
+
+\section{Discussion}
+
+The results give a consistent picture of what the neural operator must do for
+this problem.
+\begin{enumerate}
+  \item \textbf{Condition on the simulation parameters.} The density field
+  does not determine the reionization history by itself. The first large
+  improvement comes from supplying the missing global information.
+  \item \textbf{Use a global operator for communication.} Fourier and
+  Walsh--Hadamard operators both provide a compact route across the full
+  volume. The WHT result shows that the basis can be changed without changing
+  the local--global skeleton.
+  \item \textbf{Add a local path for detailed structure.} The \UFNO
+  improvement is larger than the gains from increasing the Fourier cutoff.
+  The local convolutional path is the clearest architectural explanation for
+  the reduction in field and gradient error.
+  \item \textbf{Evaluate beyond voxel error.} Bubble morphology follows
+  small-scale phase coherence more closely than power amplitude. A model
+  intended for downstream physical analysis should therefore be checked in
+  both field space and structure space.
+\end{enumerate}
+
+The strongest immediate model depends on the constraint. \UFNO is the
+accuracy reference. \code{cnn/whno} is attractive when throughput and memory
+matter. \code{sfno/swhno} shows that a generalized, generated basis can
+approach the accuracy of a much larger model with a very small parameter
+count, although its current implementation does not deliver the same
+inference efficiency. These are complementary outcomes rather than a single
+universal ranking.
+
+\section{Conclusion}
+
+The project has established a useful neural-operator path from a conditioned
+global \FNO to a generalized local--global design. Conditioning makes the
+lightcone map learnable. SIREN-generated Fourier kernels improve the pure
+spectral baseline by distributing the learned representation across the
+available modes. Walsh--Hadamard operators transfer successfully from 2-D to
+3-D, with their clearest benefit in the global slot. Finally, the \UFNO
+demonstrates that a local real-space route is more valuable than simply
+increasing global Fourier capacity for the sharp, structured parts of the
+field.
+
+The final matrix makes the trade-offs concrete. The \UFNO provides the best
+RMSE, \code{sfno/swhno} nearly matches it with 271 times fewer parameters, and
+\code{cnn/whno} is the most attractive speed--accuracy compromise. Together,
+these results support a simple design for future work: retain a global
+generalized operator for long-range structure, pair it with an efficient local
+path, and select models using morphology and throughput as well as voxelwise
+error.
+
+\begin{thebibliography}{9}
+\bibitem{li2021fno}
+Z. Li et al.,
+\emph{Fourier Neural Operator for Parametric Partial Differential Equations},
+International Conference on Learning Representations, 2021.
+
+\bibitem{rahman2023uno}
+M. A. Rahman, Z. E. Ross, and K. Azizzadenesheli,
+\emph{U-NO: U-shaped Neural Operators},
+Transactions on Machine Learning Research, 2023.
+
+\bibitem{wen2022ufno}
+G. Wen, Z. Li, K. Azizzadenesheli, A. Anandkumar, and S. M. Benson,
+\emph{U-FNO---An enhanced Fourier neural operator-based deep-learning model
+for multiphase flow},
+Advances in Water Resources, 163, 104180, 2022.
+
+\bibitem{shi2025siren}
+P. Shi, J. Yin, S. Tierney, and J. Gao,
+\emph{SirenFNO: Efficient and Full Frequency Learning of Fourier Neural Operators},
+2025.
+
+\bibitem{perez2025whno}
+M. Pérez Cuadrado et al.,
+\emph{Walsh-Hadamard Neural Operators for Solving PDEs with Discontinuous
+Coefficients}, arXiv:2511.07347, 2025.
+
+\bibitem{mesinger2010}
+A. Mesinger, S. Furlanetto, and R. Cen,
+\emph{21cmFAST: A Fast, Semi-Numerical Simulation of the 21 cm Signal from the
+Epoch of Reionization}, Monthly Notices of the Royal Astronomical Society,
+411, 955--972, 2011.
+\end{thebibliography}
+
+\end{document}

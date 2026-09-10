@@ -46,7 +46,7 @@ The EFT coefficients encode the simulator-specific physics in a compact, interpr
 ### Current State of the Art (Mitigation)
 - [[Solt et al 2026 (Multi-Simulator Training)]] — Multi-simulator training; empirical baseline for P2 to beat
 
-## Background Reading (Ingested)
+## Background Reading (Summarized)
 
 Four pedagogical reviews providing the physical foundation for the thesis:
 

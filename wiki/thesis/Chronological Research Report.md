@@ -18,9 +18,11 @@ including the figures referenced by the experimental findings.
 
 - [LaTeX source](report/chronological-research-report.tex)
 - [Compiled PDF](../../output/pdf/chronological-research-report.pdf)
+- [Focused neural-operator report](report/neural-operator-report.tex)
+- [Overleaf/ShareLaTeX package](../../output/neural-operator-report.zip)
 
-The report covers the initial 21cmFAST-to-FNO pipeline, the main FNO/U-FNO
-campaign, [[SirenFNO Spectral Bias Investigation]], and
+The report covers the initial 21cmFAST-to-FNO pipeline, the main sequence of
+FNO/U-FNO experiments, [[SirenFNO Spectral Bias Investigation]], and
 [[Windowed Local-FNO U-Net Findings]], followed by the current
 [[Smooth-Target Reparametrization Plan]], [[Lightcone z_re Map Target]], and
 [[Warped LOS Grid Plan]].

@@ -10,7 +10,7 @@ tags:
 
 # Thesis Planning
 
-Detailed, step-by-step operational plans for each work package. These documents go beyond the high-level roadmap in [[Thesis Work]] and focus on the exact computations, code patterns, sanity checks, and decision points at each stage.
+These notes describe the planned analyses, required checks, and decision points for each part of the thesis. They expand on the high-level roadmap in [[Thesis Work]] with concrete computations and code patterns.
 
 ## Documents
 
@@ -24,11 +24,11 @@ Detailed, step-by-step operational plans for each work package. These documents 
 - [[Lightcone z_re Map Target]] — Implementation of the smooth-target plan's candidate 1: per-pixel $z_\text{re}(x,y)$ fitted from the lightcone (Gompertz/step LS), 2-D FNO with mask handling; **trained — see [[z_re Map Training Results]]**
 - [[Warped LOS Grid Plan]] — Non-uniform LOS cache grid (density ∝ ensemble-mean $|dx_\text{HI}/d\chi|$, CDF-inverted): the uniform-z cache is ~37 Mpc at low z where fronts live; round-trip evaluation tool + volume-weighted loss merged; **evaluated on real cones — see [[Warped LOS Grid Evaluation]]**
 
-## Reading Order
+## Suggested Starting Point
 
 Read [[P1 EFT Characterization]] first — P2 depends on the P1 pipeline and its outputs. Each document is self-contained but cross-references the other.
 
-## How These Relate to Other Wiki Pages
+## Related Background
 
 - Physics background: [[Effective Field Theory]], [[Reionization Physics]], [[Simulation and Codes]]
 - Foundational paper for P1 methodology: [[McQuinn & D'Aloisio 2018]]

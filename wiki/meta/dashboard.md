@@ -31,7 +31,7 @@ LIST FROM "wiki/entities" WHERE !sources OR length(sources) = 0
 LIST FROM "wiki/questions" WHERE answer_quality = "draft" SORT updated DESC
 ```
 
-## Papers Not Yet Ingested
+## Papers Not Yet Summarized
 
 ```dataview
 LIST FROM "wiki/sources" WHERE status = "seed" SORT created ASC
