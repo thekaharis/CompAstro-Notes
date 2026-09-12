@@ -1,14 +1,14 @@
 ---
 type: meta
 title: "Hot Cache"
-updated: 2026-08-23T00:00:00
+updated: 2026-09-12T00:00:00
 ---
 
 # Recent Context
 
 ## Last Updated
 
-2026-08-23 — Reanalysed the completed matrix evaluation and wrote [[Phase Coherence and Bubble Size Bias]]: small-scale **phase** accuracy, rather than small-scale amplitude, controls bubble morphology. On 2026-08-17, the 3-D architecture × loss matrix was fully evaluated on held-out cones; the results are in [[3-D Operator Matrix Final Results]]. Earlier in this cycle, I wrote up [[Granulometry (BSD) Auxiliary Loss]], [[U-FNO BatchNorm Train-Eval Mismatch]], and [[LOS-Monotone Theta Key in 3-D]].
+2026-09-12 — Settled whether the U-FNO's 3-D gains were line-of-sight gains: **they are not** — see [[3-D Operator Matrix Final Results]] §7.1. On 2026-08-23, reanalysed the completed matrix evaluation and wrote [[Phase Coherence and Bubble Size Bias]]: small-scale **phase** accuracy, rather than small-scale amplitude, controls bubble morphology. On 2026-08-17, the 3-D architecture × loss matrix was fully evaluated on held-out cones; the results are in [[3-D Operator Matrix Final Results]]. Earlier in this cycle, I wrote up [[Granulometry (BSD) Auxiliary Loss]], [[U-FNO BatchNorm Train-Eval Mismatch]], and [[LOS-Monotone Theta Key in 3-D]].
 
 ## Key Facts From The Matrix (2026-08-17)
 
@@ -29,6 +29,15 @@ updated: 2026-08-23T00:00:00
 - **Speed-accuracy Pareto front = {`cnn/whno`, U-FNO}** only. Every Walsh/SIREN cell is beaten on both axes.
 - **The global operator is free**: `fno/fno` and `fno/whno` differ by 0.005% in time across 14.7 M parameters. Cost lives in the local slot — which §5 also finds sets bubble size.
 - Memory tracks activation shape, not weights: U-FNO 10.3 GB, the ~1 M-param `bw48om60` cells 8.3 GB, the 2.6 M-param `whno/whno` 3.8 GB.
+
+## Anisotropy of the U-FNO Advantage (2026-09-12)
+
+- **The U-FNO's 3-D spectral advantage is transverse, not line-of-sight.** Decomposing its cylindrical advantage over the other eight matrix models: $k_\parallel$ explains **under 14.9% in all 18 comparisons** (usually under 7%), $k_\perp$ **43–94%**.
+- The amplitude gain is a horizontal band (flat in $k_\parallel$); the coherence gain is a vertical stripe at $k_\perp \gtrsim 1$. That is the **transpose** of the pattern a LOS-concentrated gain would make.
+- **Closes the transverse-only asymmetry** (§3): the U-Net path has already saturated the transverse direction, so a transverse-only term has nothing left to buy on U-FNO (8.728 → 8.736) while `fno/whno` gained 22%.
+- Consistent with the `cnn` local slot winning on **Darcy**, which has no line of sight — the mechanism is isotropic local bandwidth. $z$ is where this dataset has the headroom, not what the architecture is doing.
+- **Limit**: $k_\parallel$ only sampled to $0.16\ h\,$Mpc$^{-1}$ (vs 1.9 for $k_\perp$). The small-scale LOS band is untested — finer LOS binning is the follow-up.
+- U-FNO is **not** the cylindrical leader: `cnn/swhno` and `cnn/whno` beat it on amplitude; it still leads all nine on decoherence.
 
 ## Phase / BSD Connection (2026-08-23)
 

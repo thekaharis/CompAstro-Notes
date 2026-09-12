@@ -2,7 +2,7 @@
 type: finding
 title: "3-D Operator Matrix Final Results"
 created: 2026-08-17
-updated: 2026-08-23
+updated: 2026-09-12
 tags:
   - domain/thesis
   - domain/ml
@@ -42,6 +42,7 @@ sources:
   - "`figures/summary/operator_variant_benchmark.json` (23-variant cost benchmark, a30, regenerated 2026-08-16)"
   - "`viz/rmse_r2_eval.py`, `viz/plot_params_vs_accuracy.py`, `slurm/final_eval_suite.sbatch`"
   - "`viz/inference_speed_eval.py`, `viz/plot_inference_speed.py` (added 2026-08-17)"
+  - "`figures/shared/eval/final_eval/matrix/ps/cyl_anisotropy_decomposition.{png,csv}`, `viz/cyl_anisotropy_decomposition.py` (cylindrical split, added 2026-09-12)"
 ---
 
 # 3-D Operator Matrix Final Results
@@ -417,6 +418,80 @@ and it inverts the leaderboard. **No model in the matrix is good at both.**
 > anti-correlation between the two columns is itself only $\rho = -0.47$
 > ($p = 0.21$) — a property of these architectures, not a law.
 
+### 7.1 Is the U-FNO advantage a line-of-sight advantage?
+
+Asked directly: the U-FNO's headline 3-D wins — front width 8.73 Mpc vs
+25.34 for `fno/whno` (§4), best coherence (§7) — are both naturally read as
+*line-of-sight* wins, and [[LOS Bandwidth as the 3-D Bottleneck]] says $z$ is
+where the spectral headroom is. So: **were all of the U-FNO's 3-D gains in the
+$z$ direction?**
+
+**No.** The `ps` suite already saved cylindrical spectra —
+`cyl_ratio_med` and `cyl_r_med`, $(3\ z\text{-slabs} \times 16\ k_\parallel
+\times 15\ k_\perp)$ medians over the same 200 cones — so the question is pure
+post-processing. `viz/cyl_anisotropy_decomposition.py` splits the error into
+amplitude $|\log_{10} P_\text{pred}/P_\text{truth}|$ and decoherence $1 - r(k)$,
+then decomposes U-FNO's advantage over each of the other eight models into a
+$k_\parallel$ main effect, a $k_\perp$ main effect and a residual
+(variance shares, averaged over the three redshift slabs).
+
+| channel | reference | mean adv. | $k_\parallel$ | $k_\perp$ | resid |
+| --- | --- | ---: | ---: | ---: | ---: |
+| amplitude | wno / whno | +0.043 | 8.5% | **64.2%** | 27.3% |
+| amplitude | swhno / swhno | +0.036 | 6.9% | **86.9%** | 6.1% |
+| amplitude | whno / whno | +0.030 | 6.1% | **86.3%** | 7.6% |
+| amplitude | whno / swhno | +0.029 | 6.3% | **87.7%** | 6.0% |
+| amplitude | fno / whno | +0.011 | 14.9% | **43.3%** | 41.8% |
+| amplitude | fno / fno (bsd) | +0.007 | 3.7% | **87.3%** | 9.0% |
+| amplitude | cnn / whno | −0.011 | 9.3% | **56.3%** | 34.5% |
+| amplitude | sfno / swhno | −0.013 | 11.0% | **73.6%** | 15.4% |
+| amplitude | cnn / swhno | −0.013 | 9.6% | **66.7%** | 23.7% |
+| decoherence | wno / whno | +0.034 | 0.8% | **93.8%** | 5.4% |
+| decoherence | fno / whno | +0.026 | 5.6% | **72.6%** | 21.9% |
+| decoherence | whno / whno | +0.023 | 6.3% | **72.5%** | 21.2% |
+| decoherence | swhno / swhno | +0.014 | 8.8% | **51.2%** | 40.0% |
+| decoherence | fno / fno (bsd) | +0.014 | 4.2% | **76.1%** | 19.7% |
+| decoherence | whno / swhno | +0.013 | 7.4% | **55.0%** | 37.7% |
+| decoherence | cnn / swhno | +0.005 | 1.9% | **76.4%** | 21.6% |
+| decoherence | sfno / swhno | +0.005 | 3.6% | **67.4%** | 29.1% |
+| decoherence | cnn / whno | +0.004 | 3.8% | **61.1%** | 35.1% |
+
+![[matrix_ps_cyl_anisotropy.png]]
+
+**Across all 18 comparisons $k_\parallel$ never explains more than 14.9% of the
+advantage structure, and usually under 7%; $k_\perp$ carries 43–94%.** The
+2-D maps show it directly: the amplitude advantage is a horizontal band (varies
+with $k_\perp$, flat in $k_\parallel$) and the coherence advantage is a vertical
+stripe in the highest $k_\perp$ bins. The hypothesis fails on its own predicted
+signature — a LOS-concentrated gain would appear as structure in
+$k_\parallel$ and flatness in $k_\perp$, and the observed pattern is the
+transpose of that.
+
+This is the reading that fits the rest of the campaign. The U-Net path is an
+**isotropic** 3-D convolution, and the same `cnn` local slot wins on Darcy,
+which has no line of sight at all
+([[Structured-Transform Operator Findings]]). What $z$ determines is where a
+general capability *pays off* in these lightcones, not what the capability is.
+It also explains the §3 null: transverse-only edge losses did nothing for
+U-FNO (8.728 → 8.736) because the U-Net path had already saturated the
+transverse direction, while `fno/whno` still had 25.34 → 19.86 Mpc to gain.
+
+Three qualifications:
+
+1. **The $k_\parallel$ grid only reaches $0.16\ h\,$Mpc$^{-1}$**, against 1.9
+   for $k_\perp$ — the cache's LOS sampling is coarse relative to the
+   transverse plane. The result rules out a LOS-concentrated gain *within the
+   sampled band*; a gain at $k_\parallel > 0.2$ would be invisible to this test.
+   Re-running the `ps` suite on a finer LOS binning is the way to close that.
+2. **The front-width win (§4) stands and is still LOS geometry** — but it does
+   not appear as a $k_\parallel$-localised coherence gain, so it is most likely
+   the broadband low-$k$ phase accuracy expressed in real space, not a separate
+   $z$-specific capability.
+3. **U-FNO is not the cylindrical leader.** `cnn/swhno` and `cnn/whno` beat it
+   on amplitude (−0.013, −0.011) while it still leads every model on
+   decoherence. The same placement-vs-amount split as §7, now localised to
+   $k_\perp \gtrsim 1\ h\,$Mpc$^{-1}$.
+
 ## 8. What this establishes
 
 1. **The Walsh–Hadamard global slot transfers from 2-D to 3-D**, and the SIREN
@@ -440,7 +515,12 @@ and it inverts the leaderboard. **No model in the matrix is good at both.**
    $P(k)$ amplitude and $P(k)$ coherence produce four different leaders. The
    thesis has to pick a scoreboard on physical grounds rather than inherit
    `val_l2`.
-6. **Universal high bias in nearly-ionized gas** (+0.19 at best), untouched by
+6. **The U-FNO's spectral advantage is transverse, not line-of-sight.**
+   Splitting the cylindrical error, $k_\parallel$ explains under 15% of it
+   in every comparison and $k_\perp$ 43–94% (§7.1). The U-Net path buys
+   isotropic local bandwidth; $z$ is merely where this dataset has the most
+   headroom to spend it.
+7. **Universal high bias in nearly-ionized gas** (+0.19 at best), untouched by
    any architecture or loss in the sweep.
 
 ## Open
@@ -450,7 +530,11 @@ and it inverts the leaderboard. **No model in the matrix is good at both.**
   sharpness ceiling that no loss can lift.
 - **`cnn/swhno` + hybrid.** The CNN local slot has the best morphology and the
   hybrid term has the best front width; the combination was never run.
-- **Why transverse-only helps `fno/whno` and not U-FNO** (§3).
+- ~~**Why transverse-only helps `fno/whno` and not U-FNO** (§3).~~
+  Answered 2026-09-12 by §7.1: the U-Net path has already saturated the
+  transverse direction, so a transverse-only term has nothing left to buy.
+- **Cylindrical spectra on a finer LOS binning.** §7.1 only probes
+  $k_\parallel \le 0.16\ h\,$Mpc$^{-1}$; the small-scale LOS band is untested.
 - **The FNO+WHNO ensemble** proposed by [[Pérez Cuadrado et al 2025 (WHNO)]] is
   still untried, and §7's coherence/amplitude anti-correlation is now a concrete
   motivation for it — the two bases fail in complementary ways.

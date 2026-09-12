@@ -1,12 +1,30 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-08-23
+updated: 2026-09-12
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-09-12] analyse | The U-FNO's 3-D advantage is transverse, not line-of-sight
+
+**Sources**: no new runs — cylindrical reanalysis of `figures/shared/eval/final_eval/matrix/ps/ps_results.npz` (`cyl_ratio_med`, `cyl_r_med`, 200 cones). New script `viz/cyl_anisotropy_decomposition.py`; outputs `figures/shared/eval/final_eval/matrix/ps/cyl_anisotropy_decomposition.{png,csv}`.
+
+**Updates**: new §7.1 in [[3-D Operator Matrix Final Results]], plus §8 point 6 and one Open item closed; pointer added to [[LOS Bandwidth as the 3-D Bottleneck]].
+
+**Question**: the U-FNO's two headline 3-D wins — front width 8.73 vs 25.34 Mpc for `fno/whno`, and best $P(k)$ coherence — are both naturally read as line-of-sight wins, and [[LOS Bandwidth as the 3-D Bottleneck]] says $z$ is where the spectral headroom is. Were *all* of the gains in $z$?
+
+**Method**: split the cylindrical error into amplitude $|\log_{10} P_\text{pred}/P_\text{truth}|$ and decoherence $1-r(k)$, then decompose U-FNO's advantage over each of the other eight matrix models into $k_\parallel$ and $k_\perp$ main effects plus a residual (two-way variance shares, averaged over the three redshift slabs).
+
+**Headline**: **no.** Across all 18 comparisons $k_\parallel$ never explains more than **14.9%** of the advantage structure and usually under 7%, while $k_\perp$ carries **43–94%**. The amplitude advantage is a horizontal band (flat in $k_\parallel$) and the coherence advantage a vertical stripe at the highest $k_\perp$. The hypothesis fails on its own predicted signature — the observed pattern is the transpose of a LOS-concentrated gain.
+
+**Why this fits**: the U-Net path is an *isotropic* 3-D convolution, and the same `cnn` local slot wins on Darcy, which has no line of sight. $z$ determines where a general capability pays off in these lightcones, not what the capability is. It also closes the §3 null — transverse-only edge losses did nothing for U-FNO (8.728 → 8.736) because the U-Net path had already saturated the transverse direction, while `fno/whno` still had 25.34 → 19.86 Mpc to gain.
+
+**Caveats**: the $k_\parallel$ grid only reaches $0.16\ h\,$Mpc$^{-1}$ against 1.9 for $k_\perp$, so a LOS gain at $k_\parallel > 0.2$ would be invisible — the claim holds only within the sampled band. The front-width win stands and is still LOS geometry, but it shows up as broadband low-$k$ phase accuracy rather than a $z$-specific capability. And U-FNO is not the cylindrical leader: `cnn/swhno` and `cnn/whno` beat it on amplitude while it still leads everything on decoherence.
 
 ---
 
