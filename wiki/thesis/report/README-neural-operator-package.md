@@ -16,7 +16,7 @@ external data, Python packages, or local project paths are required.
 |---|---|
 | `fno_training_trajectories.png` | `_attachments/fno_training_trajectories.png` |
 | `mode_weight_profiles_3d.png` | `wiki/thesis/findings/figures/localfno-mode-weights_20260720/mode_weight_profiles_3d.png` |
-| `lightcone_grid_3d_validation.png` | `wiki/thesis/findings/figures/ufno-detailed_20260606-234954_job3966888/lightcone_grid_3d_validation.png` |
+| `lightcone_grid_3d_validation.png` | `wiki/thesis/findings/figures/archive/ufno-detailed_20260606-234954_job3966888/lightcone_grid_3d_validation.png` |
 | `comparison_3d_validation_cone61.png` | Same U-FNO validation figure directory |
 | `comparison_3d_validation_cone2322.png` | Same U-FNO validation figure directory |
 | `matrix_params_vs_rmse.png` | `_attachments/matrix_params_vs_rmse.png` |

@@ -29,9 +29,9 @@ related:
   - "[[Granulometry (BSD) Auxiliary Loss]]"
   - "[[Square-Wave Basis for Ionization Fields]]"
 sources:
-  - "`figures/final_eval/matrix/ps/ps_results.npz` (stage-resolved $r(k)$, $P_\\text{pred}/P_\\text{true}$, $\\Delta^2$ medians)"
-  - "`figures/final_eval/matrix/bsd/bubble_size_metrics.csv` (MFP metrics per model per stage)"
-  - "`figures/final_eval/matrix/rmse/rmse_r2.csv` (pooled RMSE / $R^2$, for the partial correlations)"
+  - "`figures/shared/eval/final_eval/matrix/ps/ps_results.npz` (stage-resolved $r(k)$, $P_\\text{pred}/P_\\text{true}$, $\\Delta^2$ medians)"
+  - "`figures/shared/eval/final_eval/matrix/bsd/bubble_size_metrics.csv` (MFP metrics per model per stage)"
+  - "`figures/shared/eval/final_eval/matrix/rmse/rmse_r2.csv` (pooled RMSE / $R^2$, for the partial correlations)"
   - "`viz/bubble_size_evaluation.py` (estimator definition)"
   - "`Poster/euCAIF/make_coh_bsd_fig.py`, `Poster/euCAIF/make_mechanism_fig.py` (analysis + figures, 2026-08-23)"
 ---

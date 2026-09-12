@@ -20,7 +20,7 @@ related:
   - "[[Neutral Fraction]]"
   - "[[3-D Operator Matrix Final Results]]"
 sources:
-  - "figures/grid_eval_out50_real/grid_eval.csv (real cones, 926,903 front rays)"
+  - "figures/shared/eval/grid_eval_out50_real/grid_eval.csv (real cones, 926,903 front rays)"
   - "checkpoints_3d_localfno_warped256*"
 ---
 

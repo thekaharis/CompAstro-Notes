@@ -161,7 +161,7 @@ All runs pure L² except `localwno_lr3e4_h1e3` (L²+0.001·H¹, val 0.1543). Ful
 ### Diagnostics
 
 - **Mode-weight profiles (3-D Local-FNO).** Edge/peak weight ratio is 0.03–0.20 on the x and y axes but **0.60–0.78 on the LOS (z) axis** in the bottleneck and decoders. **The binding bandwidth constraint in 3-D is the LOS direction** — which the 2-D $z_\text{re}$ task structurally cannot inform. `LOCALFNO_MODES_Z` (12, cap 17) and the bottleneck z modes (16, cap 33) both have headroom.
-- **Power spectra.** Both U-FNO and Local-FNO lose transverse power above $k_\perp \sim 1\,\text{Mpc}^{-1}$ (the front-smoothing signature). Local-FNO additionally *gains* spurious low-k power at early epochs, growing with redshift — consistent with a window-grid artifact. Figures: `figures/ps_out/localfno-vs-ufno-contrastz7/`.
+- **Power spectra.** Both U-FNO and Local-FNO lose transverse power above $k_\perp \sim 1\,\text{Mpc}^{-1}$ (the front-smoothing signature). Local-FNO additionally *gains* spurious low-k power at early epochs, growing with redshift — consistent with a window-grid artifact. Figures: `figures/3d_xhi/eval/ps_out/localfno-vs-ufno-contrastz7/`.
 - **Boundary band.** Truth front width 3.6 Mpc; both models predict **12–14 Mpc**, i.e. fronts ~3.5× too smooth — *despite* the H¹-dominated loss. This is the observation the [[Contrast Map Sharpening]] investigation set out to explain, and it is now attributed to the objective rather than the bandwidth (see [[Hedging Bias of Pointwise Losses]]).
 
 ## 4. Infrastructure

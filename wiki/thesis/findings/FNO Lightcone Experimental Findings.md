@@ -295,29 +295,29 @@ The U-FNO beats the FNO on every metric, on both held-out splits, and reaches it
 
 #### Visual evidence (16-cone detailed viz, epoch 29)
 
-The metric improvement above is mirrored by the qualitative behaviour on three diagnostic cones spanning the reionization-rate axis.  All figures from the `figures/ufno-detailed_20260606-234954_job3966888/` viz run on the converged U-FNO checkpoint.
+The metric improvement above is mirrored by the qualitative behaviour on three diagnostic cones spanning the reionization-rate axis.  All figures from the `figures/archive/ufno-detailed_20260606-234954_job3966888/` viz run on the converged U-FNO checkpoint.
 
 **Cone 61 — heavily reionized.** The pre-SyncBN U-FNO predicted this cone catastrophically wrong: it produced a smooth blob centred around $z \approx 11$ that decayed at *both* the low-z and the high-z extremes, despite the truth being uniform yellow above $z \approx 9$.  We diagnosed it as a U-Net LOS receptive-field artefact.  Post-SyncBN, the prediction matches the truth across the full LOS extent, including the high-z neutral region:
 
-![cone 61 lightcone strip](figures/ufno-detailed_20260606-234954_job3966888/lightcone_3d_validation_cone61.png)
+![cone 61 lightcone strip](figures/archive/ufno-detailed_20260606-234954_job3966888/lightcone_3d_validation_cone61.png)
 
 The Pred − True panel (bottom row) is mostly white, with residuals concentrated in a narrow band around $z \approx 8\text{--}9.5$ — exactly where the reionization transition happens for this cone.  Scatter for the same cone: R² = 0.97, RMSE = 0.070.  The high-z artefact diagnosed at epoch 20 of the pre-SyncBN run is **fully resolved**.
 
 **Cone 2322 — partially reionized.**  A textbook "patchy" cone where the bubble morphology in the transition window ($z \lesssim 8$) is what the model has to capture.  The predicted x_HI panel reproduces the truth's bubble speckle pattern almost cell-for-cell:
 
-![cone 2322 lightcone strip](figures/ufno-detailed_20260606-234954_job3966888/lightcone_3d_validation_cone2322.png)
+![cone 2322 lightcone strip](figures/archive/ufno-detailed_20260606-234954_job3966888/lightcone_3d_validation_cone2322.png)
 
 The residual structure in Pred − True is at the *edges* of bubbles, not in their interiors -- the sharpness penalty that drove the `val_h1` improvement made visible.  Bubble walls in the prediction are visibly narrower than in any FNO baseline figure.
 
 **Cone 1982 — fully neutral.**  Trivially yellow throughout; the model reproduces it cleanly with essentially zero residual:
 
-![cone 1982 lightcone strip](figures/ufno-detailed_20260606-234954_job3966888/lightcone_3d_validation_cone1982.png)
+![cone 1982 lightcone strip](figures/archive/ufno-detailed_20260606-234954_job3966888/lightcone_3d_validation_cone1982.png)
 
 This is the easy case, included for the record so the visual progression across all three regimes is clear.
 
 **Summary grid across 16 cones (validation split).**  All 16 stratified cones on one page -- spans `<x_HI>(z=7)` from ≈ 0.0 (cone 61) to ≈ 1.0 (cone 1982):
 
-![lightcone summary grid (validation)](figures/ufno-detailed_20260606-234954_job3966888/lightcone_grid_3d_validation.png)
+![lightcone summary grid (validation)](figures/archive/ufno-detailed_20260606-234954_job3966888/lightcone_grid_3d_validation.png)
 
 Reading the grid top-to-bottom: heavily reionized → mostly neutral.  In every row, the Pred − True panel is dominated by white (low error); residuals appear only where the cone has spatial structure in the transition window.  No row exhibits the diffuse cone-level mis-calibration that the pre-SyncBN run showed.
 

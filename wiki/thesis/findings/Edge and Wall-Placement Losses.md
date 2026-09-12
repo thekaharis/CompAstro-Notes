@@ -23,7 +23,7 @@ related:
 sources:
   - "[[.raw/reports/NOTES-contrast-map.md]]"
   - "losses.py (SlicedWassersteinEdges, HighKPowerRatio, WallPlacementLoss, ExponentialWallDistance, H1Seminorm)"
-  - "figures/xhi2d_all_variants.md (29 runs, 384 shared held-out slices)"
+  - "figures/summary/xhi2d_all_variants.md (29 runs, 384 shared held-out slices)"
 ---
 
 # Edge and Wall-Placement Losses

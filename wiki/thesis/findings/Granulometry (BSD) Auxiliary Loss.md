@@ -25,7 +25,7 @@ related:
 sources:
   - "implementation: `losses.py` `GranulometrySpectrum`, `LOSS=bsd` in `slurm/train_3d_matrix.sbatch`"
   - "runs 4485729/30/31 (ufno expwall / hybrid / bsd, all groupnorm, seed-matched)"
-  - "evaluation: job 4494775, `figures/bubble_size_out/ufno_trio/`"
+  - "evaluation: job 4494775, `figures/3d_xhi/eval/bubble_size_out/ufno_trio/`"
 ---
 
 # Granulometry (BSD) Auxiliary Loss

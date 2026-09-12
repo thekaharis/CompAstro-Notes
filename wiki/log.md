@@ -12,7 +12,7 @@ updated: 2026-08-23
 
 ## [2026-08-23] analyse | Phase coherence, not small-scale amplitude, controls the bubble-size distribution
 
-**Sources**: no new runs — reanalysis of `figures/final_eval/matrix/{ps/ps_results.npz, bsd/bubble_size_metrics.csv, rmse/rmse_r2.csv}` from the closed matrix. New scripts `Poster/euCAIF/make_coh_bsd_fig.py`, `Poster/euCAIF/make_mechanism_fig.py`.
+**Sources**: no new runs — reanalysis of `figures/shared/eval/final_eval/matrix/{ps/ps_results.npz, bsd/bubble_size_metrics.csv, rmse/rmse_r2.csv}` from the closed matrix. New scripts `Poster/euCAIF/make_coh_bsd_fig.py`, `Poster/euCAIF/make_mechanism_fig.py`.
 
 **Updates**: new [[Phase Coherence and Bubble Size Bias]]; pointers added to [[3-D Operator Matrix Final Results]] §5, §7.
 
@@ -28,7 +28,7 @@ updated: 2026-08-23
 
 ## [2026-08-17] measure | Inference cost of the matrix checkpoints; the parameter-efficiency headline is storage-only
 
-**Sources**: `fno-21cm` — job 4584895 (`figures/final_eval/matrix/speed/`), new `viz/inference_speed_eval.py` and `viz/plot_inference_speed.py`, `speed` suite added to `slurm/final_eval_suite.sbatch`.
+**Sources**: `fno-21cm` — job 4584895 (`figures/shared/eval/final_eval/matrix/speed/`), new `viz/inference_speed_eval.py` and `viz/plot_inference_speed.py`, `speed` suite added to `slurm/final_eval_suite.sbatch`.
 
 **Updates**: [[3-D Operator Matrix Final Results]] §1, §2.1 (new), §8.
 
@@ -48,7 +48,7 @@ updated: 2026-08-23
 
 ## [2026-08-17] ingest | 3-D matrix campaign closed; final held-out evaluation of every cell
 
-**Sources**: `fno-21cm` — 27 completed `checkpoints_3d_*/metrics.jsonl`, final eval suite jobs 4580652–4580663 (`figures/final_eval/matrix/{rmse,bsd,edge3d,edgeslice,parity,ps}/`), loss-axis edge comparison (`figures/final_eval/lossaxis/`), transverse runs (`figures/edge_metrics_out/tsw_*_slice/`), regenerated `figures/operator_variant_benchmark.json`.
+**Sources**: `fno-21cm` — 27 completed `checkpoints_3d_*/metrics.jsonl`, final eval suite jobs 4580652–4580663 (`figures/shared/eval/final_eval/matrix/{rmse,bsd,edge3d,edgeslice,parity,ps}/`), loss-axis edge comparison (`figures/shared/eval/final_eval/lossaxis/`), transverse runs (`figures/3d_xhi/eval/edge_metrics_out/tsw_*_slice/`), regenerated `figures/summary/operator_variant_benchmark.json`.
 
 **New page**: [[3-D Operator Matrix Final Results]] — the campaign result for the 3-D task.
 
@@ -70,7 +70,7 @@ updated: 2026-08-23
 
 ## [2026-08-10] ingest | BSD auxiliary loss works; 3-D leaderboard re-scored on a 20-epoch cap
 
-**Sources**: `fno-21cm` — runs 4485729/30/31 (seed-matched ufno expwall/hybrid/bsd), BSD evaluation job 4494775 (`figures/bubble_size_out/ufno_trio/`), `losses.py` `GranulometrySpectrum`, all completed 3-D `metrics.jsonl`.
+**Sources**: `fno-21cm` — runs 4485729/30/31 (seed-matched ufno expwall/hybrid/bsd), BSD evaluation job 4494775 (`figures/3d_xhi/eval/bubble_size_out/ufno_trio/`), `losses.py` `GranulometrySpectrum`, all completed 3-D `metrics.jsonl`.
 
 **New page**: [[Granulometry (BSD) Auxiliary Loss]] — positive.
 
@@ -107,7 +107,7 @@ updated: 2026-08-23
 
 ## [2026-07-28] ingest+synthesis | 07-28 work filed; merged with the 07-26/27 parallel ingest
 
-**Sources**: `fno-21cm` at `6bded26` (40 commits since 07-17) — `FINDINGS-2026-07-26.md`, `NOTES-contrast-map.md`, `losses.py`, `operators.py`, `README.md` §modular operator slots, `figures/xhi2d_all_variants.md`, `figures/operator_variant_benchmark.json`, `figures/grid_eval_out50_real/`, `figures/bubble_size_out/`, `figures/localfno-mode-weights-{3d,zre}_20260720/`, plus 29 completed 2-D and 26 completed z_re checkpoint dirs.
+**Sources**: `fno-21cm` at `6bded26` (40 commits since 07-17) — `FINDINGS-2026-07-26.md`, `NOTES-contrast-map.md`, `losses.py`, `operators.py`, `README.md` §modular operator slots, `figures/summary/xhi2d_all_variants.md`, `figures/summary/operator_variant_benchmark.json`, `figures/shared/eval/grid_eval_out50_real/`, `figures/3d_xhi/eval/bubble_size_out/`, `figures/localfno-mode-weights-{3d,zre}_20260720/`, plus 29 completed 2-D and 26 completed z_re checkpoint dirs.
 
 > [!note] **This entry is the result of a two-branch merge.** The 07-26 and 07-27 entries below were written in a parallel session and pushed to `origin/main`; this session's work was committed locally from the same 07-16 base. Both were merged rather than either being force-overwritten. Where the two sessions wrote the same concept under different names, the **earlier (remote) name is canonical** and this session's version was folded into it and deleted:
 > - `Hedged Edges vs Blurred Edges` → folded into **[[Hedging Bias of Pointwise Losses]]**
@@ -295,7 +295,7 @@ updated: 2026-08-23
 
 ## [2026-06-07] finding | U-FNO + SyncBN -- architectural breakthrough; Act 5 written up
 
-**Source**: 30-epoch U-FNO + SyncBN run on the 4× H200 NVL cluster, `checkpoints_3d_ufno/metrics.jsonl`.  16-cone detailed viz run on the converged checkpoint (`figures/ufno-detailed_20260606-234954_job3966888/`) confirms the cone-61 high-z artefact diagnosed at epoch 20 of the pre-SyncBN run is fully resolved.
+**Source**: 30-epoch U-FNO + SyncBN run on the 4× H200 NVL cluster, `checkpoints_3d_ufno/metrics.jsonl`.  16-cone detailed viz run on the converged checkpoint (`figures/archive/ufno-detailed_20260606-234954_job3966888/`) confirms the cone-61 high-z artefact diagnosed at epoch 20 of the pre-SyncBN run is fully resolved.
 
 **Finding note updated**: [[FNO Lightcone Experimental Findings]] gains a new **§Act 5 -- U-FNO architecture: decisive breakthrough**.  Subsections: hypothesis, change, the **SyncBN gotcha** (documented as a methodological lesson), the 30-epoch trajectory table, comparison vs the FNO 100-epoch asymptote, **visual evidence** (embeds three diagnostic-cone lightcone strips + the 16-cone summary grid), and a paragraph on why `val_h1 = 8.27` is the bubble-wall-sharpness signal.  The §Headline Results table is updated from 4 to 5 rows; the §Synthesis section is rewritten -- the previous "information-bound" diagnosis is explicitly retracted in favour of an **inductive-bias-bound** reading with two boxed operational floors (pure-FNO at 0.056 / 11.36, U-FNO at 0.042 / 8.27).
 

@@ -35,11 +35,11 @@ related:
   - "[[LOS Bandwidth as the 3-D Bottleneck]]"
 sources:
   - "`checkpoints/checkpoints_3d_*/metrics.jsonl` (27 completed 3-D matrix runs)"
-  - "`figures/final_eval/matrix/{rmse,bsd,edge3d,edgeslice,parity,ps}/` (final eval suite, jobs 4580652-4580663)"
-  - "`figures/final_eval/matrix/speed/` (inference timing, job 4584895, A100 80GB)"
-  - "`figures/final_eval/lossaxis/{edge3d,edgeslice}/` (loss-axis edge comparison)"
-  - "`figures/edge_metrics_out/tsw_*_slice/` (transverse-only edge runs)"
-  - "`figures/operator_variant_benchmark.json` (23-variant cost benchmark, a30, regenerated 2026-08-16)"
+  - "`figures/shared/eval/final_eval/matrix/{rmse,bsd,edge3d,edgeslice,parity,ps}/` (final eval suite, jobs 4580652-4580663)"
+  - "`figures/shared/eval/final_eval/matrix/speed/` (inference timing, job 4584895, A100 80GB)"
+  - "`figures/shared/eval/final_eval/lossaxis/{edge3d,edgeslice}/` (loss-axis edge comparison)"
+  - "`figures/3d_xhi/eval/edge_metrics_out/tsw_*_slice/` (transverse-only edge runs)"
+  - "`figures/summary/operator_variant_benchmark.json` (23-variant cost benchmark, a30, regenerated 2026-08-16)"
   - "`viz/rmse_r2_eval.py`, `viz/plot_params_vs_accuracy.py`, `slurm/final_eval_suite.sbatch`"
   - "`viz/inference_speed_eval.py`, `viz/plot_inference_speed.py` (added 2026-08-17)"
 ---
@@ -303,7 +303,7 @@ front width** is still the unrun experiment that would settle this.
 ## 5. Morphology — bubble size distribution
 
 Relative mean bubble-size bias per reionization stage
-(`figures/final_eval/matrix/bsd/`), 200 cones, restricted-mean estimator:
+(`figures/shared/eval/final_eval/matrix/bsd/`), 200 cones, restricted-mean estimator:
 
 | local / global | 0.02–0.20 | 0.20–0.40 | 0.40–0.60 | 0.60–0.80 | active 0.05–0.95 | JS (active) |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -345,7 +345,7 @@ global basis — as what sets bubble size.
 ## 6. Parity — the hedging bias, everywhere
 
 Conditional prediction distribution binned by true $x_\text{HI}$
-(`figures/final_eval/matrix/parity/`):
+(`figures/shared/eval/final_eval/matrix/parity/`):
 
 | local / global | bias, true $x_\text{HI}$ 0.02–0.10 | bias, > 0.90 | sign flip at |
 | --- | ---: | ---: | ---: |
@@ -379,7 +379,7 @@ interiors.
 ## 7. Power spectrum
 
 Two different things are measured and they disagree about who is best
-(`figures/final_eval/matrix/ps/`, active band 0.05–0.95):
+(`figures/shared/eval/final_eval/matrix/ps/`, active band 0.05–0.95):
 
 | local / global | $k$ where $r < 0.9$ | ratio err, $k > 1$ |
 | --- | ---: | ---: |

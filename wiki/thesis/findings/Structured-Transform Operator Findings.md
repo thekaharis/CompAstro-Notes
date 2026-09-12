@@ -25,8 +25,8 @@ related:
   - "[[3-D Operator Matrix Final Results]]"
 sources:
   - "[[.raw/reports/FINDINGS-2026-07-26.md]]"
-  - "figures/xhi2d_all_variants.md (29 runs, 384 shared held-out slices)"
-  - "figures/operator_variant_benchmark.json (A30 throughput benchmark)"
+  - "figures/summary/xhi2d_all_variants.md (29 runs, 384 shared held-out slices)"
+  - "figures/summary/operator_variant_benchmark.json (A30 throughput benchmark)"
 ---
 
 # Structured-Transform Operator Findings
