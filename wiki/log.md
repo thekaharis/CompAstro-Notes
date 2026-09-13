@@ -1,12 +1,34 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-09-12
+updated: 2026-09-13
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-09-13] analyse | The learned basis rediscovers Fourier: four inits, one destination
+
+**Sources**: `fno-21cm` — jobs 4902218/19/21 and 4905501/02 (identity ablation, `checkpoints/2d_xhi/{id_fno,id_lwf}/`), jobs 4899328-33 (separate transform), the 21-run seeded control matrix. New `IdentityOperator` in `operators.py`, positional grid embedding in `models_zre_2d.py` / `local_fno_3d.py`, figures under `figures/shared/diagnostics/waveforms/`.
+
+**Updates**: new [[Learned Waveform Basis Operator]]; pointers from [[Square-Wave Basis for Ionization Fields]], [[Structured-Transform Operator Findings]], index.
+
+**Question**: the Walsh results motivated a square-wave basis for a two-phase ionization field. Given a *learned* mother waveform instead, what basis does the model actually pick?
+
+**Headline**: **Fourier, from every direction tried.** With the local branch replaced by an identity operator so the global slot is the only operator left, the bottleneck mother table converges to a sine from sine (fixed point), square (0.914 → 0.9997), sawtooth (0.781 → 0.9995) and random (partial, one axis 0.9972), independently on both spatial axes.
+
+**Three checks against trivial explanations**: (1) the resampler keeps 15 harmonics at $k=1$ — the full Nyquist budget for a 31-bin table — so a square was fully representable and held no shape it could not have kept; (2) the table norm is conserved to 1.5-5% while the shape changes completely, the square's peak going 1.0 → 1.42 $\approx \sqrt{2}$, exactly the equal-RMS sine, so the motion runs along the sphere as the parametrization's gauge invariance predicts; (3) x and y are independent parameters and agree to four decimals.
+
+**Both halves of the result matter.** Positive: Fourier is the optimum within this candidate family on 2-D $x_\text{HI}$, *demonstrated* by convergence rather than assumed — and the square-wave intuition does not survive contact with a basis that can choose. Negative: every arm scores within 0.0013 of a plain FNO at 715 k vs 779 k parameters, so the adaptive basis has no headroom on this task.
+
+**Also settled**: separate analysis/synthesis banks are a clean null (square +0.0002, sawtooth -0.0005, both inside the floor) *despite* the banks genuinely diverging — to r = 0.67 at encoder0, while the bottleneck stays at 0.99. The freedom is used at the shallowest slots and ignored where it would matter. And deleting the windowed local branch costs at most one floor width while running **~4x faster** on 13% fewer parameters — the second time the window loop rather than the weight count has proved to be where the compute goes.
+
+**A prediction of mine failed and is recorded as such**: I expected the sawtooth's jump discontinuity to be a representational barrier and predicted it would stall near 0.89. It went to 0.9995. The barrier is the local branch, not the discontinuity — with a windowed local operator present the same sawtooth does stall at ~0.89 across three seeds.
+
+**Caveats**: single seed per identity arm; 2-D and bottleneck only; the §3 divergence is measured on mother tables, not effective post-QR bases; the identity arms carry grid embedding and the references do not, so the local-branch cost is really "local branch minus grid embedding".
 
 ---
 

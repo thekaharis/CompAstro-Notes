@@ -100,3 +100,21 @@ fail in complementary ways — which is precisely the condition under which
 amplitude-without-coherence signature is what a dyadic-convolution artifact would
 plausibly look like, so this test is now diagnostic rather than merely
 precautionary.
+
+## Resolved 2026-09-13 — the model does not want a square basis
+
+[[Learned Waveform Basis Operator]] tests this gap directly: instead of choosing
+between a Fourier and a square basis, the mother waveform is learned. Started at a
+square, with the full 15-harmonic Nyquist budget available to stay there, the
+bottleneck waveform walks to a **sine** (correlation 0.9997 on both axes) and scores
+within the replicate floor of a plain FNO. A sawtooth start does the same.
+
+So the two-phase-field / two-phase-basis intuition that motivated this page is not
+supported: given the freedom to build a square basis, the model discards it. The
+Walsh models' wins elsewhere need a different explanation, and
+[[Phase Coherence and Bubble Size Bias]] supplies one — their extra small-scale
+power is wrong-phase power.
+
+Caveat: 2-D $x_\text{HI}$ only, single seed per arm, and the candidate family is
+dilations and phase shifts of one mother waveform — a basis outside that family is
+untested.

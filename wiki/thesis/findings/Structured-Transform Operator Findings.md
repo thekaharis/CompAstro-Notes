@@ -111,3 +111,11 @@ A single re-evaluation of every completed 2-D run on the same 384 held-out test 
 - Does global-only Walsh–Hadamard transfer to **3-D** and to $z_\text{re}$? Untested — and the §1.3 lesson is explicit that a 2-D win is not a reliable predictor.
 - The `cnn` operator in either slot has not been run to convergence as a baseline, despite being the cheapest and the one the [[Windowed Local-FNO U-Net Findings]] interpretation implicates ("the U-FNO's edge comes from its real-space conv path").
 - Ordering (sequency vs natural) at larger truncation fractions.
+
+## Note added 2026-09-13 — the learned-basis follow-up
+
+[[Learned Waveform Basis Operator]] closes the loop on the basis-choice question this
+page opens. On 2-D $x_\text{HI}$, a learned mother waveform converges to Fourier from
+four different initializations and buys nothing over a plain FNO. It also finds that
+the **windowed local branch costs ~4x wall clock** for at most one replicate-floor
+width of accuracy — relevant to every `localop` cell tabulated here.
