@@ -1,12 +1,34 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-09-13
+updated: 2026-09-14
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-09-14] build | Two operators beyond diagonal-in-frequency: mixing, and pole-residue
+
+**Sources**: `fno-21cm` branch `codex/frequency-mixing-transform` (commit 153798a); new `laplace_operator.py` + `tests/check_laplace_equivalence.py` ported from `github.com/qianyingcao/Laplace-Neural-Operator`. Jobs 4921861-4921869 (mixing, running) and 4922105-4922110 (Laplace, queued).
+
+**Updates**: new [[Frequency-Mixing Operator]] and [[Laplace Neural Operator Port]].
+
+**No results yet** — both pages are method + verification + pre-registered expectations, written while the runs are in flight.
+
+**Why both matter**: every operator in the campaign so far is *diagonal in frequency* and they differ only in which basis is diagonalized. Frequency mixing breaks the diagonality; LNO replaces the multiplier with a pole-residue response that can represent non-periodic transients. LNO in particular is the one basis [[Learned Waveform Basis Operator]] could not have found — that search was over dilations and phase shifts of a mother waveform, which cannot produce a decaying exponential.
+
+**Frequency mixing, verified**: the synthesis net is zero-initialized, so at step 0 the operator is *exactly* a plain FNO — confirmed in float64 at `max abs(diff) = 0.000e+00`, residual Frobenius 0.0. A mixing run and a Fourier control at matched seed are the same function at step 0, making this the best-controlled paired contrast in the campaign. Cost measured on the real A100 runs: **+2%** per epoch at the bottleneck, **+22%** in the windowed local branch.
+
+**LNO, ported**: the reference implementation is `O(C^2 * prod(M) * prod(N))` — 0.23 GB at their published 50x50 size, **115 GB** at ours. Both offending tensors are outer products over the mode axes, so the pole sums can be taken before the grid contraction and neither needs to exist; cost falls to `O(C^2 * max(prod(N), prod(M)))` and **1 GB** measured. Equivalence against a literal transcription of `PR2d` holds at **3e-16 to 6e-16 relative** across three configurations — machine precision, so this is LNO and not something LNO-shaped.
+
+**Two precision traps worth remembering**: `Module.double()` does not convert **complex** parameters (they are not `is_floating_point()`), and `torch.fft.fftfreq` returns **float32** by default. Either one silently caps an operator at single precision.
+
+**A correction to my own diagnostic**: I had flagged the Fourier baseline's `weights2` as possibly dead, on a zero gradient. It is healthy — the probe used a `.sum()` loss, and `sum(irfftn(out))` depends only on the DC bin, so every non-DC gradient is structurally zero. Under a proper loss both quadrants get gradients of 353 and 360. No bug.
+
+**Pre-registered**: a result has to clear a paired mean of about -0.001 val_l2 against the `fno_fno` control to be distinguishable from the sd 0.0002-0.0009 seed floor. Noted in advance that the 2-D task has no time-like axis, so it is not a fair test of LNO's actual claim; the LOS axis of the 3-D task is.
 
 ---
 

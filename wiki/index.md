@@ -1,7 +1,7 @@
 ---
 type: meta
 title: Wiki Index
-updated: 2026-09-13
+updated: 2026-09-14
 ---
 
 # Wiki Index
@@ -104,6 +104,9 @@ updated: 2026-09-13
 - [[Smooth-Target Reparametrization Plan]] — Instead of learning $x_\text{HI}$ directly, learn a **smooth surrogate** (primary: $z_\text{re}(\mathbf{x})$, native 21cmFAST output; secondary: signed distance to front) and reconstruct $x_\text{HI}$ by deterministic thresholding. Uncertainty then appears as front *displacement* rather than front *blurring*. This is orthogonal to basis-side approaches and has good potential for EFT applications.
 - [[Lightcone z_re Map Target]] — Implementation of the smooth-target plan's candidate 1, modified so that per-pixel $z_\text{re}(x,y)$ is **fitted from existing lightcones** (Gompertz front / LS step per sightline) rather than taken from the native `z_re_box`. No re-simulation is needed, and the problem becomes 2-D (density LOS slices as channels → $z_\text{re}$ map, NaN pixels masked). A reconstruction check shows that the lo-z/optimal step recovers global $x_\text{HI}(z)$ at voxel MSE ≈ 0.008–0.05; late reionizers are 79–99% no-front (the sentinel problem is real). Training results are in [[z_re Map Training Results]] and [[Loss Objective and Operator Basis Sweep]].
 - [[Warped LOS Grid Plan]] — The cube cache's uniform-z LOS grid is **~37 Mpc at low z where the fronts live** (versus ~5 Mpc at saturated high z), a hard, model-independent bound on wall fidelity. The proposed **warped grid** samples with density ∝ ensemble-mean $|d\langle x_\text{HI}\rangle/d\chi|$ plus a floor and uses CDF inversion; envelope, uniform-χ, and crop variants are also considered. The training-free round-trip evaluator and per-timing-class metrics are in place, as are `build_cubes.py --target-z` and the Δχ volume-weighted loss. Real-cone results are in [[Warped LOS Grid Evaluation]].
+
+- [[Frequency-Mixing Operator]] — **In flight, no results yet** (jobs 4921861-4921869). Every operator in the campaign so far is *diagonal in frequency* and they differ only in which basis is diagonalized; this one couples modes, adding a coordinate-generated low-rank cross-frequency residual to the Fourier multiplier. Its synthesis net is zero-initialized, so at step 0 it is **exactly** a plain FNO (verified, `max abs(diff) = 0.000e+00` in float64) — control and treatment at matched seed are the same function at step 0, making this the best-controlled paired contrast in the campaign. Measured cost +2% per epoch at the bottleneck, +22% in the windowed local branch. Bar for a real result: paired mean below about −0.001 val_l2 against the `fno_fno` control that this batch also had to create.
+- [[Laplace Neural Operator Port]] — **Queued, no results yet** (jobs 4922105-4922110). Port of the pole-residue operator of Cao et al. 2023 — a transient plus steady-state response that can represent non-periodic signals, and the one basis [[Learned Waveform Basis Operator]] could not have found, since dilations and phase shifts of a mother waveform cannot make a decaying exponential. The reference implementation is $O(C^2 \prod M \prod N)$: 0.23 GB at their published 50×50, **115 GB** at our 140×140. Both offending tensors are outer products over the mode axes, so the pole sums factor out and the cost falls to 1 GB measured; equivalence against a literal transcription of `PR2d` holds at **3e-16 relative**. Note `modes` counts *poles* there, not a spectral cutoff — nothing is truncated. Flagged in advance: 2-D $x_\text{HI}$ has no time-like axis, so this is not a fair test of the method's actual claim; the LOS axis of the 3-D task is.
 
 ## Findings
 

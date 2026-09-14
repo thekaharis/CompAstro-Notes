@@ -1,14 +1,14 @@
 ---
 type: meta
 title: "Hot Cache"
-updated: 2026-09-13T00:00:00
+updated: 2026-09-14T00:00:00
 ---
 
 # Recent Context
 
 ## Last Updated
 
-2026-09-13 — Wrote [[Learned Waveform Basis Operator]]: given a learned basis, the model **rediscovers Fourier** from four different starts, and the adaptive basis has no headroom on 2-D $x_\text{HI}$. On 2026-09-12, settled whether the U-FNO's 3-D gains were line-of-sight gains: **they are not** — see [[3-D Operator Matrix Final Results]] §7.1. On 2026-08-23, reanalysed the completed matrix evaluation and wrote [[Phase Coherence and Bubble Size Bias]]: small-scale **phase** accuracy, rather than small-scale amplitude, controls bubble morphology. On 2026-08-17, the 3-D architecture × loss matrix was fully evaluated on held-out cones; the results are in [[3-D Operator Matrix Final Results]]. Earlier in this cycle, I wrote up [[Granulometry (BSD) Auxiliary Loss]], [[U-FNO BatchNorm Train-Eval Mismatch]], and [[LOS-Monotone Theta Key in 3-D]].
+2026-09-14 — Built and queued two operators that go beyond diagonal-in-frequency: [[Frequency-Mixing Operator]] (from Codex's branch) and [[Laplace Neural Operator Port]] (ported from Cao et al. 2023). **Runs in flight, no results yet.** On 2026-09-13, wrote [[Learned Waveform Basis Operator]]: given a learned basis, the model **rediscovers Fourier** from four different starts, and the adaptive basis has no headroom on 2-D $x_\text{HI}$. On 2026-09-12, settled whether the U-FNO's 3-D gains were line-of-sight gains: **they are not** — see [[3-D Operator Matrix Final Results]] §7.1. On 2026-08-23, reanalysed the completed matrix evaluation and wrote [[Phase Coherence and Bubble Size Bias]]: small-scale **phase** accuracy, rather than small-scale amplitude, controls bubble morphology. On 2026-08-17, the 3-D architecture × loss matrix was fully evaluated on held-out cones; the results are in [[3-D Operator Matrix Final Results]]. Earlier in this cycle, I wrote up [[Granulometry (BSD) Auxiliary Loss]], [[U-FNO BatchNorm Train-Eval Mismatch]], and [[LOS-Monotone Theta Key in 3-D]].
 
 ## Key Facts From The Matrix (2026-08-17)
 
@@ -29,6 +29,17 @@ updated: 2026-09-13T00:00:00
 - **Speed-accuracy Pareto front = {`cnn/whno`, U-FNO}** only. Every Walsh/SIREN cell is beaten on both axes.
 - **The global operator is free**: `fno/fno` and `fno/whno` differ by 0.005% in time across 14.7 M parameters. Cost lives in the local slot — which §5 also finds sets bubble size.
 - Memory tracks activation shape, not weights: U-FNO 10.3 GB, the ~1 M-param `bw48om60` cells 8.3 GB, the 2.6 M-param `whno/whno` 3.8 GB.
+
+## Operators In Flight (2026-09-14)
+
+- **Everything in the campaign so far is diagonal in frequency**; the operators differ only in *which* basis is diagonalized. These two break that: mixing couples modes, LNO replaces the multiplier with a pole-residue response.
+- **Frequency mixing starts as an exact FNO** — zero-initialized synthesis, verified `max abs(diff) = 0.000e+00` in float64. Control and treatment at matched seed are the *same function* at step 0, so the paired contrast has no init noise. Cost **+2%** at the bottleneck, **+22%** in the local branch.
+- **LNO needed a rewrite to run at all**: the reference is `O(C^2 prod(M) prod(N))` — 0.23 GB at their 50x50, **115 GB** at our 140x140/C=32/16 poles. Factoring the mode sums out gives **1 GB**. Equivalence to a literal transcription holds at **3e-16** relative.
+- **`modes` means poles, not a cutoff**, in the Laplace operator — nothing is truncated. `N_MODES=16` there means 256 poles per channel pair.
+- **Bar for a real result: paired mean below about -0.001 val_l2** vs the `fno_fno` control. Four consecutive architecture tests on 2-D have landed inside the 0.0002-0.0009 seed floor.
+- **Caveat set in advance**: 2-D $x_\text{HI}$ has no time-like axis, so this is not a fair test of LNO's transient claim — the LOS axis of 3-D is. And mixing's rank-32 latent is *global* over all 16,368 coefficients, so a null there means sweep rank before concluding.
+- Two precision traps found: `Module.double()` skips **complex** params; `torch.fft.fftfreq` defaults to **float32**.
+- Retracted: the Fourier baseline's `weights2` is **not** dead — that was a `.sum()`-loss artifact (only DC gets gradient), not a bug.
 
 ## Learned Waveform Basis (2026-09-13)
 
