@@ -1,12 +1,34 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-09-14
+updated: 2026-09-15
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-09-15] measure | The Laplace operator clears the replicate floor -- the first architecture change in the campaign to do so
+
+**Sources**: `fno-21cm` -- jobs 4922105-10 and 4931776-81 (`checkpoints/2d_xhi/fno_lap/*`, pole counts 2/4/8/16 x 3 seeds), control and mixing arms 4921861-69. Diagnostics: 4934131 (representative viz), 4934109 (P(k)), 4934153 (edge). New `viz/edge_metrics_xhi2d.py`, `viz/seal_truncated_run.py`, `viz/compute_final_report.py`.
+
+**Updates**: new [[Laplace Operator on 2-D x_HI]]; [[Laplace Neural Operator Port]] marked resolved; index, hot.
+
+**Headline**: the pole-residue operator in the global slot beats a matched-seed `fourier`/`fourier` control by **-0.0056 to -0.0057 val_l2** at a matched epoch 50, for pole counts 2, 4 and 8. Against the sd 0.0002-0.0009 replicate floor that is ~**6x**, and **every seed of every arm is negative**. For contrast, frequency mixing on the same control gives -0.0013 with mixed signs and a mean carried by one seed.
+
+**The pole budget does not matter between 2 and 8** (-0.0056/-0.0057/-0.0057, differences smaller than the per-seed spread); `p16` is mildly worse. Two poles per axis buy the entire effect, so the gain is the pole-residue **form**, not the resolution of many poles -- and the cheapest configuration is as good as any.
+
+**Confirmed on an independent metric family** by running the trainer's own `final_report` over the recorded split: val_rmse **0.1446 vs 0.1741** (-17%), test_rmse -16%, mean x_HI MAE -22%.
+
+**What it is not.** Boundary-band total squared error falls 29%, but near-front L2 improves only 5-9%, the H1 (gradient) bands are identical to four decimals, and the error *fraction* within 5 Mpc is **higher** for Laplace. The representative slices agree: positions and topology are right, and the residual error is thin dipole rings at every bubble wall with soft interiors. **This is not a front-sharpness fix**; the standing [[Hedging Bias of Pointwise Losses]] is untouched.
+
+**Two of my own predictions failed.** I expected the pole count to matter -- it does not. And when queuing I argued 2-D was "not a fair test of the method's actual claim" because these slices have no time-like axis, LNO being built for non-periodic transients. It works here anyway, and **why** is now the open question. Until that is answered this is an empirical result, not an understood one. The obvious next test is an ablation zeroing the transient term.
+
+**Caveats carried into the page**: no run reached its 100-epoch budget (all killed by the 8 h wall, so the matched-epoch comparison is the only defensible one); every diagnostic uses **epoch-50 weights, not the arm's best** (epoch 63, 0.0015 better) because periodic checkpoints land every 25 epochs and the run died at 66; diagnostics are seed 0 only; and the two high-k power-ratio metrics **disagree in sign** about which model is closer to truth, so neither is quoted as settled.
+
+**Cost**: 3-4x a Fourier epoch. A per-channel Python loop in `_steady_field` is the suspect and is an implementation cost, not intrinsic. Worth optimizing before the 3-D follow-up, which is where the method's own claim can finally be tested.
 
 ---
 

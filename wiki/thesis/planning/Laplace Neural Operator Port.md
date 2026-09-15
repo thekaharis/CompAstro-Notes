@@ -2,7 +2,7 @@
 type: plan
 title: "Laplace Neural Operator Port"
 created: 2026-09-14
-updated: 2026-09-14
+updated: 2026-09-15
 tags:
   - domain/thesis
   - domain/ml
@@ -28,9 +28,17 @@ sources:
 
 # Laplace Neural Operator Port
 
-> **No results yet.** Queued 2026-09-14 behind the
-> [[Frequency-Mixing Operator]] batch. This page records the port, the
-> verification, and what the test can and cannot show.
+> **Results are in: [[Laplace Operator on 2-D x_HI]]** (2026-09-15). The
+> operator clears the replicate floor by ~6x on every seed of every pole count
+> from 2 to 8 -- the first architecture change in the campaign to do so. This
+> page remains the record of the port and its verification; the results and
+> their caveats live on the findings page.
+>
+> Two predictions made here were wrong, and are worth keeping visible. The pole
+> count was expected to matter -- it does not, 2 poles buy the whole effect.
+> And the 2-D test was framed as "not a fair test of the method's actual claim"
+> because these slices have no time-like axis; it works here anyway, and **why**
+> is now the open question.
 
 LNO replaces the Fourier multiplier with a **pole-residue** response: learned
 poles and residues give a transient term plus a steady-state term, which lets it

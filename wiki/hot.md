@@ -1,14 +1,14 @@
 ---
 type: meta
 title: "Hot Cache"
-updated: 2026-09-14T00:00:00
+updated: 2026-09-15T00:00:00
 ---
 
 # Recent Context
 
 ## Last Updated
 
-2026-09-14 — Built and queued two operators that go beyond diagonal-in-frequency: [[Frequency-Mixing Operator]] (from Codex's branch) and [[Laplace Neural Operator Port]] (ported from Cao et al. 2023). **Runs in flight, no results yet.** On 2026-09-13, wrote [[Learned Waveform Basis Operator]]: given a learned basis, the model **rediscovers Fourier** from four different starts, and the adaptive basis has no headroom on 2-D $x_\text{HI}$. On 2026-09-12, settled whether the U-FNO's 3-D gains were line-of-sight gains: **they are not** — see [[3-D Operator Matrix Final Results]] §7.1. On 2026-08-23, reanalysed the completed matrix evaluation and wrote [[Phase Coherence and Bubble Size Bias]]: small-scale **phase** accuracy, rather than small-scale amplitude, controls bubble morphology. On 2026-08-17, the 3-D architecture × loss matrix was fully evaluated on held-out cones; the results are in [[3-D Operator Matrix Final Results]]. Earlier in this cycle, I wrote up [[Granulometry (BSD) Auxiliary Loss]], [[U-FNO BatchNorm Train-Eval Mismatch]], and [[LOS-Monotone Theta Key in 3-D]].
+2026-09-15 — [[Laplace Operator on 2-D x_HI]]: the pole-residue operator is **the first architecture change in the campaign to clear the replicate floor convincingly** (~6x, every seed). On 2026-09-14, built and queued two operators that go beyond diagonal-in-frequency: [[Frequency-Mixing Operator]] (from Codex's branch) and [[Laplace Neural Operator Port]] (ported from Cao et al. 2023). **Runs in flight, no results yet.** On 2026-09-13, wrote [[Learned Waveform Basis Operator]]: given a learned basis, the model **rediscovers Fourier** from four different starts, and the adaptive basis has no headroom on 2-D $x_\text{HI}$. On 2026-09-12, settled whether the U-FNO's 3-D gains were line-of-sight gains: **they are not** — see [[3-D Operator Matrix Final Results]] §7.1. On 2026-08-23, reanalysed the completed matrix evaluation and wrote [[Phase Coherence and Bubble Size Bias]]: small-scale **phase** accuracy, rather than small-scale amplitude, controls bubble morphology. On 2026-08-17, the 3-D architecture × loss matrix was fully evaluated on held-out cones; the results are in [[3-D Operator Matrix Final Results]]. Earlier in this cycle, I wrote up [[Granulometry (BSD) Auxiliary Loss]], [[U-FNO BatchNorm Train-Eval Mismatch]], and [[LOS-Monotone Theta Key in 3-D]].
 
 ## Key Facts From The Matrix (2026-08-17)
 
@@ -29,6 +29,18 @@ updated: 2026-09-14T00:00:00
 - **Speed-accuracy Pareto front = {`cnn/whno`, U-FNO}** only. Every Walsh/SIREN cell is beaten on both axes.
 - **The global operator is free**: `fno/fno` and `fno/whno` differ by 0.005% in time across 14.7 M parameters. Cost lives in the local slot — which §5 also finds sets bubble size.
 - Memory tracks activation shape, not weights: U-FNO 10.3 GB, the ~1 M-param `bw48om60` cells 8.3 GB, the 2.6 M-param `whno/whno` 3.8 GB.
+
+## Laplace Operator Result (2026-09-15)
+
+- **-0.0056 to -0.0057 val_l2** vs a matched-seed `fourier`/`fourier` control at **matched epoch 50**, for pole counts 2, 4 and 8. Replicate floor is sd 0.0002-0.0009, so ~**6x the floor**, and **every seed of every arm is negative**.
+- Frequency mixing, for contrast: `fno_fmix` -0.0013 (sd 0.0019, driven by one seed), `fmix_fmix` -0.0004. Mixed signs. Not a result.
+- **Pole budget is irrelevant between 2 and 8** (-0.0056/-0.0057/-0.0057; differences smaller than seed spread). `p16` is mildly worse. **Two poles buy the whole effect** -- the gain is the pole-residue *form*, not pole resolution.
+- **Confirmed on a second metric family**: val_rmse **0.1446 vs 0.1741** (-17%), test_rmse -16%, x_HI MAE -22%, computed by the trainer's own `final_report` on the recorded split.
+- **Boundary-band error -29%** total squared error, but the gain is broad: near-front L2 improves only 5-9%, H1 bands identical, and the error *fraction* within 5 Mpc is **higher** (0.815 vs 0.785). **Not a front-sharpness fix.**
+- Residual error is entirely at **bubble walls** -- thin red/blue dipole rings, soft interiors. Positions and topology are right.
+- **The mechanism is unexplained and contradicts the motivation**: LNO is built for non-periodic transients; 2-D $x_\text{HI}$ has no time-like axis. It works anyway.
+- Costs **3-4x** a Fourier epoch; a per-channel Python loop in `_steady_field` is the suspect. Optimize before 3-D.
+- Caveats: **no run finished its 100-epoch budget** (8 h wall), diagnostics use **epoch-50 not best** weights, seed 0 only for §2-§5, and the two high-k power-ratio metrics **disagree in sign**.
 
 ## Operators In Flight (2026-09-14)
 
