@@ -22,7 +22,7 @@ related:
   - "[[Ionization Morphology]]"
   - "[[Inference and ML]]"
 sources:
-  - "[[Thesis/FNOs/LOCAL_FNO.md]]"
+  - "[[Windowed Local-FNO U-Net Design Note]]"
 ---
 
 # Windowed Local-FNO U-Net Plan

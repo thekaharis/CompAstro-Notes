@@ -2,7 +2,7 @@
 type: concept
 title: "Excursion Set Formalism"
 created: 2026-04-15
-updated: 2026-04-16
+updated: 2026-09-24
 tags:
   - concept/theory
   - domain/reionization
@@ -16,6 +16,8 @@ related:
   - "[[Bubble Size Distribution]]"
   - "[[Simulation and Codes]]"
   - "[[Mean Free Path]]"
+  - "[[Excursion-Set Diagnostic]]"
+  - "[[Excursion-Set Input Layer]]"
 sources:
   - "[[Choudhury 2022 (Reionization Intro)]]"
   - "[[Gnedin & Madau 2022 (Modeling Reionization)]]"
@@ -184,6 +186,17 @@ The excursion-set approach is fast but makes strong approximations:
 
 These limitations are addressed by higher-level codes (AMBER with adaptive mesh, ARTIST-like schemes) at significant computational cost. For EFT extraction in P1, it is critical to acknowledge these limitations when interpreting differences between 21cmFAST and full-RT predictions.
 
+## In This Project
+
+The training data is 21cmFAST 4.1.1 with `hii_filter = sharp-k` (keep modes with $|k|R \le 1$). Measured directly on the true density of 12 test lightcones ([[Excursion-Set Diagnostic]], 2026-09-23):
+
+- With the barrier fitted per slab, the rule in the EPS shape $B(R) = a - b\,s_R$ (two numbers) reaches ~97% of a free per-radius barrier, and beats the trained field network on ionized-region morphology late in reionization (IoU 0.910 vs 0.879); the network wins early (0.801 vs 0.694).
+- The maximum over radii is essential: a single radius or the raw density does far worse.
+- Ionizing radii span ~1-20 Mpc; above ~20 Mpc each radius accounts for only ~1% of ionized cells.
+- Practical point: on a periodic box of side $L$, sharp-k radii above $L/2\pi$ keep only the zero mode and give a constant field.
+
+A differentiable version is now an optional input to the field models: [[Excursion-Set Input Layer]].
+
 ## See Also
 
 - [[Clumping Factor]] — sub-grid recombination model that enters the ionization criterion
@@ -191,3 +204,4 @@ These limitations are addressed by higher-level codes (AMBER with adaptive mesh,
 - [[Ionization Morphology]] — the spatial patterns this formalism produces
 - [[Mean Free Path]] — the physical cutoff on bubble growth
 - [[Neutral Fraction]] — the global outcome of the excursion-set dynamics
+- [[Excursion-Set Diagnostic]] — how much of 21cmFAST's $x_\text{HI}$ morphology the rule explains on our data

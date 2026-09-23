@@ -1,12 +1,57 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-09-15
+updated: 2026-09-24
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-09-24] lint | Renamed irregularly named notes to descriptive titles
+
+| old | new |
+|---|---|
+| `findings/23.md` | [[FNO Lightcone Experimental Findings (2026-06-06 Draft)]] (older copy of [[FNO Lightcone Experimental Findings]]; frontmatter title updated) |
+| `findings/FINDINGS-2026-07-21.md` | [[Auto-Generated Findings Report 2026-07-21]] |
+| `notes/FINDINGS-2026-07-26.md` | [[Auto-Generated Findings Report 2026-07-26]] |
+| `findings/sota_comparison.md` | [[Density to x_HI Surrogates vs State of the Art]] |
+| `findings/xhi2d_all_variants.md` | [[2-D x_HI Variant Leaderboard (35 Runs)]] |
+| `notes/NOTES-contrast-map.md` | [[Contrast Map Working Notes]] |
+| `planning/LOCAL_FNO.md` | [[Windowed Local-FNO U-Net Design Note]] |
+| `report/README-neural-operator-package.md` | [[Neural-Operator Report Package Guide]] |
+| `planning/Meetings/04.05.2026.md` | [[Meeting 2026-05-04]] |
+| `planning/Meetings/Meeting.md` | [[Meeting Notes July 2026 - Bubble Sizes and LoReLi]] (undated; first committed 2026-07-28) |
+
+References in pages updated to wikilinks: [[Loss Objective and Operator Basis Sweep]], [[Hedging Bias of Pointwise Losses]], [[Walsh-Hadamard Neural Operator]], [[Contrast Map]], [[Contrast Map Sharpening]], [[LOS-Monotone Theta Key in 3-D]], [[Windowed Local-FNO U-Net Findings]], [[Windowed Local-FNO U-Net Plan]], index (new "Reports, Working Notes and Meetings" section). Stale links to the old vault path `Thesis/FNOs/LOCAL_FNO.md` now point at the design note.
+
+**Deleted** (at Haris's request): the two empty (0-byte) untitled notes `thesis/Unbenannt.md` and `thesis/Unbenannt 1.md`.
+
+**Not changed**: past log entries (append-only; they record the names as they were); `.raw/reports/` source copies and links to them; the generated table `findings/figures/operator-benchmark_20260728/xhi2d_all_variants_table.md` inside a figure bundle; Repo-side files in `fno-21cm` keep their names; `util/make_findings_report.py` would write any new report under the old naming scheme.
+
+---
+
+## [2026-09-24] ingest | Native LOS windows, multi-field data, excursion set, history emulator (work of 2026-09-14 to 2026-09-24)
+
+**Sources**: `fno-21cm` commits 7f63cbb, c412c25, 2eedba6, e25fb06, d34c2f1, 7c5b8cc, 57a9d26 (branch `codex/frequency-mixing-transform`); repo notes `notes/multifield-data-configuration.md`, `notes/los-window-sampling.md`, `experiments/multifield/pilot_report.md`; jobs 4923961, 4929874, 4952130/1, 5096595, 5101369-72, 5101442, 5144031, 5144754, 5144829, 5145857-62, 5148078, 5158645.
+
+**Updates**: new [[Multi-Field 21cmFAST Data]], [[Native LOS Window Training]], [[Excursion-Set Diagnostic]], [[Global Reionization History Emulator]], [[Excursion-Set Input Layer]], [[Transverse Symmetry Augmentation]]; [[Laplace Neural Operator Port]] gains a 3-D section; [[Excursion Set Formalism]] gains an "In This Project" section; index, hot.
+
+**Data.** Four plain fields (density, $x_\text{HI}$, $T_b$, LOS velocity), agreed with Codex on 2026-09-14. Velocity is comoving $dx/dt$ in Mpc/s (established empirically: coefficient/$fH$ = 0.997-0.998, flat in z). Plain $T_b$ is real-space but already includes the dv/dr optical-depth term. Ionized $x_\text{HI}$ is exactly zero. Each lightcone tiles one periodic box ~16 times along the LOS. 33 cones with NaN $T_b$ (0.5%) are excluded from every mapping. A 256-point cache was built (398 GiB), then a chunked native mirror (1.3 TB) that makes window reads 20x faster.
+
+**Training.** Native-LOS windows avoid the 256-point grid, which the round-trip bound shows causes 60-98% of end-to-end error. Best: contiguous `cnn/fno`, test 0.00596. `cnn/whno` and `cnn/swhno` from the 3-D winners finish at 0.00716 / 0.00714. `cnn/lap4` runs out of memory. Multi-field windows are running.
+
+**Diagnostics.** With an oracle barrier, 21cmFAST's sharp-k excursion set beats the network late in reionization and loses early. Every run reionizes the earliest test cone too late (regression to the mean in parameters -> timing); a global-history emulator trained on 5,322 dense histories fixes the timing, but hard re-levelling erases real slice-level structure. Both are now optional input channels; three single-change `cnn/whno` runs are queued (augmentation, excursion set, history).
+
+**Corrections recorded on the pages.**
+- The pilot's $x_\text{HI}$ round-trip figure (0.0037) came from a near-uniform neutral cone; on ionized cones the loss is 25-64x larger (dated section in [[Multi-Field 21cmFAST Data]]).
+- Mid-run I told Haris that `cnn/whno` matched the old `cnn/fno`. That came from subset validation; the full evaluation shows it ~20% worse ([[Native LOS Window Training]] §3).
+- I also said the 40-cone subset was ~1.2x harsher than the full split, from a single run; on the next run it was easier.
+- I once attributed the "25-64x" figure to network loss on ionized cones. It is grid round-trip loss.
+
+**Pitfalls worth keeping**: `np.polyfit` in float32 on millions of points silently corrupts slopes (default rcond ~ len*eps); `sbatch --export` splits on commas; pilot cone selection must span the target's dynamic range and check finiteness at full resolution; sharp-k radii above $L/2\pi$ give a constant field.
 
 ---
 

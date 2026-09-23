@@ -28,7 +28,7 @@ related:
   - "[[Ionization Morphology]]"
   - "[[Inference and ML]]"
 sources:
-  - "wiki/thesis/notes/NOTES-contrast-map.md"
+  - "[[Contrast Map Working Notes]]"
   - "implementation: `contrast.py` (`apply_contrast`, `ContrastHead`, `ContrastOutput`, `ContrastComposed`); `CONTRAST_MODE=off|global|head` in `fno_21cm.py`"
   - "runs: jobs 4358634 / 4358635 / 4358636, all `whno_glob`, 30 epochs, pure L2"
 ---

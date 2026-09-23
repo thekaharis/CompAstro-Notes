@@ -29,8 +29,8 @@ related:
   - "[[Warped LOS Grid Evaluation]]"
   - "[[3-D Operator Matrix Final Results]]"
 sources:
-  - "wiki/thesis/notes/NOTES-contrast-map.md §1"
-  - "wiki/thesis/notes/FINDINGS-2026-07-26.md §3 (boundary band)"
+  - "[[Contrast Map Working Notes]] §1"
+  - "[[Auto-Generated Findings Report 2026-07-26]] §3 (boundary band)"
 ---
 
 # Hedging Bias of Pointwise Losses

@@ -1,6 +1,6 @@
 ---
 type: finding
-title: "FNO Lightcone Experimental Findings"
+title: "FNO Lightcone Experimental Findings (2026-06-06 Draft)"
 created: 2026-06-05
 updated: 2026-06-06
 tags:

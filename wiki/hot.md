@@ -1,14 +1,26 @@
 ---
 type: meta
 title: "Hot Cache"
-updated: 2026-09-15T00:00:00
+updated: 2026-09-24T00:00:00
 ---
 
 # Recent Context
 
 ## Last Updated
 
-2026-09-15 — [[Laplace Operator on 2-D x_HI]]: the pole-residue operator is **the first architecture change in the campaign to clear the replicate floor convincingly** (~6x, every seed). On 2026-09-14, built and queued two operators that go beyond diagonal-in-frequency: [[Frequency-Mixing Operator]] (from Codex's branch) and [[Laplace Neural Operator Port]] (ported from Cao et al. 2023). **Runs in flight, no results yet.** On 2026-09-13, wrote [[Learned Waveform Basis Operator]]: given a learned basis, the model **rediscovers Fourier** from four different starts, and the adaptive basis has no headroom on 2-D $x_\text{HI}$. On 2026-09-12, settled whether the U-FNO's 3-D gains were line-of-sight gains: **they are not** — see [[3-D Operator Matrix Final Results]] §7.1. On 2026-08-23, reanalysed the completed matrix evaluation and wrote [[Phase Coherence and Bubble Size Bias]]: small-scale **phase** accuracy, rather than small-scale amplitude, controls bubble morphology. On 2026-08-17, the 3-D architecture × loss matrix was fully evaluated on held-out cones; the results are in [[3-D Operator Matrix Final Results]]. Earlier in this cycle, I wrote up [[Granulometry (BSD) Auxiliary Loss]], [[U-FNO BatchNorm Train-Eval Mismatch]], and [[LOS-Monotone Theta Key in 3-D]].
+2026-09-24 — Moved the 3-D task to the **native LOS grid** and to **multiple fields**. [[Native LOS Window Training]]: the best native model is still the contiguous `cnn/fno` (test 0.00596); the 3-D-winner Walsh models finish ~20% worse, and a 40-cone validation subset misled me mid-run. [[Multi-Field 21cmFAST Data]] records the data's conventions (comoving velocity, dv/dr already in $T_b$, exact-zero $x_\text{HI}$, box tiling) and a chunked native mirror. Two physics-informed diagnostics: [[Excursion-Set Diagnostic]] (21cmFAST's own rule beats the network late in reionization) and [[Global Reionization History Emulator]] (fixes timing at the prior's edges). Three single-change `cnn/whno` runs are queued: [[Transverse Symmetry Augmentation]], [[Excursion-Set Input Layer]], history channel. Before that: 2026-09-15 — [[Laplace Operator on 2-D x_HI]]: the pole-residue operator is **the first architecture change in the campaign to clear the replicate floor convincingly** (~6x, every seed). On 2026-09-14, built and queued two operators that go beyond diagonal-in-frequency: [[Frequency-Mixing Operator]] (from Codex's branch) and [[Laplace Neural Operator Port]] (ported from Cao et al. 2023). **Runs in flight, no results yet.** On 2026-09-13, wrote [[Learned Waveform Basis Operator]]: given a learned basis, the model **rediscovers Fourier** from four different starts, and the adaptive basis has no headroom on 2-D $x_\text{HI}$. On 2026-09-12, settled whether the U-FNO's 3-D gains were line-of-sight gains: **they are not** — see [[3-D Operator Matrix Final Results]] §7.1. On 2026-08-23, reanalysed the completed matrix evaluation and wrote [[Phase Coherence and Bubble Size Bias]]: small-scale **phase** accuracy, rather than small-scale amplitude, controls bubble morphology. On 2026-08-17, the 3-D architecture × loss matrix was fully evaluated on held-out cones; the results are in [[3-D Operator Matrix Final Results]]. Earlier in this cycle, I wrote up [[Granulometry (BSD) Auxiliary Loss]], [[U-FNO BatchNorm Train-Eval Mismatch]], and [[LOS-Monotone Theta Key in 3-D]].
+
+## Native Windows, Multi-Field, Timing (2026-09-24)
+
+- **Best native-LOS window model is still the first one**: contiguous `cnn/fno`, test MSE **0.00596**; coarse LOS context adds nothing (0.00606) -- expected, since each cone **tiles one periodic 200 Mpc box ~16x** and a 256-cell window already holds it.
+- **3-D winners do not transfer to native windows as-is**: `cnn/whno` 0.00716, `cnn/swhno` 0.00714, ~20% worse than old `cnn/fno`. Confound: the new configs turn `grid_embedding` off. The FNO-family runs are still training.
+- **Never rank on the 40-cone validation subset**: full/subset was 0.82 on one run and 1.09 on another. I claimed `cnn/whno` matched the old run from subset curves -- wrong.
+- **1 window per cone is a bad trade**: 4.4x cheaper epochs, 2.3x worse test (0.0142).
+- **Laplace does not fit in 3-D**: out of memory at 77.9 of 79.3 GB on one window, batch 1.
+- **Data conventions**: velocity is comoving $dx/dt$ in Mpc/s; plain $T_b$ already has the dv/dr term (R^2 0.765 -> 0.945 with it); ionized $x_\text{HI}$ is exactly 0; 33 NaN-$T_b$ cones excluded. On the 256-point cache the **grid is 60-98% of end-to-end error**.
+- **Chunked native mirror**: window reads 270 -> 14 ms, loading 4.4x faster, byte-identical. Mirror row != sample ID after row 72 (mapping file exists).
+- **Excursion set (oracle barrier) vs network**, ionized-region IoU: late **0.910 vs 0.879**, mid 0.808 vs 0.831, early 0.694 vs **0.801**. Max over radii is the key nonlinearity; the barrier is 2 numbers and smooth in z.
+- **Timing regresses to the mean**: earliest test cone (z_mid 15.8, 99.8th pct) is 0.6-1.3 too late in every run, zero spatial offset. Global-history emulator (5,322 sims): test median |dz_mid| 0.044, cone 27 15.90 vs 15.84. Hard re-levelling: -19 to -32% MSE overall, but hurts typical cones -> use it as an input channel.
 
 ## Key Facts From The Matrix (2026-08-17)
 

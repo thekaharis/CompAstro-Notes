@@ -21,7 +21,7 @@ related:
   - "[[U-FNO BatchNorm Train-Eval Mismatch]]"
   - "[[3-D Operator Matrix Final Results]]"
 sources:
-  - "wiki/thesis/notes/NOTES-contrast-map.md §8 (pre-registration)"
+  - "[[Contrast Map Working Notes]] §8 (pre-registration)"
   - "runs 4457033 (fno_whno), 4457034 (ufno, groupnorm)"
   - "implementation: `contrast.py:118` `los_key`, `util/contrast_refit.py`"
   - "diagnostic: `viz/theta_z_profile.py` (added 2026-08-07)"
@@ -31,7 +31,7 @@ sources:
 
 ## The pre-registration
 
-`NOTES-contrast-map.md` §8.1 registered the prediction in advance: the 2-D
+[[Contrast Map Working Notes]] §8.1 registered the prediction in advance: the 2-D
 contrast-map gain pooled to -0.16% because the **key** (per-slice mean
 prediction, MAE ~0.055) is noisier than the **band** it must resolve (x_HI
 0.005-0.05, width 0.045). A lightcone's 256 per-slice means are noisy samples of

@@ -2,7 +2,7 @@
 type: plan
 title: "Laplace Neural Operator Port"
 created: 2026-09-14
-updated: 2026-09-15
+updated: 2026-09-24
 tags:
   - domain/thesis
   - domain/ml
@@ -119,6 +119,22 @@ finite gradients on every parameter.
 
 Operator tag `lap`. Configuration: `LAPLACE_POLE_COUNT`, `LAPLACE_STABLE_POLES`,
 `LAPLACE_CHANNEL_CHUNK`.
+
+## 3-D follow-up: does not fit (2026-09-22/23)
+
+The 3-D native-window version (`cnn/lap4` bw48, 4 poles, channel chunk 8) was
+selected as the sixth model of the [[Native LOS Window Training]] architecture
+set. It is **not viable at this window size**:
+
+- CPU forward on one 140x140x256 window took **502.7 s against 73.1 s** for `cnn/fno` bw48.
+- A first GPU benchmark ran out of memory, but it shared a process with another
+  model that still held 77.7 GiB, so it was contaminated. The clean re-run (job 5144031)
+  **also ran out of memory: 77.9 of 79.3 GB on one window at batch 1**.
+
+Untried options: smaller width, smaller `laplace_channel_chunk`, gradient
+checkpointing, or the pole-residue form along the LOS only (transverse FFT,
+poles on the one non-periodic axis), the geometry where the method's claim
+applies. The 3-D test of LNO's actual claim therefore remains open.
 
 ## Experiment in flight
 

@@ -24,7 +24,7 @@ related:
   - "[[Inference and ML]]"
   - "[[P1 EFT Characterization]]"
 sources:
-  - "[[Thesis/FNOs/LocalFNO/LOCAL_FNO.md]]"
+  - "[[Windowed Local-FNO U-Net Design Note]]"
   - "[[Thesis/FNOs/LocalFNO/lfno-run-6-6-12.jsonl]]"
   - "run_info: lfno-run-6-6-12 (local modes (6,6,12), 21 epochs)"
 ---
@@ -79,7 +79,7 @@ Follow-up diagnostics from the Binac figure backup (`band_out/`, `parity_out/`; 
 
 ## Architecture and Setup (as run)
 
-The model is the default Local-FNO from [[Windowed Local-FNO U-Net Plan]] / `LOCAL_FNO.md`:
+The model is the default Local-FNO from [[Windowed Local-FNO U-Net Plan]] / [[Windowed Local-FNO U-Net Design Note]]:
 
 | Component | Value |
 |---|---|
@@ -180,7 +180,7 @@ In priority order, tracking the ablation list in [[Windowed Local-FNO U-Net Plan
 
 ## Reproducibility
 
-- Architecture spec: `Thesis/FNOs/LocalFNO/LOCAL_FNO.md`; implementation `local_fno_3d.py` + `modeling.py`. Selected with `MODEL_KIND=localfno`. All settings persisted to `run_metadata.json`; viz/diagnostics reconstruct the model from metadata, not the shell env.
+- Architecture spec: [[Windowed Local-FNO U-Net Design Note]]; implementation `local_fno_3d.py` + `modeling.py`. Selected with `MODEL_KIND=localfno`. All settings persisted to `run_metadata.json`; viz/diagnostics reconstruct the model from metadata, not the shell env.
 - Run log: `Thesis/FNOs/LocalFNO/lfno-run-6-6-12.jsonl` (21 epochs; one JSON line/epoch with `train_err`, per-split `l2`/`h1`/`bce`, `pred_sat_*`, `last_grad_norm`, `peak_cuda_memory_gb`).
 - Boundary comparison: `boundary_band_diagnostic.py --checkpoints ufno=… localfno=… --reference ufno --split test --n-cones 200` → `boundary_band_overlay.png`.
 - Split reproducibility: `SPLIT_SEED = 42`, val_frac = test_frac = 0.1 — same held-out cones as every other run in the campaign, so the comparison is direct.

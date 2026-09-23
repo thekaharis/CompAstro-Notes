@@ -22,7 +22,7 @@ related:
   - "[[Neutral Fraction]]"
   - "[[Fourier Neural Operator]]"
 sources:
-  - "wiki/thesis/notes/NOTES-contrast-map.md"
+  - "[[Contrast Map Working Notes]]"
   - "implementation: `contrast.py`"
 ---
 

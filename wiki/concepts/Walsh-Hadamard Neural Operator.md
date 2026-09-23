@@ -26,7 +26,7 @@ related:
   - "[[3-D Operator Matrix Final Results]]"
 sources:
   - "[[Pérez Cuadrado et al 2025 (WHNO)]]"
-  - "wiki/thesis/notes/FINDINGS-2026-07-26.md §2 (first 2-D results)"
+  - "[[Auto-Generated Findings Report 2026-07-26]] §2 (first 2-D results)"
 ---
 
 # Walsh-Hadamard Neural Operator
