@@ -14,7 +14,7 @@ updated: 2026-09-24T00:00:00
 
 - **Best native-LOS window model is still the first one**: contiguous `cnn/fno`, test MSE **0.00596**; coarse LOS context adds nothing (0.00606) -- expected, since each cone **tiles one periodic 200 Mpc box ~16x** and a 256-cell window already holds it.
 - **3-D winners do not transfer to native windows as-is**: `cnn/whno` 0.00716, `cnn/swhno` 0.00714, ~20% worse than old `cnn/fno`. Confound: the new configs turn `grid_embedding` off. The FNO-family runs are still training.
-- **Never rank on the 40-cone validation subset**: full/subset was 0.82 on one run and 1.09 on another. I claimed `cnn/whno` matched the old run from subset curves -- wrong.
+- **Never rank on the 40-cone validation subset**: full/subset was 0.82, 1.09 and 0.88 on three runs. I claimed `cnn/whno` matched the old run from subset curves -- wrong.
 - **1 window per cone is a bad trade**: 4.4x cheaper epochs, 2.3x worse test (0.0142).
 - **Laplace does not fit in 3-D**: out of memory at 77.9 of 79.3 GB on one window, batch 1.
 - **Data conventions**: velocity is comoving $dx/dt$ in Mpc/s; plain $T_b$ already has the dv/dr term (R^2 0.765 -> 0.945 with it); ionized $x_\text{HI}$ is exactly 0; 33 NaN-$T_b$ cones excluded. On the 256-point cache the **grid is 60-98% of end-to-end error**.

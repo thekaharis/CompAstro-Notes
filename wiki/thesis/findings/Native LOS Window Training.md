@@ -75,8 +75,8 @@ Two fixes were tried:
   This removed ~1.5 h per epoch of pure I/O and was kept.
 
 **The subset is not a calibrated proxy for the full split.** At the same
-checkpoint, full/subset was 0.82 for r3 but **1.09** for `cnn/whno`, so the offset
-changes sign between runs. Compare runs on the end-of-run full evaluation only.
+checkpoint, full/subset was 0.82 for r3, **1.09** for `cnn/whno` and 0.88 for
+`cnn/swhno`, so the offset changes sign between runs. Compare runs on the end-of-run full evaluation only.
 
 The chunked native mirror ([[Multi-Field 21cmFAST Data]] §5) removes the read
 bottleneck entirely (window reads 20x faster); the multi-field runs use it.
@@ -90,7 +90,7 @@ cone, 30 epochs, 40-cone subset, walltime per model (48-132 h).
 | model | params (`numel`) | test MSE | full val | status |
 |---|---:|---:|---:|---|
 | `cnn/whno` | 3.47 M | **0.00716** (r 0.964) | 0.00717 | done |
-| `cnn/swhno` | 1.41 M | **0.00714** (r 0.964) | pending | done, final pass writing |
+| `cnn/swhno` | 1.41 M | **0.00714** (r 0.964) | 0.00777 | done |
 | `cnn/fno` bw48 | 20.7 M | -- | -- | epoch 16/30, subset best 0.0106 |
 | `cnn/sfno` bw48om60 | 12.4 M | -- | -- | epoch 14/30, subset best 0.0121 |
 | `sfno/swhno` bw48om60 | 0.75 M | -- | -- | epoch 6/30, 3.9 h/epoch |

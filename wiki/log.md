@@ -10,6 +10,16 @@ updated: 2026-09-24
 
 ---
 
+## [2026-09-24] update | cnn/swhno full validation
+
+**Sources**: `checkpoints/3d_xhi/los_windows/contiguous_cnn_swhno_2000_w4e30_s0/val_full_metrics.json` (job 5101370).
+
+**Updates**: [[Native LOS Window Training]] §2-§3, index, hot.
+
+The native-window `cnn/swhno` run's end-of-run evaluation on all 200 validation cones is **0.00777** (r 0.969), against a best 40-cone subset score of 0.00886 at the same checkpoint. The full/subset ratio is 0.88 here, after 0.82 (r3) and 1.09 (`cnn/whno`). Three runs, two directions: the subset is not a calibrated proxy for the full split, and runs should be ranked on the full evaluation only. Test MSE (0.00714) was already recorded.
+
+---
+
 ## [2026-09-24] lint | Renamed irregularly named notes to descriptive titles
 
 | old | new |
