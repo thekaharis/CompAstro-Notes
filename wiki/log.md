@@ -1,12 +1,22 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-09-24
+updated: 2026-10-03
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-10-03] ingest | Rhizome neural operator results
+
+**Sources**: `rhizome-neural-operator/runs/` (2-D sweep and final runs, `rhizome3d/`, `rhizome3d_mf/`, `eval3d/` suites, inference benchmarks), `data/eval_cubes/rhizome*`.
+
+**Created**: [[Rhizome Neural Operator Results]]. **Updated**: index (Findings), hot.
+
+Consolidates the rhizome campaign: 2-D sweep (LOS bands carry the gain: single slice 0.174 → all bands 0.112 mixed-slice RMSE), 3-D native-window $x_\text{HI}$ (w48 + warm restart 0.0594 vs fno 0.0684), multi-field A0–C (C 0.0495 / 5.79 mK vs fno 0.0560 / 6.54), the physical suites, the MSE-through-sigmoid explanation of fno's τ_e bias, and the slice-wise 2-D reconstruction that beats native 3-D on the same 1,600 training cones. Multi-field slice-wise 2-D run in flight.
 
 ---
 
