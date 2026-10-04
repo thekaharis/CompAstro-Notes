@@ -1,12 +1,22 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-10-03
+updated: 2026-10-04
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-10-04] update | Rhizome: multi-field slice-wise 2-D, all-cones training, mode weights
+
+**Sources**: `rhizome-neural-operator/runs/eval3d/{slicewise2d_mf_vs_3d_mf, slicewise2d_mf_all_vs_mf, h2h_rhizome_all_vs_ufno, mode_weights}/`, `runs/rhizome_mf2d_w64_structured*/`, `runs/probes/paired_mf_all.py`.
+
+**Updated**: [[Rhizome Neural Operator Results]] (new §6, key findings, cost, open items, artifacts), index, hot.
+
+The multi-field slice-wise 2-D rhizome is the best variant. It beats the 3-D rhizome C on every $x_\text{HI}$ morphology metric and on $T_b$ during reionization, ties on τ_e and timing, and beats fno's best on everything except absorption-era $T_b$ power. Training on all 6,600 cones (6,169 usable) improves it significantly on all paired metrics (Wilcoxon p ≤ 1e-8) but leaves the absorption-era excess power at +25σ: a structural, per-slice spin-factor effect. LOS smoothing of u is being tested. The rhizome's Fourier kernel shows no spectral bias.
 
 ---
 

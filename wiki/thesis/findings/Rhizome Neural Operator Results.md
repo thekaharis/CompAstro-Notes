@@ -2,7 +2,7 @@
 type: finding
 title: "Rhizome Neural Operator Results"
 created: 2026-10-03
-updated: 2026-10-03
+updated: 2026-10-04
 tags:
   - domain/thesis
   - domain/ml
@@ -24,7 +24,7 @@ related:
   - "[[LOS Bandwidth as the 3-D Bottleneck]]"
 sources:
   - "`rhizome-neural-operator/` (repo `thekaharis/rhizome-neural-operator`): `ebm21cm/model/rhizome.py`, `ebm21cm/model/rhizome3d.py`, `ebm21cm/train_rhizome*.py`, `ebm21cm/export_*.py`"
-  - "`rhizome-neural-operator/runs/` — `sweep1/`, `rhizome_xhi_w128*/`, `rhizome_xhi_w64_fnosplit/`, `rhizome3d/`, `rhizome3d_mf/`, `eval3d/`"
+  - "`rhizome-neural-operator/runs/` — `sweep1/`, `rhizome_xhi_w128*/`, `rhizome_xhi_w64_fnosplit/`, `rhizome3d/`, `rhizome3d_mf/`, `rhizome_mf2d_w64_structured*/`, `eval3d/`"
   - "`data/eval_cubes/{rhizome3d_*,rhizome2d_*,fno_cnn_whno_es,mf_cnn_whno_es_*}/` (exported test cubes)"
   - "fno-21cm evaluation suite (`viz.physical_evaluation`, `bubble_size_evaluation`, `power_spectrum_evaluation`, `boundary_band_diagnostic`) via `slurm/eval3d_suite.sbatch`"
 ---
@@ -38,7 +38,8 @@ source/receiver integral whose kernel is applied in Fourier space (truncated to
 density -> $x_\text{HI}$ task,
 first on 2-D slices with line-of-sight (LOS) context, then on native-LOS 3-D
 windows, then multi-field (density + LOS velocity -> $x_\text{HI}$ + $T_b$), and
-finally as a **slice-wise 2-D model that reassembles full 3-D cones**.
+finally as a **slice-wise 2-D model that reassembles full 3-D cones**, first for
+$x_\text{HI}$ and then multi-field (§6), the best rhizome variant overall.
 
 ## Key findings
 
@@ -58,6 +59,13 @@ finally as a **slice-wise 2-D model that reassembles full 3-D cones**.
   - The rhizome trains BCE and saturates to −0.00006 (§4.3).
   - Timing (midpoint, duration), bias, P_ε, bubble sizes and fronts are *not* explained by this offset.
 - **A warm restart at the end of training buys 3–6%.** A constant-LR continuation buys ~1%.
+- **Best variant: multi-field slice-wise 2-D, trained on all 6,600 cones (§6).** Against fno's best multi-field model (`cnn_whno_es` `tbs+histtb`, "UFNO" in the head-to-head figures), on the same 199 test cones:
+  - x_HI value-distribution W1 is −65% and the b₁ pull −57%;
+  - bubble-size W1 −54%, small-scale incoherence −45%, front width 3.9 vs 6.2 Mpc;
+  - T_b value-distribution W1 during reionization is −34%;
+  - it wins all 8 inspected cones by 12–28% in full-cone RMSE.
+- **Its one weakness is T_b before reionization.** It adds small-scale T_b power (+25σ vs +4σ for the 3-D rhizome) because the spin factor is predicted slice by slice. Training on 3.9× more cones improved those T_b values (W1 −31%) but **not** the excess power, so the cause is structural (§6.3).
+- **The rhizome's Fourier kernel shows no low-frequency collapse** (high/low-quarter weight ratio 0.78–0.94 vs 0.10–0.45 for the U-FNO), so SIREN kernels would not fix a spectral bias here (§6.4).
 
 ## 1. Setup
 
@@ -66,7 +74,7 @@ finally as a **slice-wise 2-D model that reassembles full 3-D cones**.
 | input | slice + 13 LOS density bands (±32 cells: single slices within ±3, band means to ±32) | native LOS windows 256 + 2×32 halo (fno-21cm pipeline) | 2-D model on every slice, bands built from the raw cone |
 | conditioning | log(1+z), 11 parameters (FiLM-style scalars) | `z_params` channels | as 2-D |
 | loss | BCE on $x_\text{HI}$ | masked BCE (+ MSE on normalized $T_b$ for multi-field) | BCE |
-| data | slice cache: 16 window + 2 background slices / cone, 5,280 train cones (own split) | fno 2000-cone preparation (1600/200/200; multi-field: 1594/199/199, cleaned $T_b$) | fair split: fno's 1,600 train cones, 48+6 slices / cone |
+| data | slice cache: 16 window + 2 background slices / cone, 5,280 train cones (own split) | fno 2000-cone preparation (1600/200/200; multi-field: 1594/199/199, cleaned $T_b$) | fair split: fno's 1,600 train cones, 48+6 slices / cone; multi-field: §6 |
 
 3-D model: anisotropic modes (36,36,24), rank-48 factorized spectral kernel, 6
 updates, step 0.5, LOS zero-pad 64, bf16 autocast with float32 FFT, 20 epochs
@@ -239,11 +247,94 @@ Caveat: the 512-point evaluation grid is uniform in z and over-weights neutral
 high-z slices relative to the native grid, so its absolute RMSEs are lower
 (e.g. 0.044 vs 0.0594 for the 3-D rhizome). Rankings are unaffected.
 
-## 6. Cost
+## 6. Multi-field slice-wise 2-D (best rhizome variant)
+
+**Model.** The 2-D rhizome (w64, 6 updates, 24 modes, batch 32) on each slice:
+- **Inputs:** 13 LOS bands of normalized density and 13 of LOS velocity as image channels. The scalars are 1/(1+z), the 11 parameters, and the 13 band means of each emulated global history ($x_\text{HI}$, $T_b$): 38 values in all.
+- **Outputs:** an $x_\text{HI}$ logit and the spin variable u, with $T_b = x_\text{HI}\cdot A(z)(1+\delta)V(dv/dr)\cdot(1-e^u)$.
+- **Physics term:** $A(1+\delta)V$ is precomputed per slice with exactly the 3-D structured head's code (`StructuredBrightness3d.physical_factor`).
+- **Data:** the cache is built through fno-21cm's own multi-field pipeline, so data, split, normalization and history emulators match §4. Pilot check: $T_b/(x_\text{HI}\cdot A(1+\delta)V)$ gives a smooth spin factor, 0.8 during reionization to −0.08 in absorption.
+- **Training:** loss BCE + MSE on normalized $T_b$; selection on the mean normalized MSE; plateau-stopped.
+
+Two training sets, the same 199 val / 199 test cones:
+
+| run | train cones | slices / cone | train slices | steps / A100 time | test-slice x_HI / T_b |
+|---|---:|---:|---:|---:|---:|
+| 1,594 cones | 1,594 | 48 + 6 | 74.5 k | 77 k / 3.4 h | 0.090 / 7.97 mK |
+| **all cones** | 6,169 (of 6,202; 33 non-finite-$T_b$ cones skipped) | 16 + 2 | 98.5 k | 84 k / 3.5 h | **0.087 / 7.71 mK** |
+
+The all-cones preparation (`ebm21cm.data.mf_all_prep`) points at every raw lightcone, keeps the multi-field val/test cones and copies the normalization. The cache builder applies fno-21cm's $T_b$ cleaning per cone; on a pilot cone it matches the mirror-based cache exactly, $T_b$ to float16 rounding.
+
+### 6.1 Physical suite (199 test cones)
+
+| metric | **2-D, all cones** | 2-D, 1,594 cones | 3-D rhizome C (+warm restart) | fno `tbs+histtb` |
+|---|---:|---:|---:|---:|
+| \|Δτ_e\| / σ_Planck | 0.010 | **0.010** | 0.012 | 0.076 |
+| \|Δz\| at x̄ = 0.25 / 0.5 / 0.75 | **0.012** / 0.010 / **0.008** | 0.012 / **0.009** / 0.011 | 0.013 / 0.011 / 0.011 | 0.026 / 0.017 / 0.016 |
+| \|Δ duration\| | **0.018** | **0.018** | **0.018** | 0.044 |
+| $x_\text{HI}$ PDF W1 active | **0.0095** | 0.0105 | 0.0156 | 0.0271 |
+| partially-ionized fraction (truth 0.089) | 0.136 | **0.135** | 0.156 | 0.174 |
+| b₁ pull | **0.99** | 1.21 | 1.35 | 2.28 |
+| P_ε ratio | 0.954 | **0.960** | 0.945 | 0.793 |
+| bubble W1 active (Mpc) | **0.56** | 0.64 | 0.69 | 1.21 |
+| $x_\text{HI}$ power error large / mid / small $k$ | 0.019 / 0.057 / **0.168** | **0.006 / 0.052** / 0.169 | 0.029 / 0.116 / 0.223 | 0.119 / 0.175 / 0.311 |
+| 1 − coherence, small $k$ | **0.096** | 0.104 | 0.151 | 0.174 |
+| 3-D edge H1 ±2 Mpc / front width (Mpc, truth 2.77) | **0.106 / 3.89** | 0.109 / 3.92 | 0.131 / 4.38 | 0.147 / 6.17 |
+| $T_b$ PDF W1 active (mK) | **0.79** | 0.84 | 1.06 | 1.19 |
+| $T_b$ power ratio active, $k$ = 0.11 / 0.46 | 0.98 / 0.96 | **1.00 / 0.96** | 0.97 / 0.91 | 0.90 / 0.87 |
+| $T_b$ PDF W1, pre-reionization (mK) | 0.36 | 0.52 | **0.31** | 0.45 |
+| $T_b$ power deviation, pre-reionization, $k$ = 0.11 / 0.46 | +8.7σ / +24.8σ | +7.7σ / +24.8σ | **+1.5σ / +4.1σ** | +3.0σ / +12.8σ |
+
+- **Against 3-D rhizome C, the 2-D model wins every $x_\text{HI}$ morphology metric:** W1 −39%, b₁ pull −27%, bubble W1 −19%, small-scale incoherence −36%, mid-scale power −51%, edge H1 −19% (P = 0.000 over 170 cones).
+- **It also wins $T_b$ during reionization** (W1 −25%; power within 4% at all $k$).
+- **τ_e, timing and duration tie with 3-D C.** With the history channels, both rhizome models are already 5–7× better than fno there.
+- **On the coherence-vs-small-scale-power plane** (`runs/eval3d/ps_plane3d_best.png`) it sits far from every fno model: r(k>1) 0.90 vs 0.82–0.83 for the multi-field fno runs, power error 0.17 vs 0.31–0.34.
+
+### 6.2 All cones vs 1,594 cones (paired, 199 test cones, identical slices)
+
+| per-cone RMSE | 1,594 | all | median Δ | mean Δ (95% CI) | better on | Wilcoxon p |
+|---|---:|---:|---:|---:|---:|---:|
+| $x_\text{HI}$ full cone | 0.0318 | **0.0308** | −3.6% | −5.6% (−7.5, −3.7) | 86% | 1.5e-20 |
+| $T_b$ full cone (mK) | 4.15 | **3.96** | −5.5% | −6.3% (−7.7, −4.8) | 75% | 2.1e-15 |
+| $x_\text{HI}$ active slices | 0.0877 | **0.0853** | −3.0% | −4.0% (−5.4, −2.5) | 85% | 4.1e-15 |
+| $T_b$ active slices (mK) | 8.74 | **8.47** | −2.4% | −2.2% (−3.8, −0.6) | 74% | 1.0e-8 |
+| $T_b$ pre-reionization (mK) | 3.03 | **2.85** | −7.1% | −7.1% (−8.8, −5.2) | 71% | 3.5e-12 |
+
+The earliest reionizer (cone 27, z_mid ≈ 16), the weak case of every model,
+gains most: full-cone $x_\text{HI}$ RMSE 0.072 -> 0.064. Each model is a single
+seed.
+
+### 6.3 Absorption-era $T_b$: a structural limit of slice-wise prediction
+
+- **What's wrong:** before reionization (x̄_HI ≥ 0.98) the slice-wise model has much more small-scale $T_b$ power than the truth, +25σ at $k$ = 0.46. The 3-D rhizome is at +4σ and fno at +13σ.
+- **In the maps:** the $T_b$ slices at z ≈ 12–14 show a fine-grained error pattern.
+- **More data did not fix it.** Training on 3.9× more cones improved the absorption-era $T_b$ values (W1 0.52 -> 0.36 mK, close to 3-D C's 0.31; RMSE −7%) but left the excess power unchanged (+24.8σ). So it is not a data-variance effect.
+- **Cause:** u ($T_\text{CMB}/T_S$) is predicted independently per slice. Its slice-to-slice scatter becomes small-scale power, whereas the 3-D model predicts it jointly along the LOS.
+- **Test in progress (2026-10-04):** Gaussian smoothing of u along the LOS at reassembly (σ = 2–16 native cells, no retraining), scored against 3-D C. Per-voxel RMSE rises with σ (cone 24: 1.57 -> 2.20 mK at σ = 16); the question is whether the excess power falls faster.
+
+### 6.4 Mode-weight diagnostic (spectral bias)
+
+Per-mode RMS of the learned Fourier kernel, relative to its initialization
+(`ebm21cm/mode_weights.py`, the 2-D analogue of [[SirenFNO Spectral Bias Investigation]]):
+
+| model | high/low-quarter weight ratio | low-25% share / flat share |
+|---|---:|---:|
+| multi-field 2-D (all / 1,594 cones) | 0.80 / 0.82 | 1.17 / 1.15 |
+| x_HI 2-D w64 / w128 (fair split) | 0.85 / 0.78 | 1.13 / 1.19 |
+| sweep, modes 12 / 24 / 36 / 48 | 0.94 / 0.93 / 0.88 / 0.78 | 1.04–1.16 |
+| U-FNO, 32 modes (SirenFNO note) | 0.10–0.45 | ≈ 2.1 |
+
+- **No low-frequency collapse.** Weights grew 13–45× over initialization nearly evenly up to the band edge.
+- **Extra modes are used when available:** 36 and 48 modes stay flat out to 1.1 and 1.5 Mpc⁻¹. So the worse 48-mode sweep result (0.1177) is under-training or overfitting at 15k steps, not unused modes.
+- **The kernels are stronger along the $k_x$, $k_y$ axes and the 45° diagonals,** the mirror lines of the dihedral training augmentation.
+- **What it means for SIREN:** a SIREN-generated kernel would not correct a spectral bias here. It remains only a compact way to extend the band beyond 0.72 Mpc⁻¹. Full-budget 36/48-mode runs are the cheaper first test.
+
+## 7. Cost
 
 | model | GPU | training run | inference, one full cone (2,709 slices), A100 / H200 |
 |---|---|---|---|
 | 2-D w64 slice-wise | A100 | **2.8 h** | — |
+| 2-D w64 multi-field slice-wise | A100 | 3.4 h (1,594 cones) / 3.5 h (all cones) | — |
 | 2-D w128 slice-wise | A100 | 5.0–6.5 h (92 slices/s) | 7.9 s + 3.2 s CPU bands / 4.0 s |
 | 3-D rhizome w48 | H200 | ~12 h + 6 h restart (3.1 windows/s; A100 1.38, ~77 min/epoch) | 4.7 s / 1.9 s |
 | fno `cnn_whno_es` | A100 | 44.7 h, 30 epochs (1.32 windows/s, ~81 min/epoch) | 2.1 s / 1.0 s |
@@ -252,17 +343,21 @@ high-z slices relative to the native grid, so its absolute RMSEs are lower
 - **It needs 15–20× fewer training slices** (2.2 M vs 33–49 M), so a whole run is 4–7× cheaper.
 - **Inference speed-ups not yet applied:** w64, bf16, and band building on the GPU. These should bring slice-wise inference to roughly the 3-D rhizome's speed.
 
-## 7. Open items
+## 8. Open items
 
-- **Multi-field slice-wise 2-D** (density + velocity bands, history band means as scalars, structured $T_b$ head with the physical factor $A(z)(1+\delta)V$ precomputed by the 3-D head's code, w64, batch 32) is training since 2026-10-03. Its cache is built from fno's multi-field pipeline, so data, split and normalization match §4. Pilot check: $T_b/(x_\text{HI}\cdot A(1+\delta)V)$ gives a smooth spin factor (0.8 -> −0.08). A slice-wise $x_\text{HI}+T_b$ exporter for the suite is still to be written.
+- **Absorption-era $T_b$ power** of the slice-wise model (§6.3): the LOS smoothing test of u is running. If it falls short, predict u from coarser LOS context (history scalars plus a low-resolution map).
+- **Wider kernel band:** full-budget 36/48-mode runs; SIREN only if those help (§6.4).
 - **fno retrain with BCE on $x_\text{HI}$**, to separate the loss effect (§4.3) from the operator.
 - **Single seeds throughout**; the A vs A0 difference (7.6%) may be partly noise.
 - **Partial-ionization plateaus** in the truth are a shared blind spot (overpredicted "partially ionized" fraction 0.135–0.18 vs truth 0.086).
 
-## 8. Artifacts
+## 9. Artifacts
 
-- Suites: `runs/eval3d/{rhizome_w48_cont10_vs_fno_whno_es, rhizome_mf_C_B_vs_fno_histtb, slicewise2d_fnosplit_vs_3d, slicewise2d_w64_fnosplit_vs_3d, slicewise2d_vs_3d_test21}/`.
-- Coherence vs small-scale power plane with the 3-D matrix: `runs/eval3d/ps_plane3d.png`.
+- Suites: `runs/eval3d/{rhizome_w48_cont10_vs_fno_whno_es, rhizome_mf_C_B_vs_fno_histtb, slicewise2d_fnosplit_vs_3d, slicewise2d_w64_fnosplit_vs_3d, slicewise2d_vs_3d_test21, slicewise2d_mf_vs_3d_mf, slicewise2d_mf_all_vs_mf}/`.
+- Head-to-head figures, best rhizome vs best fno labelled "Rhizome"/"UFNO" (re-rendered from saved suite results by `ebm21cm/replot_suite.py`, plus side-by-side cone pages and error maps): `runs/eval3d/h2h_rhizome_all_vs_ufno/` (all-cones model) and `h2h_rhizome_vs_ufno/` (1,594-cone model).
+- Paired statistics: `runs/probes/paired_mf_all.py`. Mode weights: `runs/eval3d/mode_weights/`.
+- Native multi-field cones (8 test cones, $x_\text{HI}$ + $T_b$): `data/eval_cubes/rhizome2d_mf_w64_all/native/`.
+- Coherence vs small-scale power plane with the 3-D matrix: `runs/eval3d/ps_plane3d.png` (all rhizome variants), `ps_plane3d_best.png` (multi-field slice-wise only).
 - Benchmarks: `runs/eval3d/bench_inference_{a100,h200}.json`.
 - Native slice-wise cones (13 test cones): `data/eval_cubes/rhizome2d_w64_fnosplit_slicewise/native/`.
 - Launch records: `runs/rhizome3d/COMMON*.txt`, `runs/rhizome3d_mf/LAUNCH.txt`, `runs/rhizome_xhi_w128_fnosplit.LAUNCH.txt`, `runs/rhizome_mf2d.LAUNCH.txt`.
