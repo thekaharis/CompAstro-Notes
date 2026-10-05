@@ -1,12 +1,22 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-10-04
+updated: 2026-10-05
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-10-05] update | Rhizome: absorption-era T_b tests, T_b offsets, wide context, inference speed
+
+**Sources**: `rhizome-neural-operator/runs/eval3d/{smooth_u_test, slicewise2d_mf_wide_vs_mf}/`, `runs/probes/tb_offset*.py`, `runs/probes/paired_wide_vs_all.py`, `runs/eval3d/bench_inference_mf_{a100,h200}.json`.
+
+**Updated**: [[Rhizome Neural Operator Results]] (key findings, §6.3 rewritten, new §6.5 and §6.6, §7 cost, open items, artifacts), index, hot.
+
+The absorption-era T_b excess of the slice-wise model survives more data, LOS smoothing of the spin variable (removes it only by destroying real structure: T_b RMSE +40–110%) and ±128-cell context (worse, +36σ). It is concentrated in quiet slices; a power-spectrum loss term is next. A third of pre-reionization T_b error is a per-cone constant offset shared by all model families, information-limited by the history emulator. Wide context improves only the reionization duration and is not adopted. With GPU input building and prefetched reads the best model runs a full cone in 5.5 s (A100) / 3.7 s (H200), faster end to end than both 3-D models.
 
 ---
 

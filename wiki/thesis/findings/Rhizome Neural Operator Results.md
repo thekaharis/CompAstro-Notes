@@ -2,7 +2,7 @@
 type: finding
 title: "Rhizome Neural Operator Results"
 created: 2026-10-03
-updated: 2026-10-04
+updated: 2026-10-05
 tags:
   - domain/thesis
   - domain/ml
@@ -64,7 +64,14 @@ $x_\text{HI}$ and then multi-field (§6), the best rhizome variant overall.
   - bubble-size W1 −54%, small-scale incoherence −45%, front width 3.9 vs 6.2 Mpc;
   - T_b value-distribution W1 during reionization is −34%;
   - it wins all 8 inspected cones by 12–28% in full-cone RMSE.
-- **Its one weakness is T_b before reionization.** It adds small-scale T_b power (+25σ vs +4σ for the 3-D rhizome) because the spin factor is predicted slice by slice. Training on 3.9× more cones improved those T_b values (W1 −31%) but **not** the excess power, so the cause is structural (§6.3).
+- **Its one weakness is T_b before reionization.** It adds small-scale T_b power (+25σ vs +4σ for the 3-D rhizome), concentrated in quiet absorption-era slices (§6.3). Three fixes did not work:
+  - training on 3.9× more cones improved those T_b values (W1 −31%) but left the excess power unchanged;
+  - smoothing the spin variable along the LOS removed the excess only by destroying real structure (T_b RMSE +40–110%);
+  - LOS context to ±128 cells made it worse (+36σ).
+
+  The next candidate is a small-scale $T_b$ power term in the loss.
+- **A third of the absorption-era $T_b$ error is a per-slice constant offset** (random sign per cone, not a bias). Its size is the same for all three model families and of the order of the global-history emulator's own error (§6.5).
+- **It is also the fastest model end to end** once its input building runs on the GPU with prefetched reads: **5.5 s per full cone on an A100 / 3.7 s on an H200**, vs 12.8 / 8.3 s for the 3-D rhizome and 9.8 / 7.0 s for fno (§7).
 - **The rhizome's Fourier kernel shows no low-frequency collapse** (high/low-quarter weight ratio 0.78–0.94 vs 0.10–0.45 for the U-FNO), so SIREN kernels would not fix a spectral bias here (§6.4).
 
 ## 1. Setup
@@ -309,8 +316,26 @@ seed.
 - **What's wrong:** before reionization (x̄_HI ≥ 0.98) the slice-wise model has much more small-scale $T_b$ power than the truth, +25σ at $k$ = 0.46. The 3-D rhizome is at +4σ and fno at +13σ.
 - **In the maps:** the $T_b$ slices at z ≈ 12–14 show a fine-grained error pattern.
 - **More data did not fix it.** Training on 3.9× more cones improved the absorption-era $T_b$ values (W1 0.52 -> 0.36 mK, close to 3-D C's 0.31; RMSE −7%) but left the excess power unchanged (+24.8σ). So it is not a data-variance effect.
-- **Cause:** u ($T_\text{CMB}/T_S$) is predicted independently per slice. Its slice-to-slice scatter becomes small-scale power, whereas the 3-D model predicts it jointly along the LOS.
-- **Test in progress (2026-10-04):** Gaussian smoothing of u along the LOS at reassembly (σ = 2–16 native cells, no retraining), scored against 3-D C. Per-voxel RMSE rises with σ (cone 24: 1.57 -> 2.20 mK at σ = 16); the question is whether the excess power falls faster.
+- **Where the excess sits.** The power deviation is a per-slice average of (P_pred − P_true)/(P_true·√(2/N_modes)). Without smoothing, the cone-summed power ratio is in fact slightly *low* (0.97 at $k$ = 0.46) while the deviation is +25σ. So the excess is concentrated in quiet absorption-era slices whose true small-scale $T_b$ power is tiny: per-slice scatter in u is large relative to it there, even though it barely changes the total power.
+- **Working hypothesis:** u ($T_\text{CMB}/T_S$) is predicted per slice with nothing in the loss that sees slice-to-slice or small-scale power consistency; the 3-D model predicts it jointly along the LOS.
+
+**Test 1: smoothing u along the LOS at reassembly** (no retraining; Gaussian σ in native cells; T_b-only suite, 199 cones; `runs/eval3d/smooth_u_test/`):
+
+| pre-reionization metric | σ = 0 | 2 | 4 | 8 | 16 | 3-D rhizome C |
+|---|---:|---:|---:|---:|---:|---:|
+| power deviation, $k$ = 0.46 | +24.8σ | +7.5σ | **+1.1σ** | −2.0σ | −3.9σ | +4.1σ |
+| cone-summed power ratio, $k$ = 0.46 | **0.97** | 1.23 | 1.34 | 1.43 | 1.47 | 1.00 |
+| $T_b$ PDF W1 (mK) | **0.36** | 0.48 | 0.59 | 0.68 | 0.70 | 0.31 |
+| median per-cone $T_b$ RMSE, all slices (mK) | **2.66** | 4.33 | 5.08 | 5.72 | 6.22 | |
+
+- **Smoothing suppresses the per-slice scatter, but u has real fine LOS structure:** even σ = 2 (≈3 Mpc) costs 42% in $T_b$ RMSE.
+- **Because $1-e^u$ is nonlinear, averaging u shifts the mean $T_b$** and inflates the summed power (ratio 1.2–1.5).
+- **Every reionization-stage $T_b$ metric also degrades** (active W1 0.80 -> 1.04 mK at σ = 4).
+- **Rejected as a fix.**
+
+**Test 2: LOS context to ±128 cells** (§6.6): the excess grew to +36σ (W1 0.50 mK). Wider bands seem to give u more inputs to vary on per slice.
+
+**Conclusion:** the excess is not data-limited (more cones), not removable post hoc (smoothing), and not a lack of context (wide bands). Next: a loss term on the per-slice relative small-scale $T_b$ power error (k ≳ 0.3 Mpc⁻¹), which targets exactly these quiet slices and cannot be satisfied by blurring.
 
 ### 6.4 Mode-weight diagnostic (spectral bias)
 
@@ -329,23 +354,75 @@ Per-mode RMS of the learned Fourier kernel, relative to its initialization
 - **The kernels are stronger along the $k_x$, $k_y$ axes and the 45° diagonals,** the mirror lines of the dihedral training augmentation.
 - **What it means for SIREN:** a SIREN-generated kernel would not correct a spectral bias here. It remains only a compact way to extend the band beyond 0.72 Mpc⁻¹. Full-budget 36/48-mode runs are the cheaper first test.
 
+### 6.5 Constant $T_b$ offsets per slice
+
+Each slice's $T_b$ error was split into a constant offset (prediction mean − truth
+mean over the 140×140 slice) and the remaining fluctuation error
+(`runs/probes/tb_offset.py`, 199 test cones):
+
+| stage | model | $T_b$ RMSE | offset RMS | offset share of MSE |
+|---|---|---:|---:|---:|
+| pre-reionization (x̄ ≥ 0.98) | 2-D all cones | 2.86 mK | 1.64 mK | 33% |
+| | 2-D wide (±128) | 2.91 | 1.69 | 34% |
+| | 3-D rhizome C | 3.09 | 1.80 | 34% |
+| | fno `tbs+histtb` | 3.72 | 2.02 | 30% |
+| late heating (0.8–0.98) | 2-D all cones / 3-D C / fno | 6.54 / 8.11 / 8.83 | 2.73 / 2.84 / 3.02 | 17 / 12 / 12% |
+| reionization (0.05–0.8) | 2-D all cones / 3-D C / fno | 10.15 / 12.24 / 13.29 | 3.29 / 3.92 / 4.30 | 10–11% |
+
+- **The offset is real and large before reionization,** but it is **not a systematic bias.** The median offset over cones is < 0.4 mK at every redshift; each cone over- or undershoots its global $T_b$ level by a random amount. (The wide model adds a small +0.1–0.5 mK positive bias at z = 9–25, possibly from its wide history bands near the padded cone ends.)
+- **All three model families share nearly the same offset size.** The global $T_b$ level is set by the parameters through the integrated history, which the models receive as the emulated $T_b$ history. That emulator's own error on the multi-field test cones is ≈ 2.1 mK RMS, so the offset looks information-limited rather than loss-limited. $T_b$ is already trained with L2 (MSE); BCE is used only for $x_\text{HI}$.
+- **Levers:** a better $T_b$ history emulator, or a dedicated slice-mean correction head with its own loss term.
+
+### 6.6 Wide LOS context (±128 cells)
+
+Six extra density bands (±32–64, ±64–96, ±96–128 cells) as image channels and the
+same wide band means of both histories as scalars (32 channels / 50 scalars;
+otherwise identical: all cones, 16+2 slices, same hyperparameters; 68 k steps,
+2.9 h). 199 test cones:
+
+| metric | **2-D all cones (±32)** | 2-D wide (±128) |
+|---|---:|---:|
+| \|Δ duration\| | 0.018 | **0.011** |
+| bubble W1 active (Mpc) | 0.56 | **0.52** |
+| $x_\text{HI}$ power error, large $k$ | 0.019 | **0.013** |
+| 3-D edge H1 ±2 Mpc | **0.106** | 0.108 (P = 1.000 in favour of ±32) |
+| 1 − coherence, small $k$ | **0.096** | 0.100 |
+| $T_b$ W1 late heating (mK) | **0.82** | 0.88 |
+| pre-reionization power deviation, $k$ = 0.46 | **+24.8σ** | +36.0σ |
+
+- **Per voxel there is no significant difference.** Paired over 199 cones: $x_\text{HI}$ p = 0.44, $T_b$ p = 0.07. Pre-reionization $T_b$ is slightly worse (+2%, p = 0.008).
+- **Gains:** the longer view pins down the reionization duration (−37%), with small gains in bubble sizes and large-scale power.
+- **Losses:** absorption-era $T_b$ and, marginally, the edges.
+- **Not adopted;** the ±32-cell model remains the best variant.
+
 ## 7. Cost
 
 | model | GPU | training run | inference, one full cone (2,709 slices), A100 / H200 |
 |---|---|---|---|
 | 2-D w64 slice-wise | A100 | **2.8 h** | — |
-| 2-D w64 multi-field slice-wise | A100 | 3.4 h (1,594 cones) / 3.5 h (all cones) | — |
+| **2-D w64 multi-field slice-wise** (2,588 slices, x_HI + T_b) | A100 | 3.4 h (1,594 cones) / 3.5 h (all cones) | **5.5 s / 3.7 s end to end** (GPU forward 3.8 s / 1.7 s) |
+| 3-D rhizome C (multi-field) | H200 | as 3-D rhizome w48 | 12.8 s / 8.3 s end to end (GPU forward 4.4 s / 1.8 s) |
+| fno `tbs+histtb` (multi-field) | A100 | as fno `cnn_whno_es` | 9.8 s / 7.0 s end to end (GPU forward 2.0 s / 1.0 s) |
 | 2-D w128 slice-wise | A100 | 5.0–6.5 h (92 slices/s) | 7.9 s + 3.2 s CPU bands / 4.0 s |
 | 3-D rhizome w48 | H200 | ~12 h + 6 h restart (3.1 windows/s; A100 1.38, ~77 min/epoch) | 4.7 s / 1.9 s |
 | fno `cnn_whno_es` | A100 | 44.7 h, 30 epochs (1.32 windows/s, ~81 min/epoch) | 2.1 s / 1.0 s |
 
 - **The 2-D model is ~4× slower per slice in training**: width 128, float32, full-resolution recurrent updates.
 - **It needs 15–20× fewer training slices** (2.2 M vs 33–49 M), so a whole run is 4–7× cheaper.
-- **Inference speed-ups not yet applied:** w64, bf16, and band building on the GPU. These should bring slice-wise inference to roughly the 3-D rhizome's speed.
+- **Multi-field inference, stage by stage** (`ebm21cm/bench_inference_mf.py`, cone 1751, float32, batch 128):
+  - Reading the data windows takes 5.3 s on the A100 and 3.7 s on the H200 for every model.
+  - Building the 2-D inputs (LOS bands, history band means, physical factor) took 15.7 s / 8.8 s on 8 CPU cores, which made end to end 24.8 s / 14.2 s.
+  - On the GPU (`slice_inputs_gpu`) the input building takes 0.6 s / 0.1 s, giving 9.1 s / 5.2 s end to end.
+  - With the next window prefetched in a background thread and each chunk predicted as soon as it is built, the whole cone is read-bound: **5.5 s / 3.7 s**. That is 1.8–2.3× faster end to end than both 3-D models.
+  - The GPU inputs match the CPU path to float rounding. The prefetched export differs from the original by $x_\text{HI}$ RMS ≤ 1e-5 and $T_b$ ≤ 0.002 mK (TF32 convolution rounding with different batch splits).
+- **The GPU forward alone** matches the 3-D rhizome and is about 2× slower than fno.
+- **Batch size barely matters** (660–685 slices/s from 32 to 128); batch 32 needs 2.4 GiB.
+- **bfloat16 is not worth it:** only +14% (A100) / +5% (H200) faster because the FFTs stay float32, and it shifts $x_\text{HI}$ by up to 0.08 and $T_b$ by 0.35 mK RMS.
 
 ## 8. Open items
 
-- **Absorption-era $T_b$ power** of the slice-wise model (§6.3): the LOS smoothing test of u is running. If it falls short, predict u from coarser LOS context (history scalars plus a low-resolution map).
+- **Absorption-era $T_b$ power** of the slice-wise model (§6.3): smoothing and wider context failed; next is a small-scale $T_b$ power loss term (one run on the all-cones cache).
+- **Constant $T_b$ offsets** (§6.5): a better $T_b$ history emulator or a slice-mean correction head.
 - **Wider kernel band:** full-budget 36/48-mode runs; SIREN only if those help (§6.4).
 - **fno retrain with BCE on $x_\text{HI}$**, to separate the loss effect (§4.3) from the operator.
 - **Single seeds throughout**; the A vs A0 difference (7.6%) may be partly noise.
@@ -357,6 +434,8 @@ Per-mode RMS of the learned Fourier kernel, relative to its initialization
 - Head-to-head figures, best rhizome vs best fno labelled "Rhizome"/"UFNO" (re-rendered from saved suite results by `ebm21cm/replot_suite.py`, plus side-by-side cone pages and error maps): `runs/eval3d/h2h_rhizome_all_vs_ufno/` (all-cones model) and `h2h_rhizome_vs_ufno/` (1,594-cone model).
 - Paired statistics: `runs/probes/paired_mf_all.py`. Mode weights: `runs/eval3d/mode_weights/`.
 - Native multi-field cones (8 test cones, $x_\text{HI}$ + $T_b$): `data/eval_cubes/rhizome2d_mf_w64_all/native/`.
+- Spin-smoothing test: `runs/eval3d/smooth_u_test/` (`ebm21cm/smooth_spin_test.py`); wide-context suite: `runs/eval3d/slicewise2d_mf_wide_vs_mf/`; $T_b$ offset split: `runs/probes/tb_offset*.py`; paired wide vs all-cones: `runs/probes/paired_wide_vs_all.py`.
+- Multi-field inference benchmark: `runs/eval3d/bench_inference_mf_{a100,h200}.json`.
 - Coherence vs small-scale power plane with the 3-D matrix: `runs/eval3d/ps_plane3d.png` (all rhizome variants), `ps_plane3d_best.png` (multi-field slice-wise only).
 - Benchmarks: `runs/eval3d/bench_inference_{a100,h200}.json`.
 - Native slice-wise cones (13 test cones): `data/eval_cubes/rhizome2d_w64_fnosplit_slicewise/native/`.
