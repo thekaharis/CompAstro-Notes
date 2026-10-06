@@ -2,7 +2,7 @@
 type: finding
 title: "Rhizome Neural Operator Results"
 created: 2026-10-03
-updated: 2026-10-05
+updated: 2026-10-06
 tags:
   - domain/thesis
   - domain/ml
@@ -69,7 +69,10 @@ $x_\text{HI}$ and then multi-field (§6), the best rhizome variant overall.
   - smoothing the spin variable along the LOS removed the excess only by destroying real structure (T_b RMSE +40–110%);
   - LOS context to ±128 cells made it worse (+36σ).
 
-  The next candidate is a small-scale $T_b$ power term in the loss.
+  **A small-scale $T_b$ power term in the loss fixes it:** +24.8σ -> **+1.5σ**, better than the 3-D rhizome's +4.1σ.
+  - It also improves the statistics: $T_b$ power within 1–2% at all scales, bubble-size W1 −14%, τ_e −20%.
+  - The price is 4–8% higher per-voxel RMSE (consistent over 80–90% of cones) and ~6% on edges (§6.7).
+  - Keep both variants: the power-loss model for 21-cm statistics, the plain model for per-voxel accuracy.
 - **A third of the absorption-era $T_b$ error is a per-slice constant offset** (random sign per cone, not a bias). Its size is the same for all three model families and of the order of the global-history emulator's own error (§6.5).
 - **It is also the fastest model end to end** once its input building runs on the GPU with prefetched reads: **5.5 s per full cone on an A100 / 3.7 s on an H200**, vs 12.8 / 8.3 s for the 3-D rhizome and 9.8 / 7.0 s for fno (§7).
 - **The rhizome's Fourier kernel shows no low-frequency collapse** (high/low-quarter weight ratio 0.78–0.94 vs 0.10–0.45 for the U-FNO), so SIREN kernels would not fix a spectral bias here (§6.4).
@@ -335,7 +338,7 @@ seed.
 
 **Test 2: LOS context to ±128 cells** (§6.6): the excess grew to +36σ (W1 0.50 mK). Wider bands seem to give u more inputs to vary on per slice.
 
-**Conclusion:** the excess is not data-limited (more cones), not removable post hoc (smoothing), and not a lack of context (wide bands). Next: a loss term on the per-slice relative small-scale $T_b$ power error (k ≳ 0.3 Mpc⁻¹), which targets exactly these quiet slices and cannot be satisfied by blurring.
+**Conclusion:** the excess is not data-limited (more cones), not removable post hoc (smoothing), and not a lack of context (wide bands). **Test 3, a loss term on the per-slice relative small-scale $T_b$ power error, removes it** (§6.7). The excess was a property of the training objective: per-pixel losses alone leave the per-slice spin factor unconstrained in quiet slices.
 
 ### 6.4 Mode-weight diagnostic (spectral bias)
 
@@ -395,6 +398,54 @@ otherwise identical: all cones, 16+2 slices, same hyperparameters; 68 k steps,
 - **Losses:** absorption-era $T_b$ and, marginally, the edges.
 - **Not adopted;** the ±32-cell model remains the best variant.
 
+### 6.7 Small-scale $T_b$ power loss
+
+Loss += λ · mean over slices and 8 log-spaced bins ($k$ = 0.3 Mpc⁻¹ to the grid
+Nyquist) of $(\log(P_\text{pred}+\epsilon) - \log(P_\text{true}+\epsilon))^2$,
+on the transverse power of mean-subtracted normalized $T_b$ ($\epsilon$ = 1e-6;
+`train_rhizome_mf2d.PowerLoss`). Everything else is identical to the all-cones
+model.
+
+- **Calibration on the plain model** (256 validation slices), mean log(P_pred/P_true):
+  - before reionization **+0.75** (2.1× too much power);
+  - late heating −0.10;
+  - during reionization −0.46 (blurred fronts).
+- **Choice of weight:**
+  - λ = 0.03: 92 k steps, 3.9 h; small-scale power error 0.19 vs ≈0.57 for the plain model.
+  - λ = 0.1: 30% worse combined score with no better power error; stopped.
+
+**Suite, 199 test cones** (`runs/eval3d/slicewise2d_mf_power_loss/`):
+
+| metric | **2-D power loss λ = 0.03** | 2-D all cones (plain) | 3-D rhizome C |
+|---|---:|---:|---:|
+| pre-reion. $T_b$ power deviation, $k$ = 0.11 / 0.20 / 0.46 | **+0.9 / +1.0 / +1.5σ** | +8.7 / +13.6 / +24.8σ | +1.5 / +2.4 / +4.1σ |
+| pre-reion. summed power ratio, $k$ = 0.46 | **0.997** | 0.974 | 0.996 |
+| pre-reion. $T_b$ PDF W1 (mK) | 0.35 | 0.36 | **0.31** |
+| active $T_b$ power ratio, $k$ = 0.11 / 0.46 | **0.99 / 0.98** | 0.98 / 0.96 | 0.97 / 0.91 |
+| active $T_b$ power deviation, $k$ = 0.46 | **−0.07σ** | −0.44σ | −0.86σ |
+| active $T_b$ PDF W1 (mK) | **0.77** | 0.79 | 1.06 |
+| \|Δτ_e\| / σ_Planck | **0.008** | 0.010 | 0.012 |
+| \|Δz(x̄ = 0.5)\| / duration | 0.010 / 0.018 | 0.010 / 0.018 | 0.011 / 0.018 |
+| $x_\text{HI}$ PDF W1 active / b₁ pull | 0.0098 / **0.93** | **0.0095** / 0.99 | 0.0156 / 1.35 |
+| bubble W1 active (Mpc) | **0.48** | 0.56 | 0.69 |
+| $x_\text{HI}$ power error large / mid / small $k$ | **0.016** / **0.057** / **0.163** | 0.019 / **0.057** / 0.168 | 0.029 / 0.116 / 0.223 |
+| 1 − coherence, small $k$ | 0.102 | **0.096** | 0.151 |
+| 3-D edge L2 / H1 ±2 Mpc | 0.179 / 0.112 | **0.172 / 0.106** | 0.209 / 0.131 |
+| front width (Mpc, truth 2.77) | 3.94 | **3.89** | 4.38 |
+
+**Paired per-voxel accuracy vs the plain model** (199 cones, identical slices):
+
+| per-cone RMSE | plain | power loss | median Δ | power loss better on | Wilcoxon p |
+|---|---:|---:|---:|---:|---:|
+| $x_\text{HI}$ full cone | 0.0308 | 0.0318 | +5.5% | 8% | 4e-30 |
+| $T_b$ full cone (mK) | 3.96 | 4.22 | +6.8% | 17% | 5e-23 |
+| $T_b$ pre-reionization (mK) | 2.85 | 3.09 | +7.3% | 22% | 2e-17 |
+
+- **The power loss is a standard perception-vs-distortion trade.** Per-pixel losses favour slightly smoothed fields; the power term enforces realistic small-scale structure at a small cost in pixel accuracy.
+- **It fixes the absorption-era excess at every scale without amplitude overshoot.** It also corrects the reionization-era under-power and improves bubble sizes, τ_e and the bias.
+- **Costs:** pixel RMSE, edges (H1 +0.006, P = 1.000 for the plain model) and slightly lower small-scale coherence.
+- **Constant $T_b$ offsets are unchanged** (1.77 mK RMS, 33% of pre-reionization MSE): the term acts only on fluctuations (§6.5).
+
 ## 7. Cost
 
 | model | GPU | training run | inference, one full cone (2,709 slices), A100 / H200 |
@@ -417,11 +468,15 @@ otherwise identical: all cones, 16+2 slices, same hyperparameters; 68 k steps,
   - The GPU inputs match the CPU path to float rounding. The prefetched export differs from the original by $x_\text{HI}$ RMS ≤ 1e-5 and $T_b$ ≤ 0.002 mK (TF32 convolution rounding with different batch splits).
 - **The GPU forward alone** matches the 3-D rhizome and is about 2× slower than fno.
 - **Batch size barely matters** (660–685 slices/s from 32 to 128); batch 32 needs 2.4 GiB.
+- **Evaluation suite** (`ebm21cm/suite_cached.py`, behind `slurm/eval3d_suite.sbatch`):
+  - The old suite was I/O-bound: 21 CPU-minutes in 2 h 22 min, re-reading ~38 GB of cubes per model in each of six sequential steps.
+  - Now the per-model steps (physics, bubble sizes, power spectra) are cached next to each model's cubes, the steps run in parallel, and the duplicate x_HI pass is skipped in DTB mode.
+  - A three-model $T_b$ suite takes 35 min uncached and 26 min with all models cached, with byte-identical outputs. The pairwise edge diagnostics (not cached) are now the floor.
 - **bfloat16 is not worth it:** only +14% (A100) / +5% (H200) faster because the FFTs stay float32, and it shifts $x_\text{HI}$ by up to 0.08 and $T_b$ by 0.35 mK RMS.
 
 ## 8. Open items
 
-- **Absorption-era $T_b$ power** of the slice-wise model (§6.3): smoothing and wider context failed; next is a small-scale $T_b$ power loss term (one run on the all-cones cache).
+- **Power-loss weight:** λ = 0.03 fixes the absorption-era excess at a 4–8% pixel cost (§6.7). A smaller λ (e.g. 0.01) or a power term restricted to pre-reionization slices might keep most of the gain for less cost.
 - **Constant $T_b$ offsets** (§6.5): a better $T_b$ history emulator or a slice-mean correction head.
 - **Wider kernel band:** full-budget 36/48-mode runs; SIREN only if those help (§6.4).
 - **fno retrain with BCE on $x_\text{HI}$**, to separate the loss effect (§4.3) from the operator.
@@ -436,6 +491,7 @@ otherwise identical: all cones, 16+2 slices, same hyperparameters; 68 k steps,
 - Native multi-field cones (8 test cones, $x_\text{HI}$ + $T_b$): `data/eval_cubes/rhizome2d_mf_w64_all/native/`.
 - Spin-smoothing test: `runs/eval3d/smooth_u_test/` (`ebm21cm/smooth_spin_test.py`); wide-context suite: `runs/eval3d/slicewise2d_mf_wide_vs_mf/`; $T_b$ offset split: `runs/probes/tb_offset*.py`; paired wide vs all-cones: `runs/probes/paired_wide_vs_all.py`.
 - Multi-field inference benchmark: `runs/eval3d/bench_inference_mf_{a100,h200}.json`.
+- Power-loss model: `runs/rhizome_mf2d_w64_structured_all_pw0.03/`, cubes `data/eval_cubes/rhizome2d_mf_w64_all_pw0.03/`, suite `runs/eval3d/slicewise2d_mf_power_loss/`, paired stats `runs/probes/paired_pw_vs_all.py`, offsets `runs/probes/tb_offset_pw.py`.
 - Coherence vs small-scale power plane with the 3-D matrix: `runs/eval3d/ps_plane3d.png` (all rhizome variants), `ps_plane3d_best.png` (multi-field slice-wise only).
 - Benchmarks: `runs/eval3d/bench_inference_{a100,h200}.json`.
 - Native slice-wise cones (13 test cones): `data/eval_cubes/rhizome2d_w64_fnosplit_slicewise/native/`.

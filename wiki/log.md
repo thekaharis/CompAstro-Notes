@@ -1,12 +1,22 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-10-05
+updated: 2026-10-06
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-10-06] update | Rhizome: small-scale T_b power loss fixes the absorption-era excess
+
+**Sources**: `rhizome-neural-operator/runs/rhizome_mf2d_w64_structured_all_pw0.03/`, `runs/eval3d/slicewise2d_mf_power_loss/`, `runs/probes/paired_pw_vs_all.py`, `runs/probes/tb_offset_pw.py`; evaluation-suite rewrite `ebm21cm/suite_cached.py`.
+
+**Updated**: [[Rhizome Neural Operator Results]] (key findings, §6.3 conclusion, new §6.7, §7 suite timing, open items, artifacts), index, hot.
+
+A loss term on the per-slice log ratio of small-scale $T_b$ power (λ = 0.03) brings the absorption-era power deviation from +24.8σ to +1.5σ, better than the 3-D rhizome (+4.1σ). It also improves $T_b$ power at all stages, bubble sizes (−14%), τ_e (−20%) and the b₁ pull, at a 4–8% per-voxel RMSE cost and slightly worse edges. That is a perception-distortion trade, so both variants are kept. λ = 0.1 was worse on both counts. The evaluation suite is now parallel and cached per model: 2 h 22 min -> 35 / 26 min, byte-identical outputs.
 
 ---
 
