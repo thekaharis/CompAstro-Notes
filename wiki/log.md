@@ -1,12 +1,24 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-10-06
+updated: 2026-10-12
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-10-12] update | Rhizome figures in the vault; x_HI small-scale power loss
+
+**Sources**: `rhizome-neural-operator/runs/eval3d/` (`h2h_rhizome_all_vs_ufno/`, `slicewise2d_mf_xhi_power_loss/`, `slicewise2d_mf_wide_vs_mf/`, `smooth_u_test/`, `mode_weights/`, `rhizome_w48_cont10_vs_fno_whno_es/`, `rhizome_mf_C_B_vs_fno_histtb/`, `slicewise2d_w64_fnosplit_vs_3d/`, `ps_plane3d_best.png`); `runs/rhizome_mf2d_w64_structured_all_pw0.03_px0.03/`, `runs/probes/paired_px_vs.py`.
+
+**Created**: [[Rhizome Neural Operator Figures]] — 49 figures copied to `thesis/findings/figures/rhizome-results_20261012/`, with captions.
+
+**Updated**: [[Rhizome Neural Operator Results]] (figure links per section, key findings, new §6.8, open items, artifacts), index, hot.
+
+The figure note covers the best rhizome vs UFNO head-to-head (physical metrics, power spectra, bubble sizes, fronts, cone pages, error maps, slices, detailed pages, strips), the coherence-vs-power plane, the mode-weight diagnostic, the absorption-era $T_b$ tests, the power-loss variants, slice-wise vs 3-D and the 3-D rhizome runs. §6.8: adding the small-scale power term on $x_\text{HI}$ (λ = 0.03, on top of the $T_b$ term) roughly halves the high-k $x_\text{HI}$ power deficit (active k > 1 error 0.163 -> 0.089; latest stage 0.59 -> 0.15) and gives the closest $x_\text{HI}$ value distribution of all models, keeps the absorption-era $T_b$ fix (+1.3σ), and costs 2–4% per-voxel RMSE, slightly lower small-scale coherence and +18% reionization-era $T_b$ W1.
 
 ---
 

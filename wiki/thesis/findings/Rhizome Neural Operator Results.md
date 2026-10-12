@@ -2,7 +2,7 @@
 type: finding
 title: "Rhizome Neural Operator Results"
 created: 2026-10-03
-updated: 2026-10-06
+updated: 2026-10-12
 tags:
   - domain/thesis
   - domain/ml
@@ -14,6 +14,7 @@ tags:
 status: active
 verdict: positive
 related:
+  - "[[Rhizome Neural Operator Figures]]"
   - "[[Native LOS Window Training]]"
   - "[[Multi-Field 21cmFAST Data]]"
   - "[[Global Reionization History Emulator]]"
@@ -40,6 +41,9 @@ first on 2-D slices with line-of-sight (LOS) context, then on native-LOS 3-D
 windows, then multi-field (density + LOS velocity -> $x_\text{HI}$ + $T_b$), and
 finally as a **slice-wise 2-D model that reassembles full 3-D cones**, first for
 $x_\text{HI}$ and then multi-field (§6), the best rhizome variant overall.
+
+**Figures** (head-to-head against UFNO, physical metrics, power spectra, slices,
+strips, power-loss variants, 3-D runs): [[Rhizome Neural Operator Figures]].
 
 ## Key findings
 
@@ -73,6 +77,7 @@ $x_\text{HI}$ and then multi-field (§6), the best rhizome variant overall.
   - It also improves the statistics: $T_b$ power within 1–2% at all scales, bubble-size W1 −14%, τ_e −20%.
   - The price is 4–8% higher per-voxel RMSE (consistent over 80–90% of cones) and ~6% on edges (§6.7).
   - Keep both variants: the power-loss model for 21-cm statistics, the plain model for per-voxel accuracy.
+  - **Adding the same term on $x_\text{HI}$** (§6.8) roughly halves the high-k $x_\text{HI}$ power deficit (k > 1 error over active slices 0.163 -> 0.089) and keeps the absorption-era fix (+1.3σ), for another 2–4% per-voxel RMSE and slightly lower small-scale coherence.
 - **A third of the absorption-era $T_b$ error is a per-slice constant offset** (random sign per cone, not a bias). Its size is the same for all three model families and of the order of the global-history emulator's own error (§6.5).
 - **It is also the fastest model end to end** once its input building runs on the GPU with prefetched reads: **5.5 s per full cone on an A100 / 3.7 s on an H200**, vs 12.8 / 8.3 s for the 3-D rhizome and 9.8 / 7.0 s for fno (§7).
 - **The rhizome's Fourier kernel shows no low-frequency collapse** (high/low-quarter weight ratio 0.78–0.94 vs 0.10–0.45 for the U-FNO), so SIREN kernels would not fix a spectral bias here (§6.4).
@@ -161,6 +166,8 @@ The warm restart improved the bubble-size W1 by 22% (1.04 -> 0.81). Its 3-D
 edge gains over the 20-epoch model are significant in the paired bootstrap
 over 175 cones.
 
+Figures: [[Rhizome Neural Operator Figures#7. 3-D rhizome (§3, §4)|3-D rhizome vs fno]].
+
 ## 4. 3-D multi-field (density + LOS velocity -> $x_\text{HI}$ + $T_b$)
 
 Same data, split and cleaned $T_b$ as fno's `*_histtb_tbclean` runs (verified
@@ -203,6 +210,8 @@ Loss: BCE + MSE on normalized $T_b$. Selection: mean normalized MSE.
 
 - **The structured head fixes $T_b$ power amplitude.** Without it (B), $T_b$ power is ~10% low at every stage.
 - **fno adds spurious small-scale $T_b$ structure in the absorption era.**
+
+Figures: [[Rhizome Neural Operator Figures#7. 3-D rhizome (§3, §4)|3-D multi-field]].
 
 ### 4.3 Why fno's global history is off (loss, not operator)
 
@@ -257,6 +266,8 @@ Caveat: the 512-point evaluation grid is uniform in z and over-weights neutral
 high-z slices relative to the native grid, so its absolute RMSEs are lower
 (e.g. 0.044 vs 0.0594 for the 3-D rhizome). Rankings are unaffected.
 
+Figures: [[Rhizome Neural Operator Figures#6. Slice-wise 2-D $x_\text{HI}$ vs 3-D (§5)|slice-wise vs 3-D]].
+
 ## 6. Multi-field slice-wise 2-D (best rhizome variant)
 
 **Model.** The 2-D rhizome (w64, 6 updates, 24 modes, batch 32) on each slice:
@@ -276,6 +287,8 @@ Two training sets, the same 199 val / 199 test cones:
 The all-cones preparation (`ebm21cm.data.mf_all_prep`) points at every raw lightcone, keeps the multi-field val/test cones and copies the normalization. The cache builder applies fno-21cm's $T_b$ cleaning per cone; on a pilot cone it matches the mirror-based cache exactly, $T_b$ to float16 rounding.
 
 ### 6.1 Physical suite (199 test cones)
+
+Figures: [[Rhizome Neural Operator Figures#1. Head-to-head: Rhizome vs UFNO (§6.1)|head-to-head vs UFNO]], [[Rhizome Neural Operator Figures#2. Coherence vs small-scale power (§6.1)|coherence-power plane]].
 
 | metric | **2-D, all cones** | 2-D, 1,594 cones | 3-D rhizome C (+warm restart) | fno `tbs+histtb` |
 |---|---:|---:|---:|---:|
@@ -338,6 +351,8 @@ seed.
 
 **Test 2: LOS context to ±128 cells** (§6.6): the excess grew to +36σ (W1 0.50 mK). Wider bands seem to give u more inputs to vary on per slice.
 
+Figures: [[Rhizome Neural Operator Figures#4. Absorption-era $T_b$ tests (§6.3, §6.6)|absorption-era tests]].
+
 **Conclusion:** the excess is not data-limited (more cones), not removable post hoc (smoothing), and not a lack of context (wide bands). **Test 3, a loss term on the per-slice relative small-scale $T_b$ power error, removes it** (§6.7). The excess was a property of the training objective: per-pixel losses alone leave the per-slice spin factor unconstrained in quiet slices.
 
 ### 6.4 Mode-weight diagnostic (spectral bias)
@@ -356,6 +371,8 @@ Per-mode RMS of the learned Fourier kernel, relative to its initialization
 - **Extra modes are used when available:** 36 and 48 modes stay flat out to 1.1 and 1.5 Mpc⁻¹. So the worse 48-mode sweep result (0.1177) is under-training or overfitting at 15k steps, not unused modes.
 - **The kernels are stronger along the $k_x$, $k_y$ axes and the 45° diagonals,** the mirror lines of the dihedral training augmentation.
 - **What it means for SIREN:** a SIREN-generated kernel would not correct a spectral bias here. It remains only a compact way to extend the band beyond 0.72 Mpc⁻¹. Full-budget 36/48-mode runs are the cheaper first test.
+
+Figures: [[Rhizome Neural Operator Figures#3. Mode-weight diagnostic (§6.4)|mode-weight maps]].
 
 ### 6.5 Constant $T_b$ offsets per slice
 
@@ -446,6 +463,45 @@ model.
 - **Costs:** pixel RMSE, edges (H1 +0.006, P = 1.000 for the plain model) and slightly lower small-scale coherence.
 - **Constant $T_b$ offsets are unchanged** (1.77 mK RMS, 33% of pre-reionization MSE): the term acts only on fluctuations (§6.5).
 
+### 6.8 Small-scale $x_\text{HI}$ power loss
+
+The same `PowerLoss` term (λ = 0.03, $k \ge 0.3$ Mpc⁻¹, 8 log bins) applied to the
+$x_\text{HI}$ probability (sigmoid output), on top of the $T_b$ term of §6.7
+(`--xhi-power-weight 0.03`). Motivation: in the plain model the high-k $x_\text{HI}$
+power is low during reionization (mean log(P_pred/P_true) −0.16 … −0.92 from
+$k$ = 0.3 Mpc⁻¹ to Nyquist, 256 validation slices). Training: 94 k steps, 4.2 h
+A100; validation $x_\text{HI}$ power log error 0.88 at 1 k steps -> 0.19.
+
+**Suite, 199 test cones** (`runs/eval3d/slicewise2d_mf_xhi_power_loss/`):
+
+| metric | **+ $x_\text{HI}$ power** | $T_b$ power only (§6.7) | plain | 3-D rhizome C |
+|---|---:|---:|---:|---:|
+| $x_\text{HI}$ power-ratio error, $k>1$, x̄ 0.02–0.20 / 0.20–0.40 / 0.40–0.60 / 0.60–0.80 | **0.15 / 0.26 / 0.28 / 0.20** | 0.59 / 0.50 / 0.45 / 0.30 | 0.68 / 0.55 / 0.45 / 0.30 | 0.71 / 0.60 / 0.52 / 0.36 |
+| $x_\text{HI}$ power-ratio error, $k>1$, active | **0.089** | 0.163 | 0.168 | 0.223 |
+| 1 − coherence, $k>1$, active / x̄ 0.02–0.20 | 0.109 / 0.566 | 0.102 / 0.519 | **0.096 / 0.472** | 0.151 / 0.608 |
+| $x_\text{HI}$ PDF W1 active | **0.0082** | 0.0098 | 0.0095 | 0.0156 |
+| partially-ionized fraction (truth 0.089) | **0.128** | 0.136 | 0.136 | 0.156 |
+| pre-reion. $T_b$ power deviation, $k$ = 0.11 / 0.20 / 0.46 | **+0.4 / +0.8 / +1.3σ** | +0.9 / +1.0 / +1.5σ | +8.7 / +13.6 / +24.8σ | +1.5 / +2.4 / +4.1σ |
+| active $T_b$ PDF W1 (mK) | 0.91 | **0.77** | 0.79 | 1.06 |
+| \|Δτ_e\| / σ_Planck | 0.009 | **0.008** | 0.010 | 0.012 |
+| 3-D edge H1 ±2 Mpc / front width (Mpc, truth 2.77) | 0.114 / 3.90 | 0.112 / 3.94 | **0.106 / 3.89** | 0.131 / 4.38 |
+
+**Paired per-voxel accuracy** (199 cones, identical slices; every difference Wilcoxon p < 1e-5):
+
+| per-cone RMSE | vs $T_b$ power only, median Δ | vs plain, median Δ |
+|---|---:|---:|
+| $x_\text{HI}$ full cone / active slices | +2.6% / +4.2% | +8.2% / +8.2% |
+| $T_b$ full cone / active slices (mK) | +2.5% / +1.8% | +9.3% / +7.6% |
+| $T_b$ pre-reionization (mK) | +1.8% | +9.2% |
+
+- **The high-k $x_\text{HI}$ amplitude is what the term fixes:** the power deficit roughly halves at every reionization stage (the latest stage 0.59 -> 0.15) and the value distribution becomes the closest of all models.
+- **Coherence slips slightly** (small-scale 1 − r +7% over active slices): the extra power is only partly in phase with the truth. The same perception-distortion trade as §6.7.
+- **The absorption-era $T_b$ fix survives** and is marginally better (+1.3σ).
+- **Costs:** 2–4% per-voxel RMSE on top of the $T_b$ power loss (8–10% vs the plain model in total), reionization-era $T_b$ W1 +18%, edges +2%.
+- **Which model to use:** plain for per-voxel accuracy; both power terms for the most realistic small-scale structure in both fields; $T_b$-only in between.
+
+Figures: [[Rhizome Neural Operator Figures#5. Power-loss variants (§6.7, §6.8)|power-loss variants]].
+
 ## 7. Cost
 
 | model | GPU | training run | inference, one full cone (2,709 slices), A100 / H200 |
@@ -476,7 +532,7 @@ model.
 
 ## 8. Open items
 
-- **Power-loss weight:** λ = 0.03 fixes the absorption-era excess at a 4–8% pixel cost (§6.7). A smaller λ (e.g. 0.01) or a power term restricted to pre-reionization slices might keep most of the gain for less cost.
+- **Power-loss weight:** λ = 0.03 fixes the absorption-era excess at a 4–8% pixel cost (§6.7). A smaller λ (e.g. 0.01) or a power term restricted to pre-reionization slices might keep most of the gain for less cost. The same for the $x_\text{HI}$ term (§6.8), e.g. λ_x = 0.01.
 - **Constant $T_b$ offsets** (§6.5): a better $T_b$ history emulator or a slice-mean correction head.
 - **Wider kernel band:** full-budget 36/48-mode runs; SIREN only if those help (§6.4).
 - **fno retrain with BCE on $x_\text{HI}$**, to separate the loss effect (§4.3) from the operator.
@@ -495,4 +551,6 @@ model.
 - Coherence vs small-scale power plane with the 3-D matrix: `runs/eval3d/ps_plane3d.png` (all rhizome variants), `ps_plane3d_best.png` (multi-field slice-wise only).
 - Benchmarks: `runs/eval3d/bench_inference_{a100,h200}.json`.
 - Native slice-wise cones (13 test cones): `data/eval_cubes/rhizome2d_w64_fnosplit_slicewise/native/`.
+- $x_\text{HI}$ power-loss model: `runs/rhizome_mf2d_w64_structured_all_pw0.03_px0.03/`, cubes `data/eval_cubes/rhizome2d_mf_w64_all_pw0.03_px0.03/` (natives for 7 cones), suite `runs/eval3d/slicewise2d_mf_xhi_power_loss/`, paired stats `runs/probes/paired_px_vs.py`.
+- Figures copied to the vault: `figures/rhizome-results_20261012/` (see [[Rhizome Neural Operator Figures]]).
 - Launch records: `runs/rhizome3d/COMMON*.txt`, `runs/rhizome3d_mf/LAUNCH.txt`, `runs/rhizome_xhi_w128_fnosplit.LAUNCH.txt`, `runs/rhizome_mf2d.LAUNCH.txt`.
