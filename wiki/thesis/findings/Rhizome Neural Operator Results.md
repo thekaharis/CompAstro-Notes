@@ -87,6 +87,8 @@ strips, power-loss variants, 3-D runs): [[Rhizome Neural Operator Figures]].
   - Reach matters more than per-offset channel mixing.
 - **The number of updates T barely matters** (§6.10): T = 3, 6 and 10 are within 2%, and two T = 6 seeds agree to five digits on validation. T = 3 trains in 60% of the time.
 - **The emulated $x_\text{HI}$ history is the important scalar input** (§6.11). Dropping it costs 15% on validation (test $x_\text{HI}$ +12%, $T_b$ +7%) and 10–30% of the small-scale power during reionization; dropping the $T_b$ history costs only 2%.
+- **The gates extend the kernel's reach to the excursion-set scale** (§6.13). The bare Fourier kernel falls to half within 3.6 Mpc, but averaged over 7,200 receiver cells the gates boost incoming connections out to 10–25 Mpc. Ionized cells keep their receivers open and collect from the furthest; front and neutral cells settle after 2–3 updates.
+  - The power-loss model gates more strongly and more locally at fronts (3.5× vs 2.0×, half-width 9 vs 14 Mpc).
 - **At native LOS resolution, UFNO smooths along the line of sight** (§6.12). Its $x_\text{HI}$ and $T_b$ power falls off at $k_\parallel \gtrsim$ 0.5 Mpc⁻¹, which the 512-point evaluation grid (LOS cells of 4–14 Mpc) could not show. The slice-wise rhizome loses power only at $k_\parallel \gtrsim$ 1.5 Mpc⁻¹; with both power terms its $x_\text{HI}$ power is within ±10% in 91–100% of all (k⊥, k∥) cells.
 
 ## 1. Setup
@@ -628,6 +630,51 @@ The shares count each cell once. With one row per LOS frequency most cells sit a
 
 Figures: [[Rhizome Neural Operator Figures#8. Cylindrical power at native LOS resolution (§6.11, §6.12)|native cylindrical maps]].
 
+### 6.13 Gating mechanism on real slices
+
+What the trained model does with its state-dependent gates. For a receiver cell i,
+the re-weighting of its incoming connections by the gates at update t is
+
+$$M_t(j) = \frac{\|\mathrm{diag}(A_i)\,\kappa(r_i - r_j)\,\mathrm{diag}(B_j)\|_F}{\|\kappa(r_i - r_j)\|_F},$$
+
+with A the receiver and B the source gates (channel-wise, in (0, 2)) and κ the
+trained Fourier kernel (impulse response, so the model's own weights). It is shown
+relative to its mean over j, and its mean is the "gain".
+
+**What M_t is not:** a gain on the transmitted value, not a Jacobian of the output. Each model is a single network.
+
+**Code:**
+- `ebm21cm/mechanism_mf.py`: single-slice maps, the multi-field port of `scripts/make_rhizome_mechanism.py`.
+- `ebm21cm/mechanism_avg.py`: radial averages.
+
+**Single slices** (4 test slices at x̄_HI ≈ 0.2 / 0.4 / 0.6 / 0.8, receiver on a front, both models):
+- **Receiver gate:** opens in ionized gas, channel-RMS 0.37–0.44 vs 0.14–0.21 in neutral cells for the plain model, about 2× in every slice.
+- **Source gate:** nearly uniform (0.8–1.1).
+- **Bare kernel:** sharply peaked.
+- **The ring at 7–10 cells** seen in the power-loss model's maps did not survive averaging (below).
+
+**Averaged** over 120 test slices (x̄_HI 0.1–0.9, one per cone) and 7,217 receivers per model (3,808 front, 1,920 neutral-interior and 1,489 ionized-interior cells, interior = more than 4 cells from the other phase):
+
+| t = 6, mean M_t(j)/⟨M_t⟩ | plain | both power terms |
+|---|---|---|
+| front: peak / half-width | 2.0× at the centre / 14 Mpc | 3.5× at the centre / 9 Mpc |
+| neutral interior | 2.3× / 5 Mpc | 3.8× / 8 Mpc |
+| ionized interior | 1.7× at 5 Mpc / 24 Mpc | 2.3× at 5 Mpc / 18 Mpc |
+| bare kernel ‖κ‖ | half at 3.6 Mpc, 10% at 11 Mpc | half at 3.6 Mpc, 10% at 14 Mpc |
+| mean gain, front, t = 1 -> 6 | 0.19 -> 0.09 | 0.36 -> 0.17 |
+| mean gain, ionized interior, t = 1 -> 6 | 0.28 -> 0.32 | 0.42 -> 0.42 |
+
+Half-width: the distance at which the boost above 1 has fallen to half its maximum. The boost reaches 1.0 only beyond about 40 Mpc.
+
+- **The gates extend the kernel's reach** from a few Mpc to 10–25 Mpc, the range of the excursion-set ionizing radii (1–20 Mpc). Ionized cells collect from the furthest (≈ 20 Mpc), cells deep in neutral gas from the nearest (5–8 Mpc).
+- **No average ring at fronts.** The boost peaks at the receiver. A radius-dependent peak appears only for ionized-interior cells (5–9 Mpc, both models) and for the plain model's front cells at middle updates (2.2× at 9 Mpc at t = 3, gone by t = 6).
+- **Ionized regions keep collecting.** Their receiver gate opens further over the updates (plain 0.34 -> 0.46) and their gain holds. Front and neutral cells settle after 2–3 updates.
+- **Stage dependence:** the plain model's front boost grows and narrows as x̄ rises (1.6× / 24 Mpc at x̄ 0.1–0.4 to 2.2× / 9 Mpc at 0.6–0.9). The power-loss model's is nearly constant (3.3–3.6×, 8–9 Mpc).
+- **The power-loss model gates about twice as strongly** (gains and receiver gates ~2×) and more locally at fronts. That fits its sharper, more structured fronts.
+- **Artifact:** the 3–4 Mpc zigzag in the profiles and the cross-shaped stripes in the maps come from the truncated kernel's sidelobes along the grid axes. Dividing by a small ‖κ‖ amplifies them.
+
+Figures: [[Rhizome Neural Operator Figures#9. Gating mechanism (§6.13)|gate maps and averages]].
+
 ## 7. Cost
 
 | model | GPU | training run | inference, one full cone (2,709 slices), A100 / H200 |
@@ -683,5 +730,6 @@ Figures: [[Rhizome Neural Operator Figures#8. Cylindrical power at native LOS re
 - Figures copied to the vault: `figures/rhizome-results_20261012/` and `figures/rhizome-cyl-power_20261013/` (see [[Rhizome Neural Operator Figures]]).
 - Radius sweep: `runs/rhizome_mf2d_w64_structured_all_R{1,2,3,4,6,8_rank16}/`; cost benchmark `runs/eval3d/kernel_radius_bench_a100{,_cudnnbench}.json`.
 - T sweep: `runs/rhizome_mf2d_w64_structured_all_{T3,T10,T6_seed1}/`. History ablation: `runs/rhizome_mf2d_w64_structured_all_nohist_{xhi,tb}/`, cubes `data/eval_cubes/rhizome2d_mf_w64_all_nohist_{xhi,tb}/`.
+- Gating mechanism: single-slice maps `runs/eval3d/mechanism{,_pw_px}/`, averages `runs/eval3d/mechanism_avg/` (per-receiver profiles, `summary.json`).
 - Native cylindrical power: `runs/eval3d/native_cyl/<model>_{xhi,tb}.npz` and maps (`ebm21cm/native_cyl.py`, `ebm21cm/plot_cyl_error.py`); 512-grid $T_b$ maps: `runs/eval3d/tb_cyl/`, `runs/eval3d/cyl_error_linear/`.
 - Launch records: `runs/rhizome3d/COMMON*.txt`, `runs/rhizome3d_mf/LAUNCH.txt`, `runs/rhizome_xhi_w128_fnosplit.LAUNCH.txt`, `runs/rhizome_mf2d.LAUNCH.txt`.

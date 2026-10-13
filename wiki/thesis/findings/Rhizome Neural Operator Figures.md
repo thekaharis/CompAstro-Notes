@@ -25,7 +25,7 @@ sources:
 Figure companion to [[Rhizome Neural Operator Results]]; numbers and context are
 there, section numbers (§) refer to it. All figures are on the 199 (multi-field)
 or 200 ($x_\text{HI}$-only) held-out test cones unless a cone is named. Copies
-live in `figures/rhizome-results_20261012/` and `figures/rhizome-cyl-power_20261013/`.
+live in `figures/rhizome-results_20261012/` `figures/rhizome-cyl-power_20261013/` and `figures/rhizome-mechanism_20261013/`.
 
 **Naming in the plots.** "Rhizome" = the multi-field slice-wise 2-D model trained
 on all cones (`rhizome2d_mf_w64_all`, the plain BCE + $T_b$ MSE variant); "UFNO" =
@@ -240,3 +240,50 @@ large-scale excess at z ≈ 17.
 ![[native_cyl_tb_history_tb.png]]
 *With vs without the $T_b$ history input.* A much smaller effect: a broad $T_b$ excess at
 z ≈ 14 without it; the absorption-era excess at z ≈ 17 is unaffected by either history.
+
+## 9. Gating mechanism (§6.13)
+
+Re-weighting of a receiver cell's incoming connections by the gates,
+$M_t(j) = \|\mathrm{diag}(A_i)\kappa(r_i-r_j)\mathrm{diag}(B_j)\|_F / \|\kappa(r_i-r_j)\|_F$,
+relative to its mean over j. Single slices: test slices at x̄_HI ≈ 0.2, 0.4, 0.6, 0.8,
+receiver (circle) on an ionization front, panels cropped to ±32 cells (±46 Mpc);
+contours: true x_HI = 0.5. Top row: density band [0, 1], true and predicted x_HI,
+kernel norm, receiver and source gates at the last update; bottom row: M_t for
+updates 1–6 with the mean gain.
+
+**Plain model:**
+
+![[plain_mechanism_cone32_z7p10.png]]
+![[plain_mechanism_cone1208_z9p13.png]]
+![[plain_mechanism_cone1228_z6p12.png]]
+![[plain_mechanism_cone552_z5p11.png]]
+*Receiver gates open in ionized gas (about 2× the neutral value), source gates nearly
+uniform. The gates boost connections within 10–20 cells of the receiver; the mean
+gain falls from 0.11–0.40 at t = 1 to 0.06–0.14 at t = 6.*
+
+**Model with both power terms** (same slices and receivers):
+
+![[pwpx_mechanism_cone32_z7p10.png]]
+![[pwpx_mechanism_cone1208_z9p13.png]]
+![[pwpx_mechanism_cone1228_z6p12.png]]
+![[pwpx_mechanism_cone552_z5p11.png]]
+*Same pattern with about twice the receiver gate and gain. These slices show a ring at
+7–10 cells, but the average below shows it is not general.*
+
+**Averages over 7,217 receivers in 120 test slices:**
+
+![[avg_mt_profiles_by_update.png]]
+*Mean radial profile of $M_t(j)/\langle M_t\rangle_j$ per update, for front,
+neutral-interior and ionized-interior receivers (± s.e.), with the bare kernel norm
+(dashed, right axis). The gates extend the coupling from the kernel's 3.6 Mpc
+half-width to 10–25 Mpc; ionized cells reach furthest.*
+
+![[avg_mt_front_profile_by_stage.png]]
+*Front receivers at the last update by reionization stage: the plain model's boost
+grows and narrows with x̄, the power-loss model's is stronger, more local and nearly
+stage-independent.*
+
+![[avg_mt_gain_and_receiver_gate.png]]
+*Mean gain and receiver gate per update: front and neutral cells settle after 2–3
+updates, ionized-interior cells keep opening; the power-loss model is about 2× higher
+throughout.*

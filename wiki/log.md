@@ -10,6 +10,16 @@ updated: 2026-10-13
 
 ---
 
+## [2026-10-13] update | Rhizome: gating mechanism on real slices
+
+**Sources**: `rhizome-neural-operator` at `87d7bcb` — `ebm21cm/mechanism_mf.py`, `ebm21cm/mechanism_avg.py`; outputs `runs/eval3d/mechanism{,_pw_px,_avg}/`.
+
+**Updated**: [[Rhizome Neural Operator Results]] (key findings, new §6.13, artifacts), [[Rhizome Neural Operator Figures]] (new §9, 11 figures in `figures/rhizome-mechanism_20261013/`), index, hot.
+
+Gate re-weighting $M_t(j)$ of a receiver's incoming connections, for the plain and the both-power-terms models: single-slice maps on 4 test slices and radial averages over 7,217 receivers in 120 test slices. The gates extend the bare kernel's 3.6 Mpc half-width to 10–25 Mpc (ionized cells furthest); receiver gates open in ionized gas and keep opening there over the updates, while front and neutral cells settle after 2–3 updates. The power-loss model gates ~2× more strongly and more locally at fronts (3.5× / 9 Mpc vs 2.0× / 14 Mpc). The ring seen in single power-loss maps is not general.
+
+---
+
 ## [2026-10-13] update | Rhizome: local kernel, number of updates, history ablation, native-resolution cylindrical power
 
 **Sources**: `rhizome-neural-operator` at `46f0731` — runs `runs/rhizome_mf2d_w64_structured_all_{R1,R2,R3,R4,R6,R8_rank16,T3,T10,T6_seed1,nohist_xhi,nohist_tb}/`, `runs/eval3d/kernel_radius_bench_a100*.json`, `runs/eval3d/native_cyl/`; new `ebm21cm/native_cyl.py`, `plot_cyl_error.py`, `bench_kernel_radius.py`, `LocalConv2d` in `model/rhizome.py`.
