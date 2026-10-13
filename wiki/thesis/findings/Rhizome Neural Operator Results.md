@@ -2,7 +2,7 @@
 type: finding
 title: "Rhizome Neural Operator Results"
 created: 2026-10-03
-updated: 2026-10-13
+updated: 2026-10-14
 tags:
   - domain/thesis
   - domain/ml
@@ -86,6 +86,15 @@ strips, power-loss variants, 3-D runs): [[Rhizome Neural Operator Figures]].
   - At equal training cost (R ≈ 2–3) the local kernel is 19–36% worse. The N log N vs N·n argument misses the channel mixing: a dense local kernel costs C²·n per pixel.
   - Reach matters more than per-offset channel mixing.
 - **The number of updates T barely matters** (§6.10): T = 3, 6 and 10 are within 2%, and two T = 6 seeds agree to five digits on validation. T = 3 trains in 60% of the time.
+- **One or two updates cost only a few percent** (§6.10). Test RMSE: T = 2 is +1–2%, T = 1 is +3–4%. A single full update (T = 1, Δt = 1, no recurrence) is within 5% of the best rollout. The rollout depth is not what separates the rhizome from fno.
+- **Freezing the gates at the initial state costs about 2%,** consistently over two seeds (§6.14). Frozen gates still depend on the conditioning and still multiply the kernel at both ends, so this measures only the value of updating the gates during the rollout. Removing the gates altogether (A = B = 1) is not yet tested.
+- **A two-level rhizome helps only with the plain loss** (§6.15).
+  - The best plain-loss model is a spectral kernel on a 4× coarser grid plus a compact R = 2 kernel at full resolution: −3% validation score vs the single-level model with the same updates, at half the parameters. It is also the only plain-loss model without a high-k $x_\text{HI}$ power deficit.
+  - The coarse level must be spectral.
+  - With both power terms there is no gain.
+- **The trained rollout is a transient, not an iteration to equilibrium** (§6.16).
+  - Every model is best exactly at its trained T and (for T ≤ 6) degrades when run further; T = 10 settles.
+  - Beyond the trained length the state ends in a small two-cycle (1–6% per update). This is the signature of an overshooting step size; a Δt = 0.25 run is training.
 - **The emulated $x_\text{HI}$ history is the important scalar input** (§6.11). Dropping it costs 15% on validation (test $x_\text{HI}$ +12%, $T_b$ +7%) and 10–30% of the small-scale power during reionization; dropping the $T_b$ history costs only 2%.
 - **The gates extend the kernel's reach to the excursion-set scale** (§6.13). The bare Fourier kernel falls to half within 3.6 Mpc, but averaged over 7,200 receiver cells the gates boost incoming connections out to 10–25 Mpc. Ionized cells keep their receivers open and collect from the furthest; front and neutral cells settle after 2–3 updates.
   - The power-loss model gates more strongly and more locally at fronts (3.5× vs 2.0×, half-width 9 vs 14 Mpc).
@@ -566,10 +575,18 @@ multi-field all-cones setup (full Fourier kernel, step size 0.5):
 | 6 | 0 | 0.02136 | 0.0872 / 7.71 | 84 k | 3.6 h |
 | 6 | 1 | 0.02136 | 0.0873 / 7.82 | 74 k | 3.1 h |
 | 10 | 0 | **0.02098** | 0.0869 / 7.66 | 71 k | 4.9 h |
+| 1 | 0 | 0.02268 | 0.0897 / 8.05 | 72 k | 0.7 h |
+| 1 (Δt = 1.0) | 0 | 0.02206 | 0.0885 / 7.97 | 77 k | 0.8 h |
+| 2 | 0 | 0.02165 | 0.0881 / 7.86 | 96 k | 1.6 h |
 
-- **T makes no material difference:** T = 3 and T = 10 tie at −1.8% on validation. On test they are within the spread between the two T = 6 seeds ($T_b$ 7.71 vs 7.82 mK).
+- **Below T = 3 the error rises, but only slightly.**
+  - T = 2 costs 1–2% in test RMSE (+3% validation); T = 1 costs 3–4% (+8%).
+  - One full update (T = 1, Δt = 1: the state is replaced by a single proposal, no recurrence) beats one damped update but loses to two damped updates with the same integration time T·Δt = 1. So the recurrence itself adds a few percent.
+  - Even a single gated global update is within 5% of the best rollout.
+- **T makes no material difference between 3 and 10:** T = 3 and T = 10 tie at −1.8% on validation. On test they are within the spread between the two T = 6 seeds ($T_b$ 7.71 vs 7.82 mK).
 - **The two T = 6 seeds agree to five digits on validation,** so seed noise in the validation score is far below the 1–2% differences here.
 - **T = 3 is the cheaper choice:** same accuracy at ~60% of the training time and half the forward cost per slice.
+- **The number of updates is part of the trained model:** run past their T, the models degrade (§6.16).
 
 ### 6.11 Global-history ablation
 
@@ -675,6 +692,97 @@ Half-width: the distance at which the boost above 1 has fallen to half its maxim
 
 Figures: [[Rhizome Neural Operator Figures#9. Gating mechanism (§6.13)|gate maps and averages]].
 
+### 6.14 Gate ablation: frozen gates
+
+The primary contrast of the planned gate study. `--gate-mode frozen` computes the source and receiver gates once from the initial state $[h^0, c] = [\tanh c, c]$ and holds them over all T = 6 updates. The transmitted value V still follows the evolving state. Because $h^0$ is a function of c, this coincides with "gates from the conditioning only". Otherwise identical to the plain all-cones model; both seeds trained.
+
+| | val score | test $x_\text{HI}$ RMSE | test $T_b$ RMSE |
+|---|---:|---:|---:|
+| full gates, seed 0 / 1 | 0.02136 / 0.02136 | 0.0872 / 0.0873 | 7.71 / 7.82 mK |
+| frozen gates, seed 0 / 1 | 0.02188 / 0.02178 | 0.0886 / 0.0888 | 7.86 / 7.93 mK |
+| difference, paired by seed | +2.4% / +2.0% | +1.6% / +1.7% | +1.9% / +1.4% |
+
+- **Updating the gates as the state evolves is worth about 2%,** consistent across both seeds. That is well above the validation seed spread (the full-gate seeds agree to five digits) and at about the level of the test seed spread (1.4% in $T_b$).
+- **What the contrast does not measure:** frozen gates still vary across the slice and still multiply the kernel at both ends ($A_i\kappa B_j$, computed from each cell's inputs). So the value of the gating itself is still open.
+- **Why that matters:** the global kernel and the inputs cannot explain the rhizome's advantage over fno on their own, because the fno/U-FNO models also have global spectral kernels and the same inputs. A density-only 3-D rhizome (A0) already beat fno's best multi-field model (§4.1). Candidates that full and frozen gates share and fno lacks:
+  - the multiplicative, input-dependent gating of the kernel;
+  - the recurrent rollout with the conditioning re-injected at every update (§6.10 puts the recurrence at a few percent);
+  - BCE on $x_\text{HI}$ (explains the τ_e / global-history offset, §4.3, not the morphology).
+- **Remaining arms, implemented** (`--gate-mode none|source|receiver|static`): no gates (A = B = 1, the decisive one), source-only, receiver-only, static per-channel gates.
+
+### 6.15 Two-level rhizome
+
+`RhizomeUNet2d` (`--coarse-factor 4`):
+- **Coarse level:** the conditioning is average-pooled 4× (140² -> 35², 5.7 Mpc cells), lifted with its own scalar embedding and rolled out for 3 updates with its own kernel.
+- **Merge:** the coarse state is upsampled (periodic bilinear) and merged pointwise into the full-resolution forcing.
+- **Fine level:** 3 full-resolution updates, then decoding.
+- **Properties:** exact equivariance under periodic shifts by multiples of 4 cells.
+- **Kernels:** spectral (24 modes at full resolution, all 17 at 35²) or compact.
+- **Motivation:** compact kernels lose on reach (§6.9), while the 24-mode spectral kernel cannot represent couplings below ~8.6 Mpc.
+- **Reference:** the single-level model with T = 3.
+
+| full resolution / coarse level | params | val score | test $x_\text{HI}$ / $T_b$ RMSE | test power error $T_b$ / $x_\text{HI}$ |
+|---|---:|---:|---:|---:|
+| single level, spectral, T = 3 | 4.57 M | 0.02098 | 0.0866 / 7.68 mK | 0.395 / 0.385 |
+| A: spectral / compact R = 4 | 4.82 M | 0.02197 (+4.7%) | 0.0888 / 7.92 | 0.391 / 0.373 |
+| B: spectral / spectral | 6.85 M | 0.02065 (−1.6%) | 0.0863 / 7.67 | 0.367 / 0.386 |
+| **C: compact R = 2 / spectral** | **2.38 M** | **0.02036 (−3.0%)** | **0.0862 / 7.55** | **0.318 / 0.349** |
+| D: compact R = 2 / compact R = 4 | 0.35 M | 0.02628 (+25%) | 0.1012 / 8.66 | 0.449 / 0.463 |
+| *with both power terms:* single level, T = 6 | 4.57 M | 0.02381 | 0.0941 / 8.26 | 0.234 / 0.163 |
+| B + both power terms | 6.85 M | 0.02395 (+0.6%) | 0.0939 / 8.43 | 0.220 / 0.125 |
+| C + both power terms | 2.38 M | 0.02506 (+5.2%) | 0.0964 / 8.48 | 0.241 / 0.170 |
+
+Params count complex weights once (the convention of the Rhizome-Notes report). Training ran on mixed GPUs (A on A100; B, C, D on A30; the power-loss runs on H200), so times are not comparable.
+
+- **The coarse level must be spectral.** A compact kernel there (A) is 3–5% worse than single level. With compact kernels at both levels (D) the error rises by 13–25%, as for compact single-level kernels.
+- **Spectral coarse level + compact fine level (C) is the best plain-loss model in this note:**
+  - −3.0% validation score and −1.7% test $T_b$ RMSE vs the matched single-level model, at half the parameters;
+  - the lowest power errors of the plain-loss models;
+  - in the native-resolution maps, the only plain-loss model without a high-k $x_\text{HI}$ deficit during reionization: 92–99% of (k⊥, k∥) cells within ±10% at z ≈ 7–11, vs 78–90% single level;
+  - but before reionization, C and A develop a broad $x_\text{HI}$ excess: 5–16% of cells within ±10% at z ≈ 17, vs 57%.
+
+  This supports a division of labour by scale: global spectral coupling on the coarse grid, a small stencil for the couplings below the spectral cutoff.
+- **B** (spectral at both levels) ties single level in test RMSE with 50% more parameters, and has the best $T_b$ maps of the plain models during reionization (85–95% of cells vs 73–88%).
+- **With both power terms the advantage disappears.** B matches the single-level power-loss model in $x_\text{HI}$ and is 2% worse in $T_b$; C is 2–3% worse. Native maps: the single-level power-loss model stays best for $x_\text{HI}$ (91–100%); B and C drop to 41–93%. B is best for absorption-era $T_b$ (80% vs 69% at z ≈ 17). C's plain-loss gain was mainly recovering small-scale power, which the power terms supply anyway.
+
+Figures: [[Rhizome Neural Operator Figures#10. Two-level rhizome and rollout dynamics (§6.15, §6.16)|two-level maps]].
+
+### 6.16 Rollout beyond the trained length
+
+Six checkpoints were run for 30 updates at inference on 512 validation slices (`ebm21cm/rollout_diagnostic.py`). After each update the diagnostic records:
+- the relative state change $\|h_t-h_{t-1}\|/\|h_{t-1}\|$;
+- the two-step change $\|h_t-h_{t-2}\|/\|h_{t-2}\|$;
+- the cosine between successive changes $d_t = h_t-h_{t-1}$ and $d_{t-1}$;
+- the validation score of the decoded state.
+
+| model | score at T | at t = 30 | change at T / t = 30 | two-step at t = 30 | cos at T -> t = 30 |
+|---|---:|---:|---:|---:|---|
+| T = 3 | 0.0205 | 0.0778 (+280%) | 0.43 / 0.032 | 0.013 | +0.58 -> −0.45 |
+| T = 6, seed 0 | 0.0209 | 0.0263 (+26%) | 0.13 / 0.026 | 0.008 | +0.64 -> −0.78 |
+| T = 6, seed 1 | 0.0209 | 0.0295 (+42%) | 0.14 / 0.009 | 0.005 | +0.70 -> −0.16 |
+| **T = 10** | 0.0206 | **0.0206 (flat)** | 0.028 / 0.013 | 0.003 | +0.00 -> −0.82 |
+| T = 6, frozen gates | 0.0212 | 0.0223 (+5%) | 0.072 / 0.003 | 0.0001 | +0.62 -> −0.85 |
+| T = 6, both power terms | 0.0233 | 0.0563 (+142%) | 0.15 / 0.057 | 0.044 | +0.65 -> −0.52 |
+
+- **The models learn a transient.** Every model is best exactly at its trained T. At T the state still changes by 13–43% per update in a consistent direction (cosine +0.6 to +0.7), and for T ≤ 6 the prediction degrades when run further. The exception is T = 10: change only 3% at T, score flat to t = 30. With enough updates the model settles on a stable prediction.
+- **A residual two-cycle.**
+  - The state change does not decay to zero. Beyond ~15 updates it levels off at 1–6% per update for every model with state-dependent gates.
+  - Successive changes turn anti-aligned (cosine down to −0.8), and the two-step change is 2–4× smaller than the one-step change: the state alternates between two configurations, plus some drift.
+  - Frozen gates contract to 0.3%, a nearly pure two-cycle of negligible amplitude.
+  - The power-loss model has the largest residual (5.7%).
+- **Interpretation, an overshooting step:**
+  - Linearized, a direction in which the proposal has slope λ is multiplied by 1 − Δt + Δt·λ per update. The oscillation stops decaying for λ < 1 − 2/Δt, i.e. λ < −3 at Δt = 0.5 and λ < −7 at Δt = 0.25.
+  - The state-dependent gates create such strongly negative-slope directions; they are absent with frozen gates.
+  - Within the trained horizon there is no oscillation, so the reported accuracies are unaffected. It matters for any reading of the rhizome as an iteration to equilibrium.
+- **The earlier short sweep (§2) already hinted at this:** Δt = 1 (no damping) was the worst setting, and T = 6 at Δt = 0.25 matched T = 3 at Δt = 0.5.
+- **Runs in progress:**
+  - T = 12 at Δt = 0.25 (same T·Δt as the reference), to test whether a smaller step removes the two-cycle;
+  - training with random T ∈ {3, …, 12} per batch (`--random-updates 3:12`, validated at 6), to test whether the decoder can be made independent of the rollout length.
+
+  Both track the T = 6 reference within 1% at matched steps so far.
+
+Figures: [[Rhizome Neural Operator Figures#10. Two-level rhizome and rollout dynamics (§6.15, §6.16)|rollout diagnostic]].
+
 ## 7. Cost
 
 | model | GPU | training run | inference, one full cone (2,709 slices), A100 / H200 |
@@ -708,6 +816,9 @@ Figures: [[Rhizome Neural Operator Figures#9. Gating mechanism (§6.13)|gate map
 - **Power-loss weight:** λ = 0.03 fixes the absorption-era excess at a 4–8% pixel cost (§6.7). A smaller λ (e.g. 0.01) or a power term restricted to pre-reionization slices might keep most of the gain for less cost. The same for the $x_\text{HI}$ term (§6.8), e.g. λ_x = 0.01.
 - **Constant $T_b$ offsets** (§6.5): a better $T_b$ history emulator or a slice-mean correction head.
 - **Wider kernel band:** full-budget 36/48-mode runs; SIREN only if those help (§6.4). A local real-space kernel is not an alternative (§6.9).
+- **Gate arms:** no gates (A = B = 1), source-only, receiver-only, static gates (§6.14); implemented, not trained. "No gates" decides whether the gating is what separates the rhizome from fno.
+- **Step size and rollout length:** Δt = 0.25 (T = 12) and random-T runs in progress (§6.16). Run the rollout diagnostic on both.
+- **Two-level model:** C with a gentler power weight, or with only the $T_b$ term, might keep both the plain-loss gain and the power fix (§6.15).
 - **T = 3 as the default:** same accuracy as T = 6 at ~60% of the training time (§6.10); not yet evaluated on the full suite.
 - **UFNO's top-k∥ row excess** in the native maps (§6.12): check for a window-tiling artifact.
 - **fno retrain with BCE on $x_\text{HI}$**, to separate the loss effect (§4.3) from the operator.
@@ -730,6 +841,10 @@ Figures: [[Rhizome Neural Operator Figures#9. Gating mechanism (§6.13)|gate map
 - Figures copied to the vault: `figures/rhizome-results_20261012/` and `figures/rhizome-cyl-power_20261013/` (see [[Rhizome Neural Operator Figures]]).
 - Radius sweep: `runs/rhizome_mf2d_w64_structured_all_R{1,2,3,4,6,8_rank16}/`; cost benchmark `runs/eval3d/kernel_radius_bench_a100{,_cudnnbench}.json`.
 - T sweep: `runs/rhizome_mf2d_w64_structured_all_{T3,T10,T6_seed1}/`. History ablation: `runs/rhizome_mf2d_w64_structured_all_nohist_{xhi,tb}/`, cubes `data/eval_cubes/rhizome2d_mf_w64_all_nohist_{xhi,tb}/`.
+- Gate ablation: `runs/rhizome_mf2d_w64_structured_all_gates_frozen_seed{0,1}/` (`--gate-mode`), cubes and native spectra `data/eval_cubes/rhizome2d_mf_w64_all_gates_frozen_seed{0,1}/`, `runs/eval3d/native_cyl/`.
+- Updates below 3: `runs/rhizome_mf2d_w64_structured_all_{T1,T2,T1_dt1}/`. In progress: `..._T12_dt0.25/`, `..._Trand3-12/` (`--random-updates`).
+- Two-level rhizome (`RhizomeUNet2d`, `--coarse-*`): `runs/rhizome_mf2d_w64_structured_all_unet{A,B,C,D}/`, `..._unet{B,C}_pw0.03_px0.03/`, cubes `data/eval_cubes/rhizome2d_mf_w64_all_unet*/`, native maps `runs/eval3d/native_cyl/unet*_cyl_error_*.png`.
+- Rollout diagnostic: `runs/eval3d/rollout_diagnostic{,_cycles}/` (`ebm21cm/rollout_diagnostic.py`).
 - Gating mechanism: single-slice maps `runs/eval3d/mechanism{,_pw_px}/`, averages `runs/eval3d/mechanism_avg/` (per-receiver profiles, `summary.json`).
 - Native cylindrical power: `runs/eval3d/native_cyl/<model>_{xhi,tb}.npz` and maps (`ebm21cm/native_cyl.py`, `ebm21cm/plot_cyl_error.py`); 512-grid $T_b$ maps: `runs/eval3d/tb_cyl/`, `runs/eval3d/cyl_error_linear/`.
 - Launch records: `runs/rhizome3d/COMMON*.txt`, `runs/rhizome3d_mf/LAUNCH.txt`, `runs/rhizome_xhi_w128_fnosplit.LAUNCH.txt`, `runs/rhizome_mf2d.LAUNCH.txt`.

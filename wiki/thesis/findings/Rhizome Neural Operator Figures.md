@@ -2,7 +2,7 @@
 type: finding
 title: "Rhizome Neural Operator Figures"
 created: 2026-10-12
-updated: 2026-10-13
+updated: 2026-10-14
 tags:
   - domain/thesis
   - domain/ml
@@ -25,7 +25,7 @@ sources:
 Figure companion to [[Rhizome Neural Operator Results]]; numbers and context are
 there, section numbers (§) refer to it. All figures are on the 199 (multi-field)
 or 200 ($x_\text{HI}$-only) held-out test cones unless a cone is named. Copies
-live in `figures/rhizome-results_20261012/` `figures/rhizome-cyl-power_20261013/` and `figures/rhizome-mechanism_20261013/`.
+live in `figures/rhizome-results_20261012/` `figures/rhizome-cyl-power_20261013/` `figures/rhizome-mechanism_20261013/` and `figures/rhizome-two-level_20261014/`.
 
 **Naming in the plots.** "Rhizome" = the multi-field slice-wise 2-D model trained
 on all cones (`rhizome2d_mf_w64_all`, the plain BCE + $T_b$ MSE variant); "UFNO" =
@@ -287,3 +287,27 @@ stage-independent.*
 *Mean gain and receiver gate per update: front and neutral cells settle after 2–3
 updates, ionized-interior cells keep opening; the power-loss model is about 2× higher
 throughout.*
+
+## 10. Two-level rhizome and rollout dynamics (§6.15, §6.16)
+
+Native-resolution cylindrical power error maps as in §8 (log k axes, white within ±0.1).
+
+![[two_level_cyl_error_xhi.png]]
+![[two_level_cyl_error_tb.png]]
+*Plain loss: single-level spectral rhizome vs two-level A (spectral / compact
+bottleneck), B (spectral / spectral) and C (compact R = 2 / spectral), $x_\text{HI}$
+then $T_b$. C removes the high-k $x_\text{HI}$ deficit during reionization (92–99%
+of cells within ±10% at z ≈ 7–11) but develops a broad excess before reionization;
+B has the best reionization-era $T_b$ maps.*
+
+![[two_level_pwpx_cyl_error_xhi.png]]
+![[two_level_pwpx_cyl_error_tb.png]]
+*With both power terms: single level vs B and C. The single-level model stays best for
+$x_\text{HI}$ (91–100%); B gives the best absorption-era $T_b$ (80% vs 69% at z ≈ 17).*
+
+![[rollout_beyond_trained_T.png]]
+*Trained models run for 30 updates (512 validation slices; dotted: trained T). From
+left: one-step (solid) and two-step (dashed) state change, validation score, $T_b$
+RMSE, cosine between successive state changes. Every model is best at its trained T;
+T = 10 stays flat. Beyond ~15 updates the state settles into a small two-cycle
+(cosine -> −0.8), except with frozen gates (0.3%).*

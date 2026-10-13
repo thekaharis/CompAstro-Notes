@@ -1,12 +1,25 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-10-13
+updated: 2026-10-14
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-10-14] update | Rhizome: updates below 3, frozen gates, two-level rhizome, rollout dynamics
+
+**Sources**: `rhizome-neural-operator` (branch `slicewise-2d-multifield`) — runs `runs/rhizome_mf2d_w64_structured_all_{T1,T2,T1_dt1,gates_frozen_seed0,gates_frozen_seed1,unetA..D,unetB_pw0.03_px0.03,unetC_pw0.03_px0.03}/`, `runs/eval3d/native_cyl/`, `runs/eval3d/rollout_diagnostic{,_cycles}/`; new `RhizomeUNet2d`, `--gate-mode`, `--random-updates`, `ebm21cm/rollout_diagnostic.py`.
+
+**Updated**: [[Rhizome Neural Operator Results]] (key findings, §6.10 extended, new §6.14–6.16, open items, artifacts), [[Rhizome Neural Operator Figures]] (new §10, 5 figures in `figures/rhizome-two-level_20261014/`), index, hot.
+
+- §6.10: T = 1 / 2 cost only 3–4% / 1–2% in test RMSE; one full update without recurrence is within 5% of the best.
+- §6.14: gates frozen at the initial state cost ~2% (two seeds); the gating itself (no-gates arm) is still untested, and kernel + inputs cannot explain the advantage over fno.
+- §6.15: two-level rhizome with a spectral coarse level and a compact R = 2 fine level is the best plain-loss model (−3% val, half the parameters, no high-k $x_\text{HI}$ deficit); no gain with the power terms.
+- §6.16: models use a trained transient (best at their T, degrade beyond, except T = 10); beyond the horizon the state ends in a small two-cycle, an overshooting step; Δt = 0.25 and random-T runs in progress.
 
 ---
 
