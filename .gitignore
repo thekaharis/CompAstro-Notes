@@ -39,6 +39,7 @@ wiki/thesis/findings/figures/**/*.png
 !wiki/thesis/findings/figures/**/run_info.txt
 #   Rhizome Neural Operator Figures (2026-10-12): every image in the folder is embedded
 !wiki/thesis/findings/figures/rhizome-results_20261012/*.png
+!wiki/thesis/findings/figures/rhizome-cyl-power_20261013/*.png
 
 #   2026-07-28 batch — images embedded in the 07-26/28 finding and concept notes
 !wiki/thesis/findings/figures/operator-benchmark_20260728/operator_params_vs_throughput.png

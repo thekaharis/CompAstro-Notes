@@ -1,12 +1,25 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-10-12
+updated: 2026-10-13
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-10-13] update | Rhizome: local kernel, number of updates, history ablation, native-resolution cylindrical power
+
+**Sources**: `rhizome-neural-operator` at `46f0731` — runs `runs/rhizome_mf2d_w64_structured_all_{R1,R2,R3,R4,R6,R8_rank16,T3,T10,T6_seed1,nohist_xhi,nohist_tb}/`, `runs/eval3d/kernel_radius_bench_a100*.json`, `runs/eval3d/native_cyl/`; new `ebm21cm/native_cyl.py`, `plot_cyl_error.py`, `bench_kernel_radius.py`, `LocalConv2d` in `model/rhizome.py`.
+
+**Updated**: [[Rhizome Neural Operator Results]] (key findings, new §6.9–6.12, open items, artifacts), [[Rhizome Neural Operator Figures]] (new §8, 6 figures in `figures/rhizome-cyl-power_20261013/`), index, hot.
+
+- §6.9: a radius-restricted real-space kernel never matches the Fourier kernel (+62% at R = 1, +12–13% at R = 4–6; best R = 8 rank 16 at +6.5%), and at equal training cost (R ≈ 2–3) it is 19–36% worse.
+- §6.10: T = 3, 6, 10 are within 2%; two T = 6 seeds agree to five digits on validation; T = 3 trains in 60% of the time.
+- §6.11: dropping the emulated $x_\text{HI}$ history costs 15% (both fields lose 10–30% of small-scale power at z ≈ 11–14); dropping the $T_b$ history costs 2%.
+- §6.12: at native LOS resolution UFNO loses power at k∥ ≳ 0.5 Mpc⁻¹, which the 512-point evaluation grid hid; the slice-wise rhizome with both power terms is within ±10% in 91–100% of $x_\text{HI}$ (k⊥, k∥) cells.
 
 ---
 

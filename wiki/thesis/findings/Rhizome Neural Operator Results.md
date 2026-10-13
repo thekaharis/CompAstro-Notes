@@ -2,7 +2,7 @@
 type: finding
 title: "Rhizome Neural Operator Results"
 created: 2026-10-03
-updated: 2026-10-12
+updated: 2026-10-13
 tags:
   - domain/thesis
   - domain/ml
@@ -81,6 +81,13 @@ strips, power-loss variants, 3-D runs): [[Rhizome Neural Operator Figures]].
 - **A third of the absorption-era $T_b$ error is a per-slice constant offset** (random sign per cone, not a bias). Its size is the same for all three model families and of the order of the global-history emulator's own error (§6.5).
 - **It is also the fastest model end to end** once its input building runs on the GPU with prefetched reads: **5.5 s per full cone on an A100 / 3.7 s on an H200**, vs 12.8 / 8.3 s for the 3-D rhizome and 9.8 / 7.0 s for fno (§7).
 - **The rhizome's Fourier kernel shows no low-frequency collapse** (high/low-quarter weight ratio 0.78–0.94 vs 0.10–0.45 for the U-FNO), so SIREN kernels would not fix a spectral bias here (§6.4).
+- **A radius-restricted real-space kernel never matches the Fourier kernel** (§6.9).
+  - The gap shrinks with radius but saturates: +62% at R = 1 cell, +13% at R = 4, +12% at R = 6. The best local kernel (R = 8, rank 16) is still +6.5%.
+  - At equal training cost (R ≈ 2–3) the local kernel is 19–36% worse. The N log N vs N·n argument misses the channel mixing: a dense local kernel costs C²·n per pixel.
+  - Reach matters more than per-offset channel mixing.
+- **The number of updates T barely matters** (§6.10): T = 3, 6 and 10 are within 2%, and two T = 6 seeds agree to five digits on validation. T = 3 trains in 60% of the time.
+- **The emulated $x_\text{HI}$ history is the important scalar input** (§6.11). Dropping it costs 15% on validation (test $x_\text{HI}$ +12%, $T_b$ +7%) and 10–30% of the small-scale power during reionization; dropping the $T_b$ history costs only 2%.
+- **At native LOS resolution, UFNO smooths along the line of sight** (§6.12). Its $x_\text{HI}$ and $T_b$ power falls off at $k_\parallel \gtrsim$ 0.5 Mpc⁻¹, which the 512-point evaluation grid (LOS cells of 4–14 Mpc) could not show. The slice-wise rhizome loses power only at $k_\parallel \gtrsim$ 1.5 Mpc⁻¹; with both power terms its $x_\text{HI}$ power is within ±10% in 91–100% of all (k⊥, k∥) cells.
 
 ## 1. Setup
 
@@ -502,6 +509,125 @@ A100; validation $x_\text{HI}$ power log error 0.88 at 1 k steps -> 0.19.
 
 Figures: [[Rhizome Neural Operator Figures#5. Power-loss variants (§6.7, §6.8)|power-loss variants]].
 
+### 6.9 Compact real-space kernel (radius sweep)
+
+**Question:** the Fourier kernel costs ~N log N per channel, a full real-space
+integral N². Can a kernel restricted to a disc of radius R cells around each site,
+κ(d) = 0 for |d| > R, match the Fourier kernel, and how large must R be?
+
+**Setup:**
+- `LocalConv2d` (`ebm21cm/model/rhizome.py`): a periodic disc of integer offsets, with either a dense C×C channel-mixing matrix per offset or, with `rank=r`, K(d) = P_out diag(w(d)) P_in (r spatial filters).
+- After T = 6 updates a site sees at most 6R cells (1 cell = 1.43 Mpc).
+- Otherwise identical to the plain all-cones model (width 64, T = 6, BCE + $T_b$ MSE, plateau-stopped).
+
+**Cost** (`ebm21cm/bench_kernel_radius.py`, A100, cuDNN autotuned; training step at batch 32, inference at batch 128):
+
+| kernel | offsets | kernel params | training step | inference |
+|---|---:|---:|---:|---:|
+| **Fourier, modes 24** | — | 9.05 M | 137 ms | 714 slices/s |
+| R = 1 / √2 | 5 / 9 | 20–37 k | 126 ms | 835 slices/s |
+| R = 2 – 2√2 | 13–25 | 53–102 k | 146 ms | 750 slices/s |
+| R = 3 / 4 / 6 | 29 / 49 / 113 | 119 / 201 / 463 k | 177 / 208 / 310 ms | 623 / 526 / 366 slices/s |
+| R = 2 / 4 / 8, rank 16 | 13 / 49 / 197 | 2–5 k | 126 / 141 / 199 ms | 852 / 789 / 669 slices/s |
+
+- In arithmetic a dense local kernel costs C²·n per pixel, while the Fourier kernel costs ~C·N log N plus C² per retained mode. So R = 1 already does 6× the Fourier kernel's operations.
+- On the GPU, the 1×1 gate/update convolutions dominate the step, so the kernels break even at R ≈ 2.8 (dense) or R ≈ 4 (rank 16).
+- Without cuDNN autotuning, R = 3–6 ran up to 2× slower.
+
+**Accuracy** (best validation score; lower is better):
+
+| kernel | reach (6 updates) | val score | vs Fourier | test $x_\text{HI}$ / $T_b$ RMSE | training time |
+|---|---:|---:|---:|---:|---:|
+| **Fourier, modes 24** | whole slice | **0.02136** | — | **0.0872 / 7.71 mK** | **3.6 h** |
+| R = 1 | 9 Mpc | 0.0347 | +62% | 0.121 / 9.76 | 2.8 h |
+| R = 2 | 17 Mpc | 0.0290 | +36% | 0.109 / 8.85 | 3.8 h |
+| R = 3 | 26 Mpc | 0.0254 | +19% | 0.101 / 8.27 | 4.4 h |
+| R = 4 | 34 Mpc | 0.0242 | +13% | 0.097 / 8.10 | 5.2 h |
+| R = 6 | 51 Mpc | 0.0239 | +12% | 0.095 / 8.13 | 7.7 h |
+| R = 8, rank 16 | 69 Mpc | 0.0228 | +6.5% | 0.093 / 8.04 | 4.6 h |
+
+- **No radius matches the Fourier kernel.** The gap levels off at +12–13% for R = 4–6 at 1.5–2× the training time.
+- **At equal cost (R ≈ 2–3) the local kernel is 19–36% worse;** every local kernel within 15% costs more time than the Fourier one.
+- **Reach beats channel mixing:** the rank-16 kernel at R = 8 (16 spatial filters, 5 k parameters) beats dense R = 4–6 (64×64 per offset).
+- Ionization depends on photon budgets over regions of up to tens of Mpc (excursion-set radii 1–20 Mpc). The Fourier kernel reaches the whole 200 Mpc slice in one update; a few global modes are worth more than any affordable stencil.
+- The Fourier model's 9 M kernel parameters are not the explanation either: the dense local models with 0.1–0.5 M parameters do no better than the 5 k-parameter rank-16 one.
+
+### 6.10 Number of updates T
+
+The short 2-D sweep (§2, 15 k steps) put T = 3 / 6 / 10 within 3% of each other, with the
+integration time T × step size (step size 0.5) mattering more than T itself. To convergence on the
+multi-field all-cones setup (full Fourier kernel, step size 0.5):
+
+| T | seed | val score | test $x_\text{HI}$ / $T_b$ RMSE | steps | training time |
+|---:|---:|---:|---:|---:|---:|
+| 3 | 0 | **0.02098** | 0.0866 / 7.68 mK | 98 k | **2.2 h** |
+| 6 | 0 | 0.02136 | 0.0872 / 7.71 | 84 k | 3.6 h |
+| 6 | 1 | 0.02136 | 0.0873 / 7.82 | 74 k | 3.1 h |
+| 10 | 0 | **0.02098** | 0.0869 / 7.66 | 71 k | 4.9 h |
+
+- **T makes no material difference:** T = 3 and T = 10 tie at −1.8% on validation. On test they are within the spread between the two T = 6 seeds ($T_b$ 7.71 vs 7.82 mK).
+- **The two T = 6 seeds agree to five digits on validation,** so seed noise in the validation score is far below the 1–2% differences here.
+- **T = 3 is the cheaper choice:** same accuracy at ~60% of the training time and half the forward cost per slice.
+
+### 6.11 Global-history ablation
+
+The 38 scalars include 13 LOS band means each of the emulated global $x_\text{HI}$ and $T_b$
+histories. `--drop-history xhi|tb` removes one set (25 scalars kept); otherwise identical to the
+plain all-cones model (both histories).
+
+| inputs | val score | test $x_\text{HI}$ / $T_b$ RMSE |
+|---|---:|---:|
+| **both histories** | **0.02136** | **0.0872 / 7.71 mK** |
+| no $x_\text{HI}$ history | 0.02453 (+15%) | 0.0973 (+12%) / 8.26 (+7%) |
+| no $T_b$ history | 0.02178 (+2%) | 0.0900 (+3%) / 8.04 (+4%) |
+
+Cylindrical power at native LOS resolution (§6.12), share of (k⊥, k∥) cells within ±0.1, z ≈ 7 / 9 / 11 / 14 / 17:
+
+| inputs | $x_\text{HI}$ | $T_b$ |
+|---|---|---|
+| both histories | 90 / 79 / 78 / 92 / 57% | 88 / 83 / 79 / 73 / 4% |
+| no $x_\text{HI}$ history | 79 / 64 / 41 / 30 / 83% | 85 / 78 / 54 / 35 / 25% |
+| no $T_b$ history | 93 / 85 / 82 / 68 / 50% | 89 / 84 / 84 / 51 / 6% |
+
+- **The $x_\text{HI}$ history carries most of the global information.** Without it both fields lose 10–30% of their small-scale power at z ≈ 11–14 (high k⊥ and high k∥), and $x_\text{HI}$ gains a large-scale excess at z ≈ 17.
+- **The $T_b$ history matters mainly around z ≈ 14** (late heating), where its absence leaves a broad $T_b$ excess at low-to-mid k⊥.
+- **Neither history touches the absorption-era excess** at z ≈ 17 (4–6% of cells within ±0.1); that took the power loss (§6.7).
+
+Figures: [[Rhizome Neural Operator Figures#8. Cylindrical power at native LOS resolution (§6.11, §6.12)|history ablation maps]].
+
+### 6.12 Cylindrical power at native LOS resolution
+
+**Why:** fno-21cm's cylindrical maps are computed on the 512-point evaluation cubes
+(uniform in z, Δz = 0.039). Their LOS cells are 13.7 / 9.8 / 7.5 / 5.4 / 4.1 Mpc at z ≈ 7 / 9 / 11 / 14 / 17, against 1.43 Mpc natively. So k∥ only reached 0.23–0.77 Mpc⁻¹ while k⊥ reached 2.2 Mpc⁻¹, and small-scale LOS errors were invisible.
+
+**How** (`ebm21cm/native_cyl.py`, accumulated by both exporters, `--native-cyl`):
+- 140 native slices (200 Mpc) per chunk around each redshift, so k∥ spans the same 0.031–2.2 Mpc⁻¹ as k⊥.
+- fno-21cm's procedure otherwise: per-slice mean removed, Hann window along the LOS, per-cone ratio, median over the 199 test cones.
+- k⊥ in 15 log bins, k∥ one row per LOS frequency.
+- The 2-D exporters predict only the chunk slices; UFNO's 3-D export predicts full native cones.
+- Every model saw identical truth (per-cone true power equal to 1e-7).
+- A test checks the chunk sums against fno-21cm's own `_cylindrical_sums`.
+
+**Share of (k⊥, k∥) cells within ±0.1**, z ≈ 7 / 9 / 11 / 14 / 17:
+
+| model | $x_\text{HI}$ | $T_b$ |
+|---|---|---|
+| UFNO | 19 / 8 / 12 / 21 / 34% | 60 / 76 / 72 / 52 / 34% |
+| Rhizome (plain) | 90 / 79 / 78 / 92 / 57% | 88 / 83 / 79 / 73 / 4% |
+| + $T_b$ power loss | 84 / 76 / 66 / 44 / 53% | **100 / 100** / 94 / **91** / 60% |
+| + $T_b$ and $x_\text{HI}$ power loss | **91 / 94 / 100 / 100 / 99%** | **100** / 99 / **95** / 88 / **69%** |
+
+The shares count each cell once. With one row per LOS frequency most cells sit at high k∥, so they weight small LOS scales heavily.
+
+- **UFNO smooths along the LOS.** Its $x_\text{HI}$ and $T_b$ power falls off at k∥ ≳ 0.5 Mpc⁻¹ at every redshift (to −0.4), on top of its known high-k⊥ deficit. The 512-grid maps stopped below this.
+- **The slice-wise rhizome has no comparable LOS problem.** The plain model loses $x_\text{HI}$ power only in the top rows (k∥ ≳ 1.5–2 Mpc⁻¹) and at the highest k⊥. Slice-by-slice prediction neither adds LOS jitter nor loses much LOS structure.
+- **Both power terms together give nearly perfect $x_\text{HI}$ power at all (k⊥, k∥),** although the loss acts only on transverse spectra.
+- **The $T_b$-only power loss worsens $x_\text{HI}$ at z ≈ 14–17** (a high-k∥ deficit, then a broad excess); adding the $x_\text{HI}$ term removes both.
+- **Absorption-era $T_b$ (z ≈ 17) is still the hardest case.** The power-loss models are 60–69% within ±0.1, with the remaining excess in a band at k∥ ≈ 0.5–1 Mpc⁻¹.
+- **Open:** UFNO shows a thin excess in the single highest-k∥ row at z ≈ 7, 9 and 17, possibly from its tiled-window inference; not checked.
+
+Figures: [[Rhizome Neural Operator Figures#8. Cylindrical power at native LOS resolution (§6.11, §6.12)|native cylindrical maps]].
+
 ## 7. Cost
 
 | model | GPU | training run | inference, one full cone (2,709 slices), A100 / H200 |
@@ -534,7 +660,9 @@ Figures: [[Rhizome Neural Operator Figures#5. Power-loss variants (§6.7, §6.8)
 
 - **Power-loss weight:** λ = 0.03 fixes the absorption-era excess at a 4–8% pixel cost (§6.7). A smaller λ (e.g. 0.01) or a power term restricted to pre-reionization slices might keep most of the gain for less cost. The same for the $x_\text{HI}$ term (§6.8), e.g. λ_x = 0.01.
 - **Constant $T_b$ offsets** (§6.5): a better $T_b$ history emulator or a slice-mean correction head.
-- **Wider kernel band:** full-budget 36/48-mode runs; SIREN only if those help (§6.4).
+- **Wider kernel band:** full-budget 36/48-mode runs; SIREN only if those help (§6.4). A local real-space kernel is not an alternative (§6.9).
+- **T = 3 as the default:** same accuracy as T = 6 at ~60% of the training time (§6.10); not yet evaluated on the full suite.
+- **UFNO's top-k∥ row excess** in the native maps (§6.12): check for a window-tiling artifact.
 - **fno retrain with BCE on $x_\text{HI}$**, to separate the loss effect (§4.3) from the operator.
 - **Single seeds throughout**; the A vs A0 difference (7.6%) may be partly noise.
 - **Partial-ionization plateaus** in the truth are a shared blind spot (overpredicted "partially ionized" fraction 0.135–0.18 vs truth 0.086).
@@ -552,5 +680,8 @@ Figures: [[Rhizome Neural Operator Figures#5. Power-loss variants (§6.7, §6.8)
 - Benchmarks: `runs/eval3d/bench_inference_{a100,h200}.json`.
 - Native slice-wise cones (13 test cones): `data/eval_cubes/rhizome2d_w64_fnosplit_slicewise/native/`.
 - $x_\text{HI}$ power-loss model: `runs/rhizome_mf2d_w64_structured_all_pw0.03_px0.03/`, cubes `data/eval_cubes/rhizome2d_mf_w64_all_pw0.03_px0.03/` (natives for 7 cones), suite `runs/eval3d/slicewise2d_mf_xhi_power_loss/`, paired stats `runs/probes/paired_px_vs.py`.
-- Figures copied to the vault: `figures/rhizome-results_20261012/` (see [[Rhizome Neural Operator Figures]]).
+- Figures copied to the vault: `figures/rhizome-results_20261012/` and `figures/rhizome-cyl-power_20261013/` (see [[Rhizome Neural Operator Figures]]).
+- Radius sweep: `runs/rhizome_mf2d_w64_structured_all_R{1,2,3,4,6,8_rank16}/`; cost benchmark `runs/eval3d/kernel_radius_bench_a100{,_cudnnbench}.json`.
+- T sweep: `runs/rhizome_mf2d_w64_structured_all_{T3,T10,T6_seed1}/`. History ablation: `runs/rhizome_mf2d_w64_structured_all_nohist_{xhi,tb}/`, cubes `data/eval_cubes/rhizome2d_mf_w64_all_nohist_{xhi,tb}/`.
+- Native cylindrical power: `runs/eval3d/native_cyl/<model>_{xhi,tb}.npz` and maps (`ebm21cm/native_cyl.py`, `ebm21cm/plot_cyl_error.py`); 512-grid $T_b$ maps: `runs/eval3d/tb_cyl/`, `runs/eval3d/cyl_error_linear/`.
 - Launch records: `runs/rhizome3d/COMMON*.txt`, `runs/rhizome3d_mf/LAUNCH.txt`, `runs/rhizome_xhi_w128_fnosplit.LAUNCH.txt`, `runs/rhizome_mf2d.LAUNCH.txt`.

@@ -2,7 +2,7 @@
 type: finding
 title: "Rhizome Neural Operator Figures"
 created: 2026-10-12
-updated: 2026-10-12
+updated: 2026-10-13
 tags:
   - domain/thesis
   - domain/ml
@@ -25,7 +25,7 @@ sources:
 Figure companion to [[Rhizome Neural Operator Results]]; numbers and context are
 there, section numbers (§) refer to it. All figures are on the 199 (multi-field)
 or 200 ($x_\text{HI}$-only) held-out test cones unless a cone is named. Copies
-live in `figures/rhizome-results_20261012/`.
+live in `figures/rhizome-results_20261012/` and `figures/rhizome-cyl-power_20261013/`.
 
 **Naming in the plots.** "Rhizome" = the multi-field slice-wise 2-D model trained
 on all cones (`rhizome2d_mf_w64_all`, the plain BCE + $T_b$ MSE variant); "UFNO" =
@@ -211,3 +211,32 @@ timing, power/coherence by stage, front error profile (§3 table).
 ![[mf3d_physical_21cm.png]]
 *3-D multi-field: rhizome C and B vs fno `tbs+histtb` / `es+histtb`* — global
 history and timing, 21-cm statistics (§4.2 table).
+
+## 8. Cylindrical power at native LOS resolution (§6.11, §6.12)
+
+Fractional power error $P_\text{pred}/P_\text{true} - 1$ per (k⊥, k∥) cell, cone median over
+the 199 test cones. Chunks of 140 native slices (200 Mpc) at z ≈ 7, 9, 11, 14, 17, so both
+axes run from 0.031 to 2.2 Mpc⁻¹. k⊥ in log bins; k∥ one row per LOS frequency (rows thin
+out towards high k∥). Flat white within ±0.1, saturating at ±0.4 (red: too much power).
+
+![[native_cyl_ufno_vs_rhizome_xhi.png]]
+*$x_\text{HI}$: UFNO vs plain rhizome vs + $T_b$ power loss vs + $T_b$ & $x_\text{HI}$ power loss.*
+UFNO loses power at high k∥ (≳ 0.5 Mpc⁻¹) at every redshift as well as at high k⊥, and
+has a large-scale excess from z ≈ 11. The plain rhizome is short only in the top rows and
+the highest k⊥; with both power terms the maps are white (91–100% of cells).
+
+![[native_cyl_ufno_vs_rhizome_tb.png]]
+*$T_b$, same models.* UFNO again falls off at high k∥ and k⊥. The plain rhizome's
+absorption-era excess fills the z ≈ 17 map; the power-loss models leave a band at
+k∥ ≈ 0.5–1 Mpc⁻¹ there and are near-white elsewhere.
+
+![[native_cyl_xhi_history_xhi.png]]
+![[native_cyl_xhi_history_tb.png]]
+*With vs without the $x_\text{HI}$ history input* ($x_\text{HI}$, then $T_b$). Without it both
+fields lose 10–30% of their small-scale power at z ≈ 11–14 and $x_\text{HI}$ gains a
+large-scale excess at z ≈ 17.
+
+![[native_cyl_tb_history_xhi.png]]
+![[native_cyl_tb_history_tb.png]]
+*With vs without the $T_b$ history input.* A much smaller effect: a broad $T_b$ excess at
+z ≈ 14 without it; the absorption-era excess at z ≈ 17 is unaffected by either history.
