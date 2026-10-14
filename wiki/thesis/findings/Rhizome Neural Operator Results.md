@@ -92,9 +92,10 @@ strips, power-loss variants, 3-D runs): [[Rhizome Neural Operator Figures]].
   - The best plain-loss model is a spectral kernel on a 4× coarser grid plus a compact R = 2 kernel at full resolution: −3% validation score vs the single-level model with the same updates, at half the parameters. It is also the only plain-loss model without a high-k $x_\text{HI}$ power deficit.
   - The coarse level must be spectral.
   - With both power terms there is no gain.
-- **The trained rollout is a transient, not an iteration to equilibrium** (§6.16).
-  - Every model is best exactly at its trained T and (for T ≤ 6) degrades when run further; T = 10 settles.
-  - Beyond the trained length the state ends in a small two-cycle (1–6% per update). This is the signature of an overshooting step size; a Δt = 0.25 run is training.
+- **With a fixed T the trained rollout is a transient, not an iteration to equilibrium; random-T training fixes this** (§6.16).
+  - Every fixed-T model is best exactly at its trained T and (for T ≤ 6) degrades when run further. Beyond its horizon the state ends in a small two-cycle (1–6% per update), the signature of an overshooting step.
+  - **Training with a random T ∈ {3, …, 12} per batch** gives a prediction that is flat from t = 4 to t = 60 and settles within ~4 updates. It also has the best single-level validation score (0.02088, −2.2%) at no cost.
+  - Halving the step size (Δt = 0.25) weakens the oscillation but does not stop the degradation beyond the trained T.
 - **The emulated $x_\text{HI}$ history is the important scalar input** (§6.11). Dropping it costs 15% on validation (test $x_\text{HI}$ +12%, $T_b$ +7%) and 10–30% of the small-scale power during reionization; dropping the $T_b$ history costs only 2%.
 - **The gates extend the kernel's reach to the excursion-set scale** (§6.13). The bare Fourier kernel falls to half within 3.6 Mpc, but averaged over 7,200 receiver cells the gates boost incoming connections out to 10–25 Mpc. Ionized cells keep their receivers open and collect from the furthest; front and neutral cells settle after 2–3 updates.
   - The power-loss model gates more strongly and more locally at fronts (3.5× vs 2.0×, half-width 9 vs 14 Mpc).
@@ -775,13 +776,40 @@ Six checkpoints were run for 30 updates at inference on 512 validation slices (`
   - The state-dependent gates create such strongly negative-slope directions; they are absent with frozen gates.
   - Within the trained horizon there is no oscillation, so the reported accuracies are unaffected. It matters for any reading of the rhizome as an iteration to equilibrium.
 - **The earlier short sweep (§2) already hinted at this:** Δt = 1 (no damping) was the worst setting, and T = 6 at Δt = 0.25 matched T = 3 at Δt = 0.5.
-- **Runs in progress:**
-  - T = 12 at Δt = 0.25 (same T·Δt as the reference), to test whether a smaller step removes the two-cycle;
-  - training with random T ∈ {3, …, 12} per batch (`--random-updates 3:12`, validated at 6), to test whether the decoder can be made independent of the rollout length.
 
-  Both track the T = 6 reference within 1% at matched steps so far.
+**Two remedies, trained to convergence** (plain all-cones setup, seed 0):
+- **Random T:** `--random-updates 3:12`, a new T ∈ {3, …, 12} for every training batch, validated at T = 6. The decoder cannot tune itself to one rollout length.
+- **Smaller step:** T = 12 at Δt = 0.25, the same integration time T·Δt = 3 as the reference.
 
-Figures: [[Rhizome Neural Operator Figures#10. Two-level rhizome and rollout dynamics (§6.15, §6.16)|rollout diagnostic]].
+| model | val score | test $x_\text{HI}$ / $T_b$ RMSE | training |
+|---|---:|---:|---:|
+| fixed T = 6, Δt = 0.5 (2 seeds) | 0.02136 / 0.02136 | 0.0872–0.0873 / 7.71–7.82 mK | 3.1–3.6 h |
+| **random T ∈ {3, …, 12}** | **0.02088 (−2.2%)** | 0.0870 / 7.71 | 4.3 h |
+| T = 12, Δt = 0.25 | 0.02122 (−0.7%) | 0.0870 / 7.64 | 6.2 h |
+
+Rollout to 60 updates (512 validation slices; score after t updates; state change and cosine as above):
+
+| model | t = 1 | t = 3 | t = 6 | t = 12 | t = 24 | t = 60 | state change at T / t = 60 | cos at t = 60 |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| fixed T = 6 | 0.400 | 0.055 | **0.021** | 0.025 | 0.026 | 0.026 | 0.128 / 0.029 | −0.83 |
+| fixed T = 10 | 0.272 | 0.059 | 0.022 | **0.0205** | 0.0205 | 0.0206 | 0.028 / 0.015 | −0.87 |
+| T = 12, Δt = 0.25 | 0.711 | 0.329 | 0.074 | **0.0206** | 0.028 | 0.030 | 0.046 / 0.008 | −0.33 |
+| **random T ∈ {3, …, 12}** | 0.055 | 0.021 | **0.0204** | **0.0204** | **0.0204** | **0.0204** | 0.036 / 0.007 | −0.87 |
+
+- **Random T makes the rollout stable at no cost.**
+  - The prediction is identical from t ≈ 5 to t = 60, and the best of all models.
+  - At its validation T the state already changes by only 3.6% per update (12.8% for fixed T = 6).
+  - A small two-cycle remains, but at ~0.7% per update (4× less than fixed T = 6) it no longer affects the output.
+  - The model front-loads its computation: essentially final after 4–5 updates, and even 0.055 / 0.026 after 1 / 2 updates, which it never trained on (fixed T = 6: 0.40 / 0.13).
+  - With random T the model behaves like an iteration to a T-independent answer, which is what a fixed-point reading of the rhizome needs.
+- **The smaller step alone does not.** Δt = 0.25 weakens the oscillation, as the linear argument predicts: cosine only −0.33 and residual 0.8% vs −0.83 and 2.9%. But the model is still best exactly at its trained T = 12 and degrades by 45% at t = 60. It also converges slowly early on (0.074 after 6 updates), since each update moves only a quarter of the way to the proposal.
+- **Two separate effects:**
+  - The degradation beyond T comes from training at one fixed length; random T fixes it.
+  - The oscillation amplitude is set by Δt and by the gates' sharpness; it is harmless once the output no longer depends on T.
+- **Within a model the recurrence does the work:** fixed T = 6 improves 20× from t = 1 to t = 6. That is not evidence that more updates are needed in general: a model retrained with T = 1 is only ~8% behind (§6.10). Early stopping just leaves a model trained for T updates unfinished.
+- **Recommendation:** train with random T by default (Δt = 0.5 is fine then). Combining it with the two-level C model and with the power terms is the natural next step.
+
+Figures: [[Rhizome Neural Operator Figures#10. Two-level rhizome and rollout dynamics (§6.15, §6.16)|rollout diagnostics]].
 
 ## 7. Cost
 
@@ -817,7 +845,7 @@ Figures: [[Rhizome Neural Operator Figures#10. Two-level rhizome and rollout dyn
 - **Constant $T_b$ offsets** (§6.5): a better $T_b$ history emulator or a slice-mean correction head.
 - **Wider kernel band:** full-budget 36/48-mode runs; SIREN only if those help (§6.4). A local real-space kernel is not an alternative (§6.9).
 - **Gate arms:** no gates (A = B = 1), source-only, receiver-only, static gates (§6.14); implemented, not trained. "No gates" decides whether the gating is what separates the rhizome from fno.
-- **Step size and rollout length:** Δt = 0.25 (T = 12) and random-T runs in progress (§6.16). Run the rollout diagnostic on both.
+- **Random-T training as the default** (§6.16): combine with the two-level C model and with both power terms; check whether random T also stabilizes the power-loss model, the least settled one.
 - **Two-level model:** C with a gentler power weight, or with only the $T_b$ term, might keep both the plain-loss gain and the power fix (§6.15).
 - **T = 3 as the default:** same accuracy as T = 6 at ~60% of the training time (§6.10); not yet evaluated on the full suite.
 - **UFNO's top-k∥ row excess** in the native maps (§6.12): check for a window-tiling artifact.
@@ -842,9 +870,9 @@ Figures: [[Rhizome Neural Operator Figures#10. Two-level rhizome and rollout dyn
 - Radius sweep: `runs/rhizome_mf2d_w64_structured_all_R{1,2,3,4,6,8_rank16}/`; cost benchmark `runs/eval3d/kernel_radius_bench_a100{,_cudnnbench}.json`.
 - T sweep: `runs/rhizome_mf2d_w64_structured_all_{T3,T10,T6_seed1}/`. History ablation: `runs/rhizome_mf2d_w64_structured_all_nohist_{xhi,tb}/`, cubes `data/eval_cubes/rhizome2d_mf_w64_all_nohist_{xhi,tb}/`.
 - Gate ablation: `runs/rhizome_mf2d_w64_structured_all_gates_frozen_seed{0,1}/` (`--gate-mode`), cubes and native spectra `data/eval_cubes/rhizome2d_mf_w64_all_gates_frozen_seed{0,1}/`, `runs/eval3d/native_cyl/`.
-- Updates below 3: `runs/rhizome_mf2d_w64_structured_all_{T1,T2,T1_dt1}/`. In progress: `..._T12_dt0.25/`, `..._Trand3-12/` (`--random-updates`).
+- Updates below 3: `runs/rhizome_mf2d_w64_structured_all_{T1,T2,T1_dt1}/`. Random T and small step: `..._Trand3-12/` (`--random-updates`), `..._T12_dt0.25/`.
 - Two-level rhizome (`RhizomeUNet2d`, `--coarse-*`): `runs/rhizome_mf2d_w64_structured_all_unet{A,B,C,D}/`, `..._unet{B,C}_pw0.03_px0.03/`, cubes `data/eval_cubes/rhizome2d_mf_w64_all_unet*/`, native maps `runs/eval3d/native_cyl/unet*_cyl_error_*.png`.
-- Rollout diagnostic: `runs/eval3d/rollout_diagnostic{,_cycles}/` (`ebm21cm/rollout_diagnostic.py`).
+- Rollout diagnostic: `runs/eval3d/rollout_diagnostic{,_cycles,_dt_randT}/` (`ebm21cm/rollout_diagnostic.py`).
 - Gating mechanism: single-slice maps `runs/eval3d/mechanism{,_pw_px}/`, averages `runs/eval3d/mechanism_avg/` (per-receiver profiles, `summary.json`).
 - Native cylindrical power: `runs/eval3d/native_cyl/<model>_{xhi,tb}.npz` and maps (`ebm21cm/native_cyl.py`, `ebm21cm/plot_cyl_error.py`); 512-grid $T_b$ maps: `runs/eval3d/tb_cyl/`, `runs/eval3d/cyl_error_linear/`.
 - Launch records: `runs/rhizome3d/COMMON*.txt`, `runs/rhizome3d_mf/LAUNCH.txt`, `runs/rhizome_xhi_w128_fnosplit.LAUNCH.txt`, `runs/rhizome_mf2d.LAUNCH.txt`.

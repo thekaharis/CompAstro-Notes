@@ -311,3 +311,10 @@ left: one-step (solid) and two-step (dashed) state change, validation score, $T_
 RMSE, cosine between successive state changes. Every model is best at its trained T;
 T = 10 stays flat. Beyond ~15 updates the state settles into a small two-cycle
 (cosine -> −0.8), except with frozen gates (0.3%).*
+
+![[rollout_random_T_and_dt.png]]
+*Rollout to 60 updates: fixed T = 6 and T = 10 (Δt = 0.5), T = 12 at Δt = 0.25, and a
+model trained with random T ∈ {3, …, 12} (validated at 6). Same panels as above. The
+random-T model's score is flat from t ≈ 5 to 60 and its state change ends lowest; the
+Δt = 0.25 model oscillates less (cosine −0.33) but still degrades beyond its trained 12
+updates.*

@@ -10,6 +10,16 @@ updated: 2026-10-14
 
 ---
 
+## [2026-10-14] update | Rhizome: random-T training and smaller step size
+
+**Sources**: `rhizome-neural-operator` — runs `runs/rhizome_mf2d_w64_structured_all_{Trand3-12,T12_dt0.25}/`, rollout diagnostic `runs/eval3d/rollout_diagnostic_dt_randT/`.
+
+**Updated**: [[Rhizome Neural Operator Results]] (key findings, §6.16, open items, artifacts), [[Rhizome Neural Operator Figures]] (§10, 1 figure), index, hot.
+
+Training with a random T ∈ {3, …, 12} per batch makes the rollout stable: the prediction is identical from t ≈ 5 to 60, the state settles within ~4 updates, and the validation score is the best single-level one (0.02088, −2.2%), at no cost. Halving the step size (T = 12, Δt = 0.25) weakens the residual two-cycle but leaves the degradation beyond the trained T. Random T is recommended as the default.
+
+---
+
 ## [2026-10-14] update | Rhizome: updates below 3, frozen gates, two-level rhizome, rollout dynamics
 
 **Sources**: `rhizome-neural-operator` (branch `slicewise-2d-multifield`) — runs `runs/rhizome_mf2d_w64_structured_all_{T1,T2,T1_dt1,gates_frozen_seed0,gates_frozen_seed1,unetA..D,unetB_pw0.03_px0.03,unetC_pw0.03_px0.03}/`, `runs/eval3d/native_cyl/`, `runs/eval3d/rollout_diagnostic{,_cycles}/`; new `RhizomeUNet2d`, `--gate-mode`, `--random-updates`, `ebm21cm/rollout_diagnostic.py`.
