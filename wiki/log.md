@@ -1,12 +1,22 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-10-14
+updated: 2026-10-17
 ---
 
 # Operation Log
 
 *Append-only. New entries go at the TOP.*
+
+---
+
+## [2026-10-17] update | Rhizome: two-level model with random T
+
+**Sources**: `rhizome-neural-operator` (`94639f4` random rollout lengths incl. two-level, `658e0a6` rollout diagnostic) — runs `runs/rhizome_mf2d_w64_structured_all_unetC{,_pw0.03_px0.03}_Trand3-6{,_both}/` and the cancelled `..._Trand2-6/`, `runs/eval3d/rollout_diagnostic_two_level{,_randT,_randT_both}/`, `runs/eval3d/native_cyl/`.
+
+**Updated**: [[Rhizome Neural Operator Results]] (key findings, §6.16 recommendation, new §6.17, open items, artifacts), [[Rhizome Neural Operator Figures]] (§10, 6 figures), index, hot.
+
+Fixed-T two-level models degrade beyond their trained length (+23% to +196%), and C's full-resolution level oscillates in a 32% two-cycle. Random T stabilizes exactly the levels it is applied to. Plain loss with random T at both levels gives the best model of the project: val 0.02014, test 0.0863 / 7.55 mK, both levels T-independent. With both power terms there is a trade-off: fine-only random T has the best pixel accuracy (val 0.02337) but an unstable coarse level; both-level random T is stable with the most realistic spectra (absorption-era $T_b$ 84% of native cells within ±10%) at a 4–9% pixel cost. A first attempt with T ∈ {2..6} at both levels plus power terms was unstable and cancelled.
 
 ---
 

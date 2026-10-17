@@ -2,7 +2,7 @@
 type: finding
 title: "Rhizome Neural Operator Results"
 created: 2026-10-03
-updated: 2026-10-14
+updated: 2026-10-17
 tags:
   - domain/thesis
   - domain/ml
@@ -88,10 +88,13 @@ strips, power-loss variants, 3-D runs): [[Rhizome Neural Operator Figures]].
 - **The number of updates T barely matters** (§6.10): T = 3, 6 and 10 are within 2%, and two T = 6 seeds agree to five digits on validation. T = 3 trains in 60% of the time.
 - **One or two updates cost only a few percent** (§6.10). Test RMSE: T = 2 is +1–2%, T = 1 is +3–4%. A single full update (T = 1, Δt = 1, no recurrence) is within 5% of the best rollout. The rollout depth is not what separates the rhizome from fno.
 - **Freezing the gates at the initial state costs about 2%,** consistently over two seeds (§6.14). Frozen gates still depend on the conditioning and still multiply the kernel at both ends, so this measures only the value of updating the gates during the rollout. Removing the gates altogether (A = B = 1) is not yet tested.
-- **A two-level rhizome helps only with the plain loss** (§6.15).
-  - The best plain-loss model is a spectral kernel on a 4× coarser grid plus a compact R = 2 kernel at full resolution: −3% validation score vs the single-level model with the same updates, at half the parameters. It is also the only plain-loss model without a high-k $x_\text{HI}$ power deficit.
-  - The coarse level must be spectral.
-  - With both power terms there is no gain.
+- **A two-level rhizome is the best model, once trained with random T** (§6.15, §6.17).
+  - The design: a spectral kernel on a 4× coarser grid plus a compact R = 2 kernel at full resolution (the coarse level must be spectral).
+  - With fixed T it is the best plain-loss model (−3% validation vs the matched single-level model, half the parameters), but its rollout is the least stable: a 32% two-cycle at the full-resolution level, and +68–167% when either level runs longer.
+  - **Plain loss, random T at both levels:** the best validation score of the project (0.02014, −5.7% vs the single-level reference), test RMSE tied with the best (0.0863 / 7.55 mK), and both levels T-independent (±1% to 30 updates).
+  - **With both power terms** there is a trade-off:
+    - random T at the full-resolution level only gives the best power-loss accuracy (val 0.02337, −1.8% vs single level) and the lowest power errors;
+    - random T at both levels is stable and has the most realistic spectra (absorption-era $T_b$: 84% of native cells within ±10% vs 69%), but is 4–9% worse per voxel.
 - **With a fixed T the trained rollout is a transient, not an iteration to equilibrium; random-T training fixes this** (§6.16).
   - Every fixed-T model is best exactly at its trained T and (for T ≤ 6) degrades when run further. Beyond its horizon the state ends in a small two-cycle (1–6% per update), the signature of an overshooting step.
   - **Training with a random T ∈ {3, …, 12} per batch** gives a prediction that is flat from t = 4 to t = 60 and settles within ~4 updates. It also has the best single-level validation score (0.02088, −2.2%) at no cost.
@@ -807,9 +810,57 @@ Rollout to 60 updates (512 validation slices; score after t updates; state chang
   - The degradation beyond T comes from training at one fixed length; random T fixes it.
   - The oscillation amplitude is set by Δt and by the gates' sharpness; it is harmless once the output no longer depends on T.
 - **Within a model the recurrence does the work:** fixed T = 6 improves 20× from t = 1 to t = 6. That is not evidence that more updates are needed in general: a model retrained with T = 1 is only ~8% behind (§6.10). Early stopping just leaves a model trained for T updates unfinished.
-- **Recommendation:** train with random T by default (Δt = 0.5 is fine then). Combining it with the two-level C model and with the power terms is the natural next step.
+- **Recommendation:** train with random T by default (Δt = 0.5 is fine then). For the two-level model, see §6.17.
 
 Figures: [[Rhizome Neural Operator Figures#10. Two-level rhizome and rollout dynamics (§6.15, §6.16)|rollout diagnostics]].
+
+### 6.17 Two-level rhizome with random T
+
+The fixed-T two-level models degrade badly beyond their trained length. Rollout diagnostic, each level extended to 30 updates with the other at its trained 3; 512 validation slices:
+
+| fixed-T model, extended level | score at 3 + 3 | at t = 30 | state change at t = 30 | cos at t = 30 |
+|---|---:|---:|---:|---:|
+| B, fine / coarse | 0.0203 | +196% / +23% | 0.018 / 0.22 | −0.31 / −0.73 |
+| C, fine / coarse | 0.0199 | +167% / +68% | **0.32** / 0.040 | **−0.98** / −0.83 |
+| C + power terms, fine / coarse | 0.0244 | +86% / +175% | 0.061 / 0.033 | −0.80 / −0.66 |
+
+C's full-resolution level, with its compact R = 2 kernel, oscillates far more strongly than any single-level model: a near-perfect two-cycle of 32% per update. The local stencil makes the update much stiffer at Δt = 0.5.
+
+**Training with random T** (`--random-updates`, and `--random-coarse-updates` for the coarse level; validated at 3 + 3):
+- **First attempt, unstable:** C with both power terms, each level random in {2, …, 6}. After 6k steps the training loss rose, gradient norms spiked to 18, and the run was 45% behind fixed T at 21k steps. Cancelled. Likely cause: very short rollouts (2 updates) of the stiff two-level dynamics, combined with the steep log-power loss.
+- **With T ≥ 3, all runs trained stably** (largest gradient norm 1.3–4.3):
+
+| model | random T | val score | test $x_\text{HI}$ / $T_b$ RMSE | test power error $T_b$ / $x_\text{HI}$ |
+|---|---|---:|---:|---:|
+| *plain loss:* C, fixed T | — | 0.02036 | 0.0862 / 7.55 mK | 0.318 / 0.349 |
+| C | fine {3..6} | 0.02079 | 0.0869 / 7.60 | 0.332 / 0.347 |
+| **C** | **both {3..6}** | **0.02014** | **0.0863 / 7.55** | 0.348 / 0.389 |
+| *both power terms:* single level, fixed T | — | 0.02381 | 0.0941 / 8.26 | 0.234 / 0.163 |
+| C, fixed T | — | 0.02506 | 0.0964 / 8.48 | 0.241 / 0.170 |
+| **C** | **fine {3..6}** | **0.02337** | **0.0936 / 8.24** | **0.172 / 0.102** |
+| C | both {3..6} | 0.02547 | 0.0981 / 8.63 | 0.227 / 0.151 |
+
+Rollout diagnostic of the random-T models (each level extended to 30 updates):
+
+| model, extended level | score at 3 + 3 | at t = 30 |
+|---|---:|---:|
+| C, random T fine only: fine / coarse | 0.0205 | −1% / **+76%** |
+| C + power, random T fine only: fine / coarse | 0.0228 | +1% / **+208%** |
+| **C, random T both: fine / coarse** | 0.0198 | **−1% / 0%** |
+| **C + power, random T both: fine / coarse** | 0.0248 | **+1% / +1%** |
+
+- **Random T stabilizes exactly the levels it is applied to.** Randomizing the full-resolution level makes that level T-independent and shrinks its oscillation from 32% to 4–7% per update. The coarse level, still fixed in training, keeps degrading. With both levels random, the whole model is stable. Residual hidden-state oscillations (up to 20% per update in the coarse level of the power-loss model) do not reach the output.
+- **Plain loss: random T at both levels is the best model of the project.** It has the best validation score, ties the best test RMSE, and both levels are T-independent. Its fine level is best at ~7 updates, slightly beyond the validated 3. It has somewhat higher power errors than fixed-T C (randomizing trades a little small-scale power for stability). In the native maps it has the best plain-loss $T_b$ during reionization (91–93% of cells within ±10% at z ≈ 7–11, vs 88–90% fixed-T C, 79–88% single level).
+- **Both power terms: a trade-off between pixel accuracy and spectra.**
+  - **Random T at the full-resolution level only** is the best power-loss model per voxel and has the lowest power errors in the training metric (−27% / −37% vs single level). But its coarse level is unstable, and its native maps are the weakest at z ≥ 14: $x_\text{HI}$ 10–20% short at high k∥, 9–23% of cells within ±10%. The training power term only sees transverse power above 0.3 Mpc⁻¹.
+  - **Random T at both levels** is 4–9% worse per voxel, but stable. It has the most realistic spectra of all power-loss models where it matters most:
+    - absorption-era $T_b$: 84% of cells within ±10% at z ≈ 17, vs 69% single level and 35–61% for the other C variants;
+    - $x_\text{HI}$ at z ≈ 7–9: 91–93%;
+    - $x_\text{HI}$ at z ≈ 14–17: 68–78%, vs 9–23% for fine-only randomization.
+
+    The single-level power-loss model remains best for $x_\text{HI}$ at z ≥ 11.
+
+Figures: [[Rhizome Neural Operator Figures#10. Two-level rhizome and rollout dynamics (§6.15, §6.16)|two-level rollout diagnostics and maps]].
 
 ## 7. Cost
 
@@ -845,7 +896,7 @@ Figures: [[Rhizome Neural Operator Figures#10. Two-level rhizome and rollout dyn
 - **Constant $T_b$ offsets** (§6.5): a better $T_b$ history emulator or a slice-mean correction head.
 - **Wider kernel band:** full-budget 36/48-mode runs; SIREN only if those help (§6.4). A local real-space kernel is not an alternative (§6.9).
 - **Gate arms:** no gates (A = B = 1), source-only, receiver-only, static gates (§6.14); implemented, not trained. "No gates" decides whether the gating is what separates the rhizome from fno.
-- **Random-T training as the default** (§6.16): combine with the two-level C model and with both power terms; check whether random T also stabilizes the power-loss model, the least settled one.
+- **Random-T training as the default** (§6.16, §6.17): done for the two-level model. Open: the single-level power-loss model with random T (the least settled single-level model); a gentler power weight for the stable both-level two-level model, to recover its 4–9% pixel cost.
 - **Two-level model:** C with a gentler power weight, or with only the $T_b$ term, might keep both the plain-loss gain and the power fix (§6.15).
 - **T = 3 as the default:** same accuracy as T = 6 at ~60% of the training time (§6.10); not yet evaluated on the full suite.
 - **UFNO's top-k∥ row excess** in the native maps (§6.12): check for a window-tiling artifact.
@@ -872,7 +923,8 @@ Figures: [[Rhizome Neural Operator Figures#10. Two-level rhizome and rollout dyn
 - Gate ablation: `runs/rhizome_mf2d_w64_structured_all_gates_frozen_seed{0,1}/` (`--gate-mode`), cubes and native spectra `data/eval_cubes/rhizome2d_mf_w64_all_gates_frozen_seed{0,1}/`, `runs/eval3d/native_cyl/`.
 - Updates below 3: `runs/rhizome_mf2d_w64_structured_all_{T1,T2,T1_dt1}/`. Random T and small step: `..._Trand3-12/` (`--random-updates`), `..._T12_dt0.25/`.
 - Two-level rhizome (`RhizomeUNet2d`, `--coarse-*`): `runs/rhizome_mf2d_w64_structured_all_unet{A,B,C,D}/`, `..._unet{B,C}_pw0.03_px0.03/`, cubes `data/eval_cubes/rhizome2d_mf_w64_all_unet*/`, native maps `runs/eval3d/native_cyl/unet*_cyl_error_*.png`.
-- Rollout diagnostic: `runs/eval3d/rollout_diagnostic{,_cycles,_dt_randT}/` (`ebm21cm/rollout_diagnostic.py`).
+- Rollout diagnostic: `runs/eval3d/rollout_diagnostic{,_cycles,_dt_randT,_two_level,_two_level_randT,_two_level_randT_both}/` (`ebm21cm/rollout_diagnostic.py`, rhizome commit `658e0a6`).
+- Two-level random T: `runs/rhizome_mf2d_w64_structured_all_unetC{,_pw0.03_px0.03}_Trand3-6{,_both}/` (cancelled first attempt: `..._unetC_pw0.03_px0.03_Trand2-6/`), native spectra `runs/eval3d/native_cyl/`.
 - Gating mechanism: single-slice maps `runs/eval3d/mechanism{,_pw_px}/`, averages `runs/eval3d/mechanism_avg/` (per-receiver profiles, `summary.json`).
 - Native cylindrical power: `runs/eval3d/native_cyl/<model>_{xhi,tb}.npz` and maps (`ebm21cm/native_cyl.py`, `ebm21cm/plot_cyl_error.py`); 512-grid $T_b$ maps: `runs/eval3d/tb_cyl/`, `runs/eval3d/cyl_error_linear/`.
 - Launch records: `runs/rhizome3d/COMMON*.txt`, `runs/rhizome3d_mf/LAUNCH.txt`, `runs/rhizome_xhi_w128_fnosplit.LAUNCH.txt`, `runs/rhizome_mf2d.LAUNCH.txt`.

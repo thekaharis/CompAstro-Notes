@@ -2,7 +2,7 @@
 type: finding
 title: "Rhizome Neural Operator Figures"
 created: 2026-10-12
-updated: 2026-10-14
+updated: 2026-10-17
 tags:
   - domain/thesis
   - domain/ml
@@ -318,3 +318,28 @@ model trained with random T ∈ {3, …, 12} (validated at 6). Same panels as ab
 random-T model's score is flat from t ≈ 5 to 60 and its state change ends lowest; the
 Δt = 0.25 model oscillates less (cosine −0.33) but still degrades beyond its trained 12
 updates.*
+
+**Two-level rhizome with random T (§6.17):**
+
+![[rollout_two_level_fixed_T.png]]
+*Fixed-T two-level models (B, C, C + power terms), each level extended to 30 updates
+with the other at its trained 3. All degrade beyond the trained length (+23% to
++196%); C's full-resolution level oscillates in a near-perfect two-cycle of 32% per
+update.*
+
+![[rollout_two_level_random_T_both.png]]
+*C trained with random T at both levels, plain loss and both power terms: both levels
+stay within ±1% when extended to 30 updates.*
+
+![[two_level_randT_plain_cyl_error_xhi.png]]
+![[two_level_randT_plain_cyl_error_tb.png]]
+*Plain loss, native resolution: single level vs C fixed T vs C with random T at both
+levels ($x_\text{HI}$, then $T_b$). The stable model has the best reionization-era
+$T_b$ maps (91–93% of cells within ±10% at z ≈ 7–11).*
+
+![[two_level_randT_pwpx_cyl_error_xhi.png]]
+![[two_level_randT_pwpx_cyl_error_tb.png]]
+*Both power terms, native resolution: single level, C fixed T, C random T at the fine
+level only, C random T at both levels. Fine-only randomization is 10–20% short in
+$x_\text{HI}$ at z ≥ 14 (high k∥); both-level randomization has the best absorption-era
+$T_b$ (84% vs 69% at z ≈ 17) and $x_\text{HI}$ at z ≈ 7–9.*
